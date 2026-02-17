@@ -6,14 +6,18 @@ class OtpService {
 
     // Generate 6-digit OTP
     generateOTP() {
-        return Math.floor(100000 + Math.random() * 900000).toString();
+        return Math.floor(1000 + Math.random() * 9000).toString();
     }
 
     // Send OTP via MSG91
     async sendOTP(phone, otp) {
         try {
+            let mobileNumber = phone.replace('+', '');
+            if (mobileNumber.length === 10) {
+                mobileNumber = '91' + mobileNumber;
+            }
             const response = await axios.post(
-                `${MSG91_API_URL}?authkey=${process.env.MSG91_AUTH_KEY}&mobile=${phone.replace('+', '')}&otp=${otp}&sender=${process.env.MSG91_SENDER_ID}&template_id=${process.env.MSG91_TEMPLATE_ID}`,
+                `${MSG91_API_URL}?authkey=${process.env.MSG91_AUTH_KEY}&mobile=${mobileNumber}&otp=${otp}&sender=${process.env.MSG91_SENDER_ID}&template_id=${process.env.MSG91_TEMPLATE_ID}`,
                 {},
                 {
                     headers: {
