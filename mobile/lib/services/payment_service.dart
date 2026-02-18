@@ -50,7 +50,7 @@ class PaymentService {
       }
 
       // 3. Start Transaction
-      // Params: JSON string body (NOT base64), checksum
+      // Params: raw JSON string, checksum
       Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(
           requestBody, 
           checksum
