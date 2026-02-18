@@ -35,6 +35,7 @@ class PhonePeService {
             const checksum = crypto.createHash('sha256').update(stringToHash).digest('hex') + "###" + config.saltIndex;
 
             return {
+                payload,
                 base64Body,
                 checksum,
                 merchantTransactionId

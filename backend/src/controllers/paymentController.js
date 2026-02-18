@@ -331,6 +331,7 @@ const getSdkToken = async (req, res) => {
         }
 
         res.json({
+            payload: sdkResponse.payload,
             base64Body: sdkResponse.base64Body,
             checksum: sdkResponse.checksum,
             merchantTransactionId
