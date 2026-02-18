@@ -112,4 +112,35 @@ router.get('/:matchId', async (req, res) => {
     }
 });
 
+// Get match scorecard
+router.get('/:matchId/scorecard', async (req, res) => {
+    try {
+        const { matchId } = req.params;
+
+        // Get API match ID from DB
+        const matchResult = await db.query(
+            'SELECT api_match_id FROM matches WHERE id = $1',
+            [matchId]
+        );
+
+        if (matchResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Match not found' });
+        }
+
+        const apiMatchId = matchResult.rows[0].api_match_id;
+        const cricketApiService = require('../services/cricketApiService');
+
+        const scorecard = await cricketApiService.getMatchScore(apiMatchId);
+
+        if (!scorecard) {
+            return res.status(404).json({ error: 'Scorecard not available' });
+        }
+
+        res.json(scorecard);
+    } catch (error) {
+        console.error('Get match scorecard error:', error);
+        res.status(500).json({ error: 'Failed to fetch scorecard' });
+    }
+});
+
 module.exports = router;

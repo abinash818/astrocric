@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import '../models/match.dart';
 import '../screens/prediction/prediction_detail_screen.dart';
 
+import '../screens/home/match_detail_screen.dart';
+
 class MatchCard extends StatelessWidget {
   final Match match;
 
@@ -22,6 +24,13 @@ class MatchCard extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => PredictionDetailScreen(matchId: match.id),
+              ),
+            );
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MatchDetailScreen(matchId: match.id),
               ),
             );
           }

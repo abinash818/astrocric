@@ -33,4 +33,9 @@ class MatchService {
     final response = await _apiService.get('/matches/$matchId');
     return Match.fromJson(response);
   }
+
+  Future<Map<String, dynamic>> getMatchScorecard(int matchId) async {
+    final response = await _apiService.get('/matches/$matchId/scorecard');
+    return response;
+  }
 }
