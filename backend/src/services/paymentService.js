@@ -15,19 +15,29 @@ const client = StandardCheckoutClient.getInstance(
 
 class PhonePeService {
 
-    // Get SDK Token for Mobile App
-    async getSdkToken({ amount, merchantTransactionId }) {
+    // Get SDK Token for Mobile App (v3 compatibility)
+    async getSdkToken({ amount, userId, merchantTransactionId, phone }) {
         try {
-            const request = CreateSdkOrderRequest.StandardCheckoutBuilder()
-                .merchantOrderId(merchantTransactionId) // Note: SDK uses merchantOrderId
-                .amount(amount * 100)
-                .redirectUrl(config.redirectUrl)
-                .build();
+            const payload = {
+                merchantId: config.merchantId,
+                merchantTransactionId: merchantTransactionId,
+                merchantUserId: `USER_${userId}`,
+                amount: Math.round(amount * 100), // in paise
+                mobileNumber: phone ? phone.replace('+91', '').replace('+', '') : '',
+                callbackUrl: config.callbackUrl,
+                paymentInstrument: {
+                    type: "PAY_PAGE"
+                }
+            };
 
-            const response = await client.createSdkOrder(request);
+            const base64Body = Buffer.from(JSON.stringify(payload)).toString('base64');
+            const stringToHash = base64Body + "/pg/v1/pay" + config.saltKey;
+            const checksum = crypto.createHash('sha256').update(stringToHash).digest('hex') + "###" + config.saltIndex;
+
             return {
-                token: response.token,
-                orderId: response.orderId // PhonePe's Order ID
+                base64Body,
+                checksum,
+                merchantTransactionId
             };
         } catch (error) {
             console.error('PhonePe SDK Token error:', error);

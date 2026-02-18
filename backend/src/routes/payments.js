@@ -12,6 +12,9 @@ router.post('/recharge', auth, paymentController.rechargeWallet);
 // Get SDK Token (requires auth)
 router.post('/sdk-token', auth, paymentController.getSdkToken);
 
+// Trigger Reconciliation (Manual/Cron) - protected
+router.post('/reconcile', auth, paymentController.checkPendingStatus);
+
 // Verify payment (requires auth)
 router.post('/verify', auth, paymentController.verifyPayment);
 

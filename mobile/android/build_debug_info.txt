@@ -1,0 +1,323 @@
+Initialized native services in: C:\Users\abina\.gradle\native
+Initialized jansi services in: C:\Users\abina\.gradle\native
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Starting process 'Gradle build daemon'. Working directory: C:\Users\abina\.gradle\daemon\8.14 Command: C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot\bin\java.exe --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.xml/javax.xml.namespace=ALL-UNNAMED -Xmx1024m -Dfile.encoding=UTF-8 -Duser.country=US -Duser.language=en -Duser.variant -cp C:\Users\abina\.gradle\wrapper\dists\gradle-8.14-all\c2qonpi39x1mddn7hk5gh9iqj\gradle-8.14\lib\gradle-daemon-main-8.14.jar -javaagent:C:\Users\abina\.gradle\wrapper\dists\gradle-8.14-all\c2qonpi39x1mddn7hk5gh9iqj\gradle-8.14\lib\agents\gradle-instrumentation-agent-8.14.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 8.14
+Successfully started process 'Gradle build daemon'
+An attempt to start the daemon took 1.104 secs.
+The client will now receive all logging from the daemon (pid: 17236). The daemon log file: C:\Users\abina\.gradle\daemon\8.14\daemon-17236.out.log
+Daemon will be stopped at the end of the build 
+Using 12 worker leases.
+Received JVM installation metadata from 'C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot': {JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot, JAVA_VERSION=17.0.17, JAVA_VENDOR=Eclipse Adoptium, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=17.0.17+10, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=17.0.17+10, VM_VENDOR=Eclipse Adoptium, OS_ARCH=amd64}
+Watching the file system is configured to be enabled if available
+Now considering [C:\Users\abina\astrocric\mobile\android] as hierarchies to watch
+File system watching is active
+Starting Build
+Now considering [C:\src\flutter\packages\flutter_tools\gradle, C:\Users\abina\astrocric\mobile\android] as hierarchies to watch
+
+> Configure project :gradle
+Evaluating project ':gradle' using build file 'C:\src\flutter\packages\flutter_tools\gradle\build.gradle.kts'.
+Resolved plugin [id: 'org.gradle.java-gradle-plugin']
+Resolved plugin [id: 'org.gradle.groovy']
+Resolved plugin [id: 'org.gradle.kotlin.kotlin-dsl', version: '5.2.0']
+Resolved plugin [id: 'org.jetbrains.kotlin.jvm', version: '1.9.24']
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+file or directory 'C:\src\flutter\packages\flutter_tools\gradle\src\main\java', not found
+Resolved plugin [id: 'dev.flutter.flutter-plugin-loader', version: '1.0.0']
+Resolved plugin [id: 'com.android.application', version: '8.11.1', apply: false]
+Resolved plugin [id: 'org.jetbrains.kotlin.android', version: '2.2.20', apply: false]
+Resolve mutations for :gradle:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+:gradle:checkKotlinGradlePluginConfigurationErrors (Thread[included builds,5,main]) started.
+
+> Task :gradle:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':gradle:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :gradle:compileKotlin (Thread[included builds,5,main]) started.
+:gradle:compileKotlin (Thread[included builds,5,main]) started.
+Resolve mutations for :gradle:pluginDescriptors (Thread[Execution worker Thread 10,5,main]) started.
+:gradle:pluginDescriptors (Thread[Execution worker Thread 10,5,main]) started.
+
+> Task :gradle:pluginDescriptors UP-TO-DATE
+Caching disabled for task ':gradle:pluginDescriptors' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle:pluginDescriptors' as it is up-to-date.
+Resolve mutations for :gradle:processResources (Thread[Execution worker Thread 10,5,main]) started.
+:gradle:processResources (Thread[Execution worker Thread 10,5,main]) started.
+
+> Task :gradle:processResources UP-TO-DATE
+Caching disabled for task ':gradle:processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle:processResources' as it is up-to-date.
+
+> Task :gradle:compileKotlin
+Caching disabled for task ':gradle:compileKotlin' because:
+  Build cache is disabled
+Task ':gradle:compileKotlin' is not up-to-date because:
+  Value of input property 'kotlinJavaToolchainProvider.javaVersion' has changed for task ':gradle:compileKotlin'
+The input changes require a full rebuild for incremental task ':gradle:compileKotlin'.
+file or directory 'C:\src\flutter\packages\flutter_tools\gradle\src\main\java', not found
+file or directory 'C:\src\flutter\packages\flutter_tools\gradle\src\main\java', not found
+file or directory 'C:\src\flutter\packages\flutter_tools\gradle\src\main\java', not found
+file or directory 'C:\src\flutter\packages\flutter_tools\gradle\src\main\java', not found
+Kotlin source files: C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\AppLinkSettings.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\BaseApplicationNameHandler.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\Deeplink.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\DependencyVersionChecker.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\FlutterAppPluginLoaderPlugin.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\FlutterExtension.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\FlutterPlugin.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\FlutterPluginConstants.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\FlutterPluginUtils.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\IntentFilterCheck.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\NativePluginLoaderReflectionBridge.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\plugins\PluginHandler.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\tasks\BaseFlutterTask.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\tasks\BaseFlutterTaskHelper.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\tasks\DeepLinkJsonFromManifestTask.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\tasks\DeepLinkJsonFromManifestTaskHelper.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\tasks\FlutterTask.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\tasks\FlutterTaskHelper.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\VersionFetcher.kt, C:\src\flutter\packages\flutter_tools\gradle\src\main\kotlin\VersionUtils.kt
+Java source files: 
+Script source files: 
+Script file extensions: 
+Using Kotlin/JVM incremental compilation
+[KOTLIN] Kotlin compilation 'jdkHome' argument: C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot
+i: starting the daemon as: C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot\bin\java -cp C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-compiler-embeddable\2.0.21\79346ed53db48b18312a472602eb5c057070c54d\kotlin-compiler-embeddable-2.0.21.jar;C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\2.0.21\618b539767b4899b4660a83006e052b63f1db551\kotlin-stdlib-2.0.21.jar;C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-script-runtime\2.0.21\c9b044380ad41f89aa89aa896c2d32a8c0b2129d\kotlin-script-runtime-2.0.21.jar;C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-reflect\1.6.10\1cbe9c92c12a94eea200d23c2bbaedaf3daf5132\kotlin-reflect-1.6.10.jar;C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-daemon-embeddable\2.0.21\c9e933b23287de9b5a17e2116b4657bb91aea72c\kotlin-daemon-embeddable-2.0.21.jar;C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains.intellij.deps\trove4j\1.0.20200330\3afb14d5f9ceb459d724e907a21145e8ff394f02\trove4j-1.0.20200330.jar;C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-core-jvm\1.6.4\2c997cd1c0ef33f3e751d3831929aeff1390cb30\kotlinx-coroutines-core-jvm-1.6.4.jar;C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar -Djava.awt.headless=true -Djava.rmi.server.hostname=127.0.0.1 -Xmx1024m -XX:ReservedCodeCacheSize=320m -Dkotlin.environment.keepalive -ea -XX:+UseCodeCacheFlushing -XX:+UseParallelGC --add-exports java.base/sun.nio.ch=ALL-UNNAMED org.jetbrains.kotlin.daemon.KotlinCompileDaemon --daemon-runFilesPath C:\Users\abina\AppData\Local\kotlin\daemon --daemon-autoshutdownIdleSeconds=7200 --daemon-compilerClasspath C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-compiler-embeddable\2.0.21\79346ed53db48b18312a472602eb5c057070c54d\kotlin-compiler-embeddable-2.0.21.jar;C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\2.0.21\618b539767b4899b4660a83006e052b63f1db551\kotlin-stdlib-2.0.21.jar;C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-script-runtime\2.0.21\c9b044380ad41f89aa89aa896c2d32a8c0b2129d\kotlin-script-runtime-2.0.21.jar;C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-reflect\1.6.10\1cbe9c92c12a94eea200d23c2bbaedaf3daf5132\kotlin-reflect-1.6.10.jar;C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-daemon-embeddable\2.0.21\c9e933b23287de9b5a17e2116b4657bb91aea72c\kotlin-daemon-embeddable-2.0.21.jar;C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains.intellij.deps\trove4j\1.0.20200330\3afb14d5f9ceb459d724e907a21145e8ff394f02\trove4j-1.0.20200330.jar;C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlinx\kotlinx-coroutines-core-jvm\1.6.4\2c997cd1c0ef33f3e751d3831929aeff1390cb30\kotlinx-coroutines-core-jvm-1.6.4.jar;C:\Users\abina\.gradle\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar
+i: #1 retrying connecting to the daemon 
+Options for KOTLIN DAEMON: IncrementalCompilationOptions(super=CompilationOptions(compilerMode=INCREMENTAL_COMPILER, targetPlatform=JVM, reportCategories=[0, 3], reportSeverity=2, requestedCompilationResults=[0], kotlinScriptExtensions=[]), areFileChangesKnown=false, modifiedFiles=null, deletedFiles=null, classpathChanges=NotAvailableForNonIncrementalRun, workingDir=C:\src\flutter\packages\flutter_tools\gradle\build\kotlin\compileKotlin\cacheable, multiModuleICSettings=MultiModuleICSettings(buildHistoryFile=C:\src\flutter\packages\flutter_tools\gradle\build\kotlin\compileKotlin\local-state\build-history.bin, useModuleDetection=false), usePreciseJavaTracking=true, icFeatures=IncrementalCompilationFeatures(withAbiSnapshot=false, preciseCompilationResultsBackup=true, keepIncrementalCompilationCachesInMemory=true, enableUnsafeIncrementalCompilationForMultiplatform=false), outputFiles=[C:\src\flutter\packages\flutter_tools\gradle\build\classes\kotlin\main, C:\src\flutter\packages\flutter_tools\gradle\build\kotlin\compileKotlin\cacheable, C:\src\flutter\packages\flutter_tools\gradle\build\kotlin\compileKotlin\local-state])
+w: file:///C:/src/flutter/packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt:11:37 'ApkVariant' is deprecated. Deprecated in Java
+w: file:///C:/src/flutter/packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt:609:69 'ApkVariant' is deprecated. Deprecated in Java
+w: file:///C:/src/flutter/packages/flutter_tools/gradle/src/main/kotlin/plugins/PluginHandler.kt:186:64 Unchecked cast: NamedDomainObjectContainer<out BuildType> to NamedDomainObjectContainer<BuildType>
+w: file:///C:/src/flutter/packages/flutter_tools/gradle/src/main/kotlin/plugins/PluginHandler.kt:187:69 Unchecked cast: NamedDomainObjectContainer<out BuildType> to NamedDomainObjectContainer<BuildType>
+Finished executing kotlin compiler using DAEMON strategy
+Resolve mutations for :gradle:compileJava (Thread[included builds,5,main]) started.
+:gradle:compileJava (Thread[included builds,5,main]) started.
+
+> Task :gradle:compileJava NO-SOURCE
+Skipping task ':gradle:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :gradle:compileGroovy (Thread[included builds,5,main]) started.
+:gradle:compileGroovy (Thread[included builds,5,main]) started.
+
+> Task :gradle:compileGroovy NO-SOURCE
+Skipping task ':gradle:compileGroovy' as it has no source files and no previous output files.
+Resolve mutations for :gradle:classes (Thread[included builds,5,main]) started.
+:gradle:classes (Thread[included builds,5,main]) started.
+
+> Task :gradle:classes UP-TO-DATE
+Skipping task ':gradle:classes' as it has no actions.
+Resolve mutations for :gradle:jar (Thread[included builds,5,main]) started.
+:gradle:jar (Thread[included builds,5,main]) started.
+
+> Task :gradle:jar UP-TO-DATE
+Caching disabled for task ':gradle:jar' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle:jar' as it is up-to-date.
+Settings evaluated using settings file 'C:\Users\abina\astrocric\mobile\android\settings.gradle.kts'.
+Projects loaded. Root project using build file 'C:\Users\abina\astrocric\mobile\android\build.gradle.kts'.
+Included projects: [root project 'android', project ':app', project ':phonepe_payment_sdk', project ':shared_preferences_android', project ':url_launcher_android', project ':webview_flutter_android']
+
+> Configure project :
+Evaluating root project 'android' using build file 'C:\Users\abina\astrocric\mobile\android\build.gradle.kts'.
+Caching disabled for Kotlin DSL script compilation (Project/TopLevel/stage1) because:
+  Build cache is disabled
+Caching disabled for Kotlin DSL script compilation (Project/TopLevel/stage2) because:
+  Build cache is disabled
+
+> Configure project :app
+Evaluating project ':app' using build file 'C:\Users\abina\astrocric\mobile\android\app\build.gradle.kts'.
+Resolved plugin [id: 'com.android.application']
+Resolved plugin [id: 'kotlin-android']
+Resolved plugin [id: 'dev.flutter.flutter-gradle-plugin']
+Using default execution profile
+Build 1f036e85-16f4-4192-be20-3a7a60df6760 is started
+Using Kotlin Gradle Plugin gradle813 variant
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is C:\Users\abina\AppData\Local\Android\Sdk
+
+> Configure project :phonepe_payment_sdk
+Evaluating project ':phonepe_payment_sdk' using build file 'C:\Users\abina\AppData\Local\Pub\Cache\hosted\pub.dev\phonepe_payment_sdk-1.1.0\android\build.gradle'.
+Using default execution profile
+Using Kotlin Gradle Plugin gradle813 variant
+
+> Configure project :shared_preferences_android
+Evaluating project ':shared_preferences_android' using build file 'C:\Users\abina\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.20\android\build.gradle'.
+Using default execution profile
+Using Kotlin Gradle Plugin gradle813 variant
+
+> Configure project :url_launcher_android
+Evaluating project ':url_launcher_android' using build file 'C:\Users\abina\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.28\android\build.gradle'.
+Using default execution profile
+
+> Configure project :webview_flutter_android
+Evaluating project ':webview_flutter_android' using build file 'C:\Users\abina\AppData\Local\Pub\Cache\hosted\pub.dev\webview_flutter_android-4.10.11\android\build.gradle'.
+Using default execution profile
+Using Kotlin Gradle Plugin gradle813 variant
+All projects evaluated.
+Task name matched 'assembleDebug'
+Selected primary task 'assembleDebug' from project :
+Adding -Xuse-inline-scopes-numbers Kotlin compiler flag for task :app:compileDebugKotlin
+Tasks to be executed: [task ':app:DebugMinSdkCheck', task ':app:preBuild', task ':app:preDebugBuild', task ':app:mergeDebugNativeDebugMetadata', task ':app:checkKotlinGradlePluginConfigurationErrors', task ':app:compileFlutterBuildDebug', task ':app:packJniLibsflutterBuildDebug', task ':phonepe_payment_sdk:preBuild', task ':phonepe_payment_sdk:preDebugBuild', task ':phonepe_payment_sdk:writeDebugAarMetadata', task ':shared_preferences_android:preBuild', task ':shared_preferences_android:preDebugBuild', task ':shared_preferences_android:writeDebugAarMetadata', task ':url_launcher_android:preBuild', task ':url_launcher_android:preDebugBuild', task ':url_launcher_android:writeDebugAarMetadata', task ':webview_flutter_android:preBuild', task ':webview_flutter_android:preDebugBuild', task ':webview_flutter_android:writeDebugAarMetadata', task ':app:checkDebugAarMetadata', task ':app:cleanMergeDebugAssets', task ':app:mergeDebugShaders', task ':app:compileDebugShaders', task ':app:generateDebugAssets', task ':phonepe_payment_sdk:mergeDebugShaders', task ':phonepe_payment_sdk:compileDebugShaders', task ':phonepe_payment_sdk:generateDebugAssets', task ':phonepe_payment_sdk:mergeDebugAssets', task ':shared_preferences_android:mergeDebugShaders', task ':shared_preferences_android:compileDebugShaders', task ':shared_preferences_android:generateDebugAssets', task ':shared_preferences_android:mergeDebugAssets', task ':url_launcher_android:mergeDebugShaders', task ':url_launcher_android:compileDebugShaders', task ':url_launcher_android:generateDebugAssets', task ':url_launcher_android:mergeDebugAssets', task ':webview_flutter_android:mergeDebugShaders', task ':webview_flutter_android:compileDebugShaders', task ':webview_flutter_android:generateDebugAssets', task ':webview_flutter_android:mergeDebugAssets', task ':app:mergeDebugAssets', task ':app:copyFlutterAssetsDebug', task ':app:generateDebugResValues', task ':phonepe_payment_sdk:generateDebugResValues', task ':phonepe_payment_sdk:generateDebugResources', task ':phonepe_payment_sdk:packageDebugResources', task ':shared_preferences_android:generateDebugResValues', task ':shared_preferences_android:generateDebugResources', task ':shared_preferences_android:packageDebugResources', task ':url_launcher_android:generateDebugResValues', task ':url_launcher_android:generateDebugResources', task ':url_launcher_android:packageDebugResources', task ':webview_flutter_android:generateDebugResValues', task ':webview_flutter_android:generateDebugResources', task ':webview_flutter_android:packageDebugResources', task ':app:mapDebugSourceSetPaths', task ':app:generateDebugResources', task ':app:mergeDebugResources', task ':app:packageDebugResources', task ':app:parseDebugLocalResources', task ':app:createDebugCompatibleScreenManifests', task ':app:extractDeepLinksDebug', task ':phonepe_payment_sdk:extractDeepLinksDebug', task ':phonepe_payment_sdk:processDebugManifest', task ':shared_preferences_android:extractDeepLinksDebug', task ':shared_preferences_android:processDebugManifest', task ':url_launcher_android:extractDeepLinksDebug', task ':url_launcher_android:processDebugManifest', task ':webview_flutter_android:extractDeepLinksDebug', task ':webview_flutter_android:processDebugManifest', task ':app:processDebugMainManifest', task ':app:outputDebugAppLinkSettings', task ':app:processDebugManifest', task ':app:processDebugManifestForPackage', task ':phonepe_payment_sdk:compileDebugLibraryResources', task ':phonepe_payment_sdk:parseDebugLocalResources', task ':phonepe_payment_sdk:generateDebugRFile', task ':shared_preferences_android:compileDebugLibraryResources', task ':shared_preferences_android:parseDebugLocalResources', task ':shared_preferences_android:generateDebugRFile', task ':url_launcher_android:compileDebugLibraryResources', task ':url_launcher_android:parseDebugLocalResources', task ':url_launcher_android:generateDebugRFile', task ':webview_flutter_android:compileDebugLibraryResources', task ':webview_flutter_android:parseDebugLocalResources', task ':webview_flutter_android:generateDebugRFile', task ':app:processDebugResources', task ':phonepe_payment_sdk:checkKotlinGradlePluginConfigurationErrors', task ':phonepe_payment_sdk:compileDebugKotlin', task ':phonepe_payment_sdk:javaPreCompileDebug', task ':phonepe_payment_sdk:compileDebugJavaWithJavac', task ':phonepe_payment_sdk:bundleLibCompileToJarDebug', task ':shared_preferences_android:checkKotlinGradlePluginConfigurationErrors', task ':shared_preferences_android:compileDebugKotlin', task ':shared_preferences_android:javaPreCompileDebug', task ':shared_preferences_android:compileDebugJavaWithJavac', task ':shared_preferences_android:bundleLibCompileToJarDebug', task ':url_launcher_android:generateDebugBuildConfig', task ':url_launcher_android:javaPreCompileDebug', task ':url_launcher_android:compileDebugJavaWithJavac', task ':url_launcher_android:bundleLibCompileToJarDebug', task ':webview_flutter_android:checkKotlinGradlePluginConfigurationErrors', task ':webview_flutter_android:compileDebugKotlin', task ':webview_flutter_android:javaPreCompileDebug', task ':webview_flutter_android:compileDebugJavaWithJavac', task ':webview_flutter_android:bundleLibCompileToJarDebug', task ':app:compileDebugKotlin', task ':app:javaPreCompileDebug', task ':app:compileDebugJavaWithJavac', task ':app:compressDebugAssets', task ':phonepe_payment_sdk:bundleLibRuntimeToJarDebug', task ':shared_preferences_android:bundleLibRuntimeToJarDebug', task ':url_launcher_android:bundleLibRuntimeToJarDebug', task ':webview_flutter_android:bundleLibRuntimeToJarDebug', task ':app:desugarDebugFileDependencies', task ':app:dexBuilderDebug', task ':app:mergeDebugGlobalSynthetics', task ':app:processDebugJavaRes', task ':phonepe_payment_sdk:processDebugJavaRes', task ':shared_preferences_android:processDebugJavaRes', task ':url_launcher_android:processDebugJavaRes', task ':webview_flutter_android:processDebugJavaRes', task ':app:mergeDebugJavaResource', task ':app:checkDebugDuplicateClasses', task ':app:mergeExtDexDebug', task ':phonepe_payment_sdk:bundleLibRuntimeToDirDebug', task ':shared_preferences_android:bundleLibRuntimeToDirDebug', task ':url_launcher_android:bundleLibRuntimeToDirDebug', task ':webview_flutter_android:bundleLibRuntimeToDirDebug', task ':app:mergeLibDexDebug', task ':app:mergeProjectDexDebug', task ':app:configureCMakeDebug[arm64-v8a]', task ':app:buildCMakeDebug[arm64-v8a]', task ':app:configureCMakeDebug[armeabi-v7a]', task ':app:buildCMakeDebug[armeabi-v7a]', task ':app:configureCMakeDebug[x86_64]', task ':app:buildCMakeDebug[x86_64]', task ':app:mergeDebugJniLibFolders', task ':phonepe_payment_sdk:mergeDebugJniLibFolders', task ':phonepe_payment_sdk:mergeDebugNativeLibs', task ':phonepe_payment_sdk:copyDebugJniLibsProjectOnly', task ':shared_preferences_android:mergeDebugJniLibFolders', task ':shared_preferences_android:mergeDebugNativeLibs', task ':shared_preferences_android:copyDebugJniLibsProjectOnly', task ':url_launcher_android:mergeDebugJniLibFolders', task ':url_launcher_android:mergeDebugNativeLibs', task ':url_launcher_android:copyDebugJniLibsProjectOnly', task ':webview_flutter_android:mergeDebugJniLibFolders', task ':webview_flutter_android:mergeDebugNativeLibs', task ':webview_flutter_android:copyDebugJniLibsProjectOnly', task ':app:mergeDebugNativeLibs', task ':app:stripDebugDebugSymbols', task ':app:validateSigningDebug', task ':app:writeDebugAppMetadata', task ':app:writeDebugSigningConfigVersions', task ':app:packageDebug', task ':app:createDebugApkListingFileRedirect', task ':app:assembleDebug', task ':phonepe_payment_sdk:stripDebugDebugSymbols', task ':phonepe_payment_sdk:copyDebugJniLibsProjectAndLocalJars', task ':phonepe_payment_sdk:extractDebugAnnotations', task ':phonepe_payment_sdk:extractDeepLinksForAarDebug', task ':phonepe_payment_sdk:mergeDebugGeneratedProguardFiles', task ':phonepe_payment_sdk:mergeDebugConsumerProguardFiles', task ':phonepe_payment_sdk:prepareDebugArtProfile', task ':phonepe_payment_sdk:prepareLintJarForPublish', task ':phonepe_payment_sdk:mergeDebugJavaResource', task ':phonepe_payment_sdk:syncDebugLibJars', task ':phonepe_payment_sdk:bundleDebugAar', task ':phonepe_payment_sdk:assembleDebug', task ':shared_preferences_android:stripDebugDebugSymbols', task ':shared_preferences_android:copyDebugJniLibsProjectAndLocalJars', task ':shared_preferences_android:extractDebugAnnotations', task ':shared_preferences_android:extractDeepLinksForAarDebug', task ':shared_preferences_android:mergeDebugGeneratedProguardFiles', task ':shared_preferences_android:mergeDebugConsumerProguardFiles', task ':shared_preferences_android:prepareDebugArtProfile', task ':shared_preferences_android:prepareLintJarForPublish', task ':shared_preferences_android:mergeDebugJavaResource', task ':shared_preferences_android:syncDebugLibJars', task ':shared_preferences_android:bundleDebugAar', task ':shared_preferences_android:assembleDebug', task ':url_launcher_android:stripDebugDebugSymbols', task ':url_launcher_android:copyDebugJniLibsProjectAndLocalJars', task ':url_launcher_android:extractDebugAnnotations', task ':url_launcher_android:extractDeepLinksForAarDebug', task ':url_launcher_android:mergeDebugGeneratedProguardFiles', task ':url_launcher_android:mergeDebugConsumerProguardFiles', task ':url_launcher_android:prepareDebugArtProfile', task ':url_launcher_android:prepareLintJarForPublish', task ':url_launcher_android:mergeDebugJavaResource', task ':url_launcher_android:syncDebugLibJars', task ':url_launcher_android:bundleDebugAar', task ':url_launcher_android:assembleDebug', task ':webview_flutter_android:stripDebugDebugSymbols', task ':webview_flutter_android:copyDebugJniLibsProjectAndLocalJars', task ':webview_flutter_android:extractDebugAnnotations', task ':webview_flutter_android:extractDeepLinksForAarDebug', task ':webview_flutter_android:mergeDebugGeneratedProguardFiles', task ':webview_flutter_android:mergeDebugConsumerProguardFiles', task ':webview_flutter_android:prepareDebugArtProfile', task ':webview_flutter_android:prepareLintJarForPublish', task ':webview_flutter_android:mergeDebugJavaResource', task ':webview_flutter_android:syncDebugLibJars', task ':webview_flutter_android:bundleDebugAar', task ':webview_flutter_android:assembleDebug']
+Tasks that were excluded: []
+work action Parameters of IdentityTransform (Thread[Execution worker Thread 9,5,main]) started.
+work action Parameters of DexingNoClasspathTransform (Thread[Execution worker Thread 9,5,main]) started.
+work action Parameters of DexingOutputSplitTransform (Thread[Execution worker Thread 9,5,main]) started.
+work action Parameters of ClassesDirToClassesTransform (Thread[Execution worker Thread 9,5,main]) started.
+work action Parameters of DexingOutputSplitTransform (Thread[Execution worker Thread 9,5,main]) started.
+Resolve mutations for :app:DebugMinSdkCheck (Thread[Execution worker Thread 9,5,main]) started.
+:app:DebugMinSdkCheck (Thread[Execution worker Thread 9,5,main]) started.
+
+> Task :app:DebugMinSdkCheck
+Caching disabled for task ':app:DebugMinSdkCheck' because:
+  Build cache is disabled
+Task ':app:DebugMinSdkCheck' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Resolve mutations for :app:preBuild (Thread[Execution worker Thread 9,5,main]) started.
+:app:preBuild (Thread[Execution worker Thread 9,5,main]) started.
+
+> Task :app:preBuild UP-TO-DATE
+Skipping task ':app:preBuild' as it has no actions.
+Resolve mutations for :app:preDebugBuild (Thread[Execution worker Thread 9,5,main]) started.
+:app:preDebugBuild (Thread[Execution worker Thread 9,5,main]) started.
+
+> Task :app:preDebugBuild UP-TO-DATE
+Skipping task ':app:preDebugBuild' as it has no actions.
+Resolve mutations for :app:mergeDebugNativeDebugMetadata (Thread[Execution worker Thread 9,5,main]) started.
+:app:mergeDebugNativeDebugMetadata (Thread[Execution worker Thread 9,5,main]) started.
+
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+Skipping task ':app:mergeDebugNativeDebugMetadata' as it has no source files and no previous output files.
+Resolve mutations for :app:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker Thread 9,5,main]) started.
+:app:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker Thread 9,5,main]) started.
+
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':app:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :app:compileFlutterBuildDebug (Thread[Execution worker Thread 9,5,main]) started.
+:app:compileFlutterBuildDebug (Thread[Execution worker Thread 9,5,main]) started.
+
+> Task :app:compileFlutterBuildDebug
+Caching disabled for task ':app:compileFlutterBuildDebug' because:
+  Build cache is disabled
+  Caching has not been enabled for the task
+Task ':app:compileFlutterBuildDebug' is not up-to-date because:
+  Task has failed previously.
+Starting process 'command 'C:\src\flutter\bin\flutter.bat''. Working directory: C:\Users\abina\astrocric\mobile Command: C:\src\flutter\bin\flutter.bat --quiet assemble --no-version-check --depfile C:\Users\abina\astrocric\mobile\build\app\intermediates\flutter\debug/flutter_build.d --output C:\Users\abina\astrocric\mobile\build\app\intermediates\flutter\debug -dTargetFile=lib/main.dart -dTargetPlatform=android -dBuildMode=debug -dTrackWidgetCreation=true -dFlavor= -dAndroidArchs=android-arm android-arm64 android-x64 -dMinSdkVersion=24 debug_android_application
+Successfully started process 'command 'C:\src\flutter\bin\flutter.bat''
+lib/services/payment_service.dart:57:81: Error: Too few positional arguments: 4 required, 2 given.
+      Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(body, 'ppemerchantsdkv1');
+                                                                                ^
+../../AppData/Local/Pub/Cache/hosted/pub.dev/phonepe_payment_sdk-1.1.0/lib/phonepe_payment_sdk.dart:48:41: Context: Found this candidate, but the arguments don't match.
+  static Future<Map<dynamic, dynamic>?> startTransaction(String body,
+                                        ^^^^^^^^^^^^^^^^
+lib/screens/prediction/payment_screen.dart:87:44: Error: The method 'verifyPayment' isn't defined for the type 'PaymentService'.
+ - 'PaymentService' is from 'package:astrocric/services/payment_service.dart' ('lib/services/payment_service.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'verifyPayment'.
+      final result = await _paymentService.verifyPayment(_merchantTransactionId!);
+                                           ^^^^^^^^^^^^^
+Target kernel_snapshot_program failed: Exception
+
+
+> Task :app:compileFlutterBuildDebug FAILED
+Build 1f036e85-16f4-4192-be20-3a7a60df6760 is closed
+
+[Incubating] Problems report is available at: file:///C:/Users/abina/astrocric/mobile/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileFlutterBuildDebug'.
+> Process 'command 'C:\src\flutter\bin\flutter.bat'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 1m 17s
+6 actionable tasks: 3 executed, 3 up-to-date
+Watched directory hierarchies: [C:\src\flutter\packages\flutter_tools\gradle]

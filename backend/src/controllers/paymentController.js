@@ -284,7 +284,7 @@ const getPaymentHistory = async (req, res) => {
 // Get SDK Token for Mobile App
 const getSdkToken = async (req, res) => {
     try {
-        const { amount } = req.body;
+        const { amount, predictionId } = req.body; // Accept predictionId
         const userId = req.user.id;
 
         if (!amount || amount <= 0) {
@@ -292,30 +292,115 @@ const getSdkToken = async (req, res) => {
         }
 
         // Generate a unique transaction ID (which acts as merchantOrderId)
+        // If predictionId exists, include it in the ID for validation but usually we track via DB
         const merchantTransactionId = `MT_SDK_${Date.now()}_${userId}`;
+
+        // Get user for phone number
+        const userResult = await db.query(
+            'SELECT phone FROM users WHERE id = $1',
+            [userId]
+        );
+
+        if (userResult.rows.length === 0) {
+            throw new Error('User not found');
+        }
 
         const sdkResponse = await phonePeService.getSdkToken({
             amount,
-            merchantTransactionId
+            userId,
+            merchantTransactionId,
+            phone: userResult.rows[0].phone
         });
 
-        // Save pending purchase (using NULL for prediction_id)
-        await db.query(
-            `INSERT INTO purchases 
-             (user_id, prediction_id, phonepe_merchant_transaction_id, amount, payment_status)
-             VALUES ($1, NULL, $2, $3, 'pending')`,
-            [userId, merchantTransactionId, amount]
-        );
+        // Save pending purchase
+        if (predictionId) {
+            await db.query(
+                `INSERT INTO purchases 
+                 (user_id, prediction_id, phonepe_merchant_transaction_id, amount, payment_status)
+                 VALUES ($1, $2, $3, $4, 'pending')`,
+                [userId, predictionId, merchantTransactionId, amount]
+            );
+        } else {
+            // Wallet recharge
+            await db.query(
+                `INSERT INTO purchases 
+                 (user_id, prediction_id, phonepe_merchant_transaction_id, amount, payment_status)
+                 VALUES ($1, NULL, $2, $3, 'pending')`,
+                [userId, merchantTransactionId, amount]
+            );
+        }
 
         res.json({
-            token: sdkResponse.token,
-            orderId: sdkResponse.orderId,
-            merchantTransactionId,
-            merchantId: process.env.PHONEPE_MERCHANT_ID
+            base64Body: sdkResponse.base64Body,
+            checksum: sdkResponse.checksum,
+            merchantTransactionId
         });
     } catch (error) {
         console.error('Get SDK Token Error:', error);
-        res.status(500).json({ error: 'Failed to generate SDK token' });
+        res.status(500).json({ error: error.message || 'Failed to generate SDK token' });
+    }
+};
+
+// Check Pending Orders (Reconciliation)
+// Should be called via Cron or Admin API
+const checkPendingStatus = async (req, res) => {
+    try {
+        // Find orders pending for > 5 minutes (or as per need)
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+        const result = await db.query(
+            `SELECT * FROM purchases 
+             WHERE payment_status = 'pending' 
+             AND phonepe_merchant_transaction_id IS NOT NULL
+             AND created_at < $1
+             LIMIT 10`,
+            [fiveMinutesAgo]
+        );
+
+        const updates = [];
+
+        for (const order of result.rows) {
+            try {
+                const status = await phonePeService.verifyPayment(order.phonepe_merchant_transaction_id);
+
+                if (status.success && status.state === 'COMPLETED') {
+                    // Update to success
+                    await db.query(
+                        `UPDATE purchases 
+                         SET phonepe_transaction_id = $1, payment_status = 'success'
+                         WHERE id = $2`,
+                        [status.transactionId, order.id]
+                    );
+
+                    // If wallet recharge, credit balance
+                    if (order.prediction_id === null) {
+                        await db.query(
+                            `UPDATE users 
+                             SET wallet_balance = COALESCE(wallet_balance, 0) + $1 
+                             WHERE id = $2`,
+                            [order.amount, order.user_id]
+                        );
+                    }
+                    updates.push({ id: order.id, status: 'COMPLETED' });
+                } else if (status.state === 'FAILED') {
+                    // Update to failed
+                    await db.query(
+                        `UPDATE purchases 
+                         SET payment_status = 'failed'
+                         WHERE id = $1`,
+                        [order.id]
+                    );
+                    updates.push({ id: order.id, status: 'FAILED' });
+                }
+            } catch (err) {
+                console.error(`Failed to verify order ${order.id}:`, err);
+            }
+        }
+
+        res.json({ success: true, checked: result.rows.length, updates });
+    } catch (error) {
+        console.error('Reconciliation error:', error);
+        res.status(500).json({ error: 'Reconciliation failed' });
     }
 };
 
@@ -325,5 +410,6 @@ module.exports = {
     webhook,
     getPaymentHistory,
     rechargeWallet,
-    getSdkToken
+    getSdkToken,
+    checkPendingStatus
 };

@@ -25,3 +25,14 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+subprojects {
+    if (project.name == "phonepe_payment_sdk") {
+        project.afterEvaluate {
+            val android = project.extensions.getByName("android") as com.android.build.gradle.LibraryExtension
+            if (android.namespace == null) {
+                android.namespace = "com.phonepe.payment.sdk"
+            }
+        }
+    }
+}

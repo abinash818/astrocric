@@ -26,7 +26,7 @@ dependencies:
   # Payment
   url_launcher: ^6.2.2
   webview_flutter: ^4.4.2
-  phonepe_payment_sdk: ^1.0.0+1
+  phonepe_payment_sdk: ^3.0.2
   
   # Utils
   intl: ^0.18.1

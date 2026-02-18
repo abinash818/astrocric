@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import '../../services/payment_service.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -20,82 +19,39 @@ class PaymentScreen extends StatefulWidget {
 
 class _PaymentScreenState extends State<PaymentScreen> {
   final PaymentService _paymentService = PaymentService();
-  late WebViewController _webViewController;
   bool _isLoading = true;
-  String? _merchantTransactionId;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _initializePayment();
+    _startPayment();
   }
 
-  Future<void> _initializePayment() async {
+  Future<void> _startPayment() async {
     try {
-      // Create payment order
-      final orderData = await _paymentService.createOrder(widget.predictionId);
+      final result = await _paymentService.startPhonePeTransaction(
+          widget.amount, 
+          predictionId: widget.predictionId
+      );
       
-      if (orderData['success'] == true) {
-        setState(() {
-          _merchantTransactionId = orderData['merchantTransactionId'];
-        });
-
-        // Initialize WebView
-        _webViewController = WebViewController()
-          ..setJavaScriptMode(JavaScriptMode.unrestricted)
-          ..setNavigationDelegate(
-            NavigationDelegate(
-              onPageStarted: (url) {
-                print('Page started: $url');
-              },
-              onPageFinished: (url) {
-                setState(() => _isLoading = false);
-                
-                // Check if payment completed
-                if (url.contains('/payment/callback')) {
-                  _verifyPayment();
-                }
-              },
-              onNavigationRequest: (request) {
-                print('Navigation request: ${request.url}');
-                return NavigationDecision.navigate;
-              },
-            ),
-          )
-          ..loadRequest(Uri.parse(orderData['redirectUrl']));
-      } else {
-        setState(() {
-          _error = 'Failed to create payment order';
-          _isLoading = false;
-        });
+      if (mounted) {
+        setState(() => _isLoading = false);
+        
+        if (result['success'] == true) {
+          _showSuccessDialog();
+        } else {
+          _showErrorDialog(result['message'] ?? 'Payment Failed');
+        }
       }
     } catch (e) {
-      setState(() {
-        _error = 'Error: ${e.toString()}';
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _verifyPayment() async {
-    if (_merchantTransactionId == null) return;
-
-    setState(() => _isLoading = true);
-
-    try {
-      final result = await _paymentService.verifyPayment(_merchantTransactionId!);
-      
-      if (result['success'] == true) {
-        // Payment successful
-        _showSuccessDialog();
-      } else {
-        _showErrorDialog('Payment verification failed');
+      if (mounted) {
+        setState(() {
+            _error = e.toString();
+            _isLoading = false;
+        });
+        _showErrorDialog('Error: ${e.toString()}');
       }
-    } catch (e) {
-      _showErrorDialog('Error verifying payment: ${e.toString()}');
-    } finally {
-      setState(() => _isLoading = false);
     }
   }
 
@@ -107,42 +63,32 @@ class _PaymentScreenState extends State<PaymentScreen> {
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
       ),
-      body: Stack(
-        children: [
-          if (_error != null)
-            Center(
-              child: Column(
+      body: Center(
+        child: _isLoading 
+            ? const Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Text(_error!),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Go Back'),
-                  ),
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Processing Payment...'),
+                  Text('Please do not press back or close the app', style: TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
-              ),
-            )
-          else if (_merchantTransactionId != null)
-            WebViewWidget(controller: _webViewController),
-          
-          if (_isLoading)
-            Container(
-              color: Colors.white,
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Processing payment...'),
-                  ],
-                ),
-              ),
-            ),
-        ],
+              )
+            : _error != null 
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text(_error!),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Go Back'),
+                        ),
+                    ],
+                  )
+                : const SizedBox(), // Should ideally be handled by dialogs
       ),
     );
   }

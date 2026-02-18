@@ -29,32 +29,30 @@ class PaymentService {
   }
 
   // Start Transaction
-  Future<Map<String, dynamic>> startPhonePeTransaction(double amount) async {
+  Future<Map<String, dynamic>> startPhonePeTransaction(double amount, {int? predictionId}) async {
     try {
       // 1. Get SDK Token and details from Backend
       final tokenResponse = await _apiService.post(
         '/payment/sdk-token',
-        {'amount': amount},
+        {
+            'amount': amount,
+            if (predictionId != null) 'predictionId': predictionId
+        },
       );
       
       String token = tokenResponse['token'];
       String orderId = tokenResponse['orderId']; // PhonePe Order ID
       String merchantId = tokenResponse['merchantId'];
 
-      // 2. Construct Payload
-      Map<String, dynamic> payload = {
-        "orderId": orderId, 
-        "merchantId": merchantId,
-        "token": token,
-        "paymentMode": {"type": "PAY_PAGE"}
-      };
-      
-      String body = jsonEncode(payload);
+      String base64Body = tokenResponse['base64Body'];
+      String checksum = tokenResponse['checksum'];
 
       // 3. Start Transaction
-      // iOS: appSchema is required. For Android it's optional/empty.
-      // We added 'ppemerchantsdkv1' etc to Info.plist. Let's use one.
-      Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(body, 'ppemerchantsdkv1');
+      // Params: body (base64 encoded), checksum
+      Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(
+          base64Body, 
+          checksum
+      );
 
       if (response != null && response['status'] == 'SUCCESS') {
           return {'success': true, 'message': 'Payment Successful'};
