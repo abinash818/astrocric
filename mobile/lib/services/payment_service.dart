@@ -11,6 +11,14 @@ class PaymentService {
     return response;
   }
 
+  Future<Map<String, dynamic>> rechargeWallet(double amount) async {
+    final response = await _apiService.post(
+      '/payment/recharge',
+      {'amount': amount},
+    );
+    return response;
+  }
+
   Future<Map<String, dynamic>> verifyPayment(String merchantTransactionId) async {
     final response = await _apiService.post(
       '/payment/verify',

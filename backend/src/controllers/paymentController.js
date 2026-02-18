@@ -71,6 +71,53 @@ const createOrder = async (req, res) => {
     }
 };
 
+// Create wallet recharge order
+const rechargeWallet = async (req, res) => {
+    try {
+        const { amount } = req.body;
+        const userId = req.user.id;
+
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid amount' });
+        }
+
+        // Get user phone
+        const userResult = await db.query(
+            'SELECT phone FROM users WHERE id = $1',
+            [userId]
+        );
+
+        // Initiate PhonePe payment
+        // We use a dummy predictionId of '0' or distinct prefix for merchantTransactionId
+        const merchantTransactionId = `WT_${Date.now()}_${userId}`;
+
+        const paymentData = await phonePeService.initiatePayment({
+            amount: parseFloat(amount),
+            userId: userId,
+            predictionId: 'WALLET', // Special tag for wallet
+            phone: userResult.rows[0].phone,
+            merchantTransactionId: merchantTransactionId // Pass explicit ID
+        });
+
+        // Save pending purchase (using NULL for prediction_id)
+        await db.query(
+            `INSERT INTO purchases 
+         (user_id, prediction_id, phonepe_merchant_transaction_id, amount, payment_status)
+         VALUES ($1, NULL, $2, $3, 'pending')`,
+            [userId, paymentData.merchantTransactionId, amount]
+        );
+
+        res.json({
+            success: true,
+            merchantTransactionId: paymentData.merchantTransactionId,
+            redirectUrl: paymentData.redirectUrl
+        });
+    } catch (error) {
+        console.error('Recharge wallet error:', error);
+        res.status(500).json({ error: 'Failed to initiate recharge' });
+    }
+};
+
 // Verify payment
 const verifyPayment = async (req, res) => {
     try {
@@ -90,18 +137,39 @@ const verifyPayment = async (req, res) => {
             );
 
             if (purchase.rows.length === 0) {
-                return res.status(404).json({ error: 'Purchase not found' });
+                return res.status(404).json({ error: 'Transaction not found' });
             }
 
-            // Get full prediction
+            const transaction = purchase.rows[0];
+
+            // If it's a wallet recharge (prediction_id is NULL)
+            if (transaction.prediction_id === null) {
+                // Update user wallet balance
+                await db.query(
+                    `UPDATE users 
+             SET wallet_balance = COALESCE(wallet_balance, 0) + $1 
+             WHERE id = $2`,
+                    [transaction.amount, transaction.user_id]
+                );
+
+                return res.json({
+                    success: true,
+                    message: 'Wallet recharged successfully',
+                    type: 'WALLET_RECHARGE',
+                    newBalance: parseFloat(transaction.amount) // This is just the added amount, ideally we fetch new balance
+                });
+            }
+
+            // If it's a prediction purchase
             const prediction = await db.query(
                 'SELECT * FROM predictions WHERE id = $1',
-                [purchase.rows[0].prediction_id]
+                [transaction.prediction_id]
             );
 
             res.json({
                 success: true,
                 message: 'Payment verified successfully',
+                type: 'PREDICTION_PURCHASE',
                 prediction: {
                     id: prediction.rows[0].id,
                     title: prediction.rows[0].title,
@@ -147,12 +215,23 @@ const webhook = async (req, res) => {
         console.log('PhonePe webhook received:', decodedResponse);
 
         if (decodedResponse.success && decodedResponse.data.state === 'COMPLETED') {
-            await db.query(
+            const purchase = await db.query(
                 `UPDATE purchases 
          SET phonepe_transaction_id = $1, payment_status = 'success'
-         WHERE phonepe_merchant_transaction_id = $2`,
+         WHERE phonepe_merchant_transaction_id = $2
+         RETURNING *`,
                 [decodedResponse.data.transactionId, decodedResponse.data.merchantTransactionId]
             );
+
+            // Check if it's a wallet recharge and update balance
+            if (purchase.rows.length > 0 && purchase.rows[0].prediction_id === null) {
+                await db.query(
+                    `UPDATE users 
+             SET wallet_balance = COALESCE(wallet_balance, 0) + $1 
+             WHERE id = $2`,
+                    [purchase.rows[0].amount, purchase.rows[0].user_id]
+                );
+            }
         } else {
             await db.query(
                 `UPDATE purchases 
@@ -206,5 +285,6 @@ module.exports = {
     createOrder,
     verifyPayment,
     webhook,
-    getPaymentHistory
+    getPaymentHistory,
+    rechargeWallet
 };

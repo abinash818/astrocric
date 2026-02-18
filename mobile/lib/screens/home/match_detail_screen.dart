@@ -20,6 +20,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
   @override
   void initState() {
     super.initState();
+    print('MatchDetailScreen initialized for match ${widget.matchId}');
     _matchFuture = _matchService.getMatchDetails(widget.matchId);
     _scorecardFuture = _matchService.getMatchScorecard(widget.matchId);
     _tabController = TabController(length: 2, vsync: this);

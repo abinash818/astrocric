@@ -13,12 +13,12 @@ class PhonePeService {
     }
 
     // Create payment request
-    async initiatePayment({ amount, userId, predictionId, phone }) {
-        const merchantTransactionId = `MT_${Date.now()}_${predictionId}`;
+    async initiatePayment({ amount, userId, predictionId, phone, merchantTransactionId }) {
+        const txnId = merchantTransactionId || `MT_${Date.now()}_${predictionId}`;
 
         const payload = {
             merchantId: config.merchantId,
-            merchantTransactionId: merchantTransactionId,
+            merchantTransactionId: txnId,
             merchantUserId: `USER_${userId}`,
             amount: amount * 100, // Convert to paise
             redirectUrl: config.redirectUrl,
@@ -49,7 +49,7 @@ class PhonePeService {
 
             return {
                 success: true,
-                merchantTransactionId,
+                merchantTransactionId: txnId,
                 redirectUrl: response.data.data.instrumentResponse.redirectInfo.url
             };
         } catch (error) {

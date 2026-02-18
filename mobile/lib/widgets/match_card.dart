@@ -18,6 +18,7 @@ class MatchCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
+          print('MatchCard clicked: ${match.id} (Prediction: ${match.hasPrediction})');
           // Navigate to match details / prediction screen
           if (match.hasPrediction) {
             Navigator.push(
@@ -27,6 +28,7 @@ class MatchCard extends StatelessWidget {
               ),
             );
           } else {
+            print('Navigating to MatchDetailScreen for match ${match.id}');
             Navigator.push(
               context,
               MaterialPageRoute(

@@ -6,6 +6,7 @@ import '../../services/match_service.dart';
 import '../../widgets/match_card.dart';
 import '../auth/login_screen.dart';
 import '../prediction/my_predictions_screen.dart';
+import '../payment/recharge_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -95,6 +96,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   fontSize: 16,
                 ),
               ),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const RechargeScreen(),
+                  ),
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.history),
