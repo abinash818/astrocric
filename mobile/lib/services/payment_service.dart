@@ -42,17 +42,19 @@ class PaymentService {
       
       print('SDK Token Response: $tokenResponse');
       
-      String requestBody = jsonEncode(tokenResponse['payload']);
+      String base64Body = tokenResponse['base64Body'] ?? '';
       String checksum = tokenResponse['checksum'] ?? '';
 
-      if (requestBody.isEmpty || checksum.isEmpty) {
+      if (base64Body.isEmpty || checksum.isEmpty) {
         throw Exception('Invalid response from server: Missing required payment data');
       }
 
       // 3. Start Transaction
-      // Params: raw JSON string, checksum
+      // PhonePe SDK v3 expects a JSON string, usually wrapping the base64 request
+      String requestString = jsonEncode({'request': base64Body});
+
       Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(
-          requestBody, 
+          requestString, 
           checksum
       );
 
