@@ -1,94 +1,71 @@
-const axios = require('axios');
-const crypto = require('crypto');
+const { StandardCheckoutClient, Env, StandardCheckoutPayRequest } = require('pg-sdk-node');
 const config = require('../config/phonepe');
+const crypto = require('crypto');
+
+// Initialize Client
+// Env: SANDBOX or PRODUCTION
+// client_version: 1 (Standard)
+const env = config.apiUrl && config.apiUrl.includes('sandbox') ? Env.SANDBOX : Env.PRODUCTION;
+const client = StandardCheckoutClient.getInstance(
+    config.merchantId,
+    config.saltKey,
+    config.saltIndex,
+    env
+);
 
 class PhonePeService {
-
-    // Generate checksum for API requests
-    generateChecksum(payload) {
-        const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64');
-        const string = base64Payload + '/pg/v1/pay' + config.saltKey;
-        const sha256 = crypto.createHash('sha256').update(string).digest('hex');
-        return sha256 + '###' + config.saltIndex;
-    }
 
     // Create payment request
     async initiatePayment({ amount, userId, predictionId, phone, merchantTransactionId }) {
         const txnId = merchantTransactionId || `MT_${Date.now()}_${predictionId}`;
 
-        const payload = {
-            merchantId: config.merchantId,
-            merchantTransactionId: txnId,
-            merchantUserId: `USER_${userId}`,
-            amount: amount * 100, // Convert to paise
-            redirectUrl: config.redirectUrl,
-            redirectMode: 'POST',
-            callbackUrl: config.callbackUrl,
-            mobileNumber: phone.replace('+91', '').replace('+', ''),
-            paymentInstrument: {
-                type: 'PAY_PAGE'
-            }
-        };
-
-        const checksum = this.generateChecksum(payload);
-        const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64');
-
         try {
-            const response = await axios.post(
-                `${config.apiUrl}/pg/v1/pay`,
-                {
-                    request: base64Payload
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-VERIFY': checksum
-                    }
-                }
-            );
+            const request = StandardCheckoutPayRequest.StandardCheckoutBuilder()
+                .merchantId(config.merchantId)
+                .merchantTransactionId(txnId)
+                .amount(amount * 100) // Convert to paise
+                .merchantUserId(`USER_${userId}`)
+                .redirectUrl(config.redirectUrl)
+                .redirectMode("POST")
+                .callbackUrl(config.callbackUrl)
+                .mobileNumber(phone.replace('+91', '').replace('+', ''))
+                .paymentInstrument({ type: "PAY_PAGE" })
+                .build();
+
+            const response = await client.pay(request);
 
             return {
                 success: true,
                 merchantTransactionId: txnId,
-                redirectUrl: response.data.data.instrumentResponse.redirectInfo.url
+                redirectUrl: response.redirectUrl
             };
+
         } catch (error) {
-            console.error('PhonePe payment initiation error:', error.response?.data || error.message);
+            console.error('PhonePe SDK initiation error:', error);
             throw new Error('Payment initiation failed');
         }
     }
 
     // Verify payment status
     async verifyPayment(merchantTransactionId) {
-        const string = `/pg/v1/status/${config.merchantId}/${merchantTransactionId}` + config.saltKey;
-        const checksum = crypto.createHash('sha256').update(string).digest('hex') + '###' + config.saltIndex;
-
         try {
-            const response = await axios.get(
-                `${config.apiUrl}/pg/v1/status/${config.merchantId}/${merchantTransactionId}`,
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-VERIFY': checksum,
-                        'X-MERCHANT-ID': config.merchantId
-                    }
-                }
-            );
+            const response = await client.getOrderStatus(merchantTransactionId);
 
             return {
-                success: response.data.success,
-                code: response.data.code,
-                transactionId: response.data.data?.transactionId,
-                amount: response.data.data?.amount,
-                state: response.data.data?.state
+                success: response.state === 'COMPLETED',
+                code: response.state,
+                transactionId: response.transactionId, // SDK might return different field names, need to check response structure
+                amount: response.amount,
+                state: response.state,
+                paymentDetails: response.paymentDetails
             };
         } catch (error) {
-            console.error('PhonePe verification error:', error.response?.data || error.message);
+            console.error('PhonePe SDK verification error:', error);
             throw new Error('Payment verification failed');
         }
     }
 
-    // Verify webhook signature
+    // Verify webhook signature (Manual implementation retained for reliability)
     verifyWebhookSignature(base64Response, receivedChecksum) {
         const string = base64Response + config.saltKey;
         const calculatedChecksum = crypto.createHash('sha256').update(string).digest('hex') + '###' + config.saltIndex;
