@@ -4,7 +4,7 @@ class AppConstants {
   static const String apiBaseUrl = 'https://astrocric.onrender.com/api';
   
   // PhonePe Configuration
-  static const String phonePeMerchantId = 'PGTESTPAYUAT';
+  static const String phonePeMerchantId = 'M23VW0EJ3IVEK';
   
   // App Configuration
   static const String appName = 'Astrocric';
