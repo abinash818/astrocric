@@ -40,10 +40,6 @@ class PaymentService {
         },
       );
       
-      String token = tokenResponse['token'];
-      String orderId = tokenResponse['orderId']; // PhonePe Order ID
-      String merchantId = tokenResponse['merchantId'];
-
       String base64Body = tokenResponse['base64Body'];
       String checksum = tokenResponse['checksum'];
 
