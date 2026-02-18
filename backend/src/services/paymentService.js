@@ -30,9 +30,17 @@ class PhonePeService {
                 }
             };
 
-            const base64Body = Buffer.from(JSON.stringify(payload)).toString('base64');
+            const jsonBody = JSON.stringify(payload);
+            const base64Body = Buffer.from(jsonBody).toString('base64');
+
+            // checksum for Hermes (SDK v3) usually matches the Base64 used
             const stringToHash = base64Body + "/pg/v1/pay" + config.saltKey;
             const checksum = crypto.createHash('sha256').update(stringToHash).digest('hex') + "###" + config.saltIndex;
+
+            console.log('--- PhonePe SDK Debug ---');
+            console.log('TransactionID:', merchantTransactionId);
+            console.log('Checksum:', checksum);
+            console.log('-------------------------');
 
             return {
                 payload,
