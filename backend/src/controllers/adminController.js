@@ -39,8 +39,8 @@ const syncMatches = async (req, res) => {
         const currentMatches = await cricketApiService.getCurrentMatches();
         const upcomingMatches = await cricketApiService.getUpcomingMatches();
 
-        // Combine and deduplicate
-        const allMatches = [...currentMatches, ...upcomingMatches];
+        // Combine and deduplicate (Put currentMatches LAST so they overwrite upcoming if duplicates exist)
+        const allMatches = [...upcomingMatches, ...currentMatches];
         const uniqueMatches = Array.from(
             new Map(allMatches.map(match => [match.id, match])).values()
         );
@@ -61,14 +61,15 @@ const syncMatches = async (req, res) => {
                 // Update existing match
                 await db.query(
                     `UPDATE matches 
-           SET team1 = $1, team2 = $2, team1_flag_url = $3, team2_flag_url = $4,
-               match_date = $5, match_type = $6, venue = $7, status = $8,
-               result = $9, synced_at = NOW()
-           WHERE api_match_id = $10`,
+                     SET team1 = $1, team2 = $2, team1_flag_url = $3, team2_flag_url = $4,
+                         match_date = $5, match_type = $6, venue = $7, status = $8,
+                         result = $9, team1_score = $10, team2_score = $11, synced_at = NOW()
+                     WHERE api_match_id = $12`,
                     [
                         matchData.team1, matchData.team2, matchData.team1_flag_url,
                         matchData.team2_flag_url, matchData.match_date, matchData.match_type,
                         matchData.venue, matchData.status, matchData.result,
+                        matchData.team1_score, matchData.team2_score,
                         matchData.api_match_id
                     ]
                 );
@@ -77,14 +78,15 @@ const syncMatches = async (req, res) => {
                 // Insert new match
                 await db.query(
                     `INSERT INTO matches 
-           (api_match_id, team1, team2, team1_flag_url, team2_flag_url,
-            match_date, match_type, venue, status, result, synced_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())`,
+                     (api_match_id, team1, team2, team1_flag_url, team2_flag_url,
+                      match_date, match_type, venue, status, result, team1_score, team2_score, synced_at)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())`,
                     [
                         matchData.api_match_id, matchData.team1, matchData.team2,
                         matchData.team1_flag_url, matchData.team2_flag_url,
                         matchData.match_date, matchData.match_type, matchData.venue,
-                        matchData.status, matchData.result
+                        matchData.status, matchData.result,
+                        matchData.team1_score, matchData.team2_score
                     ]
                 );
                 syncedCount++;

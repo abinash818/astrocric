@@ -10,6 +10,8 @@ class Match {
   final String venue;
   final String status;
   final String? result;
+  final String? team1Score;
+  final String? team2Score;
   final bool hasPrediction;
 
   Match({
@@ -24,6 +26,8 @@ class Match {
     required this.venue,
     required this.status,
     this.result,
+    this.team1Score,
+    this.team2Score,
     this.hasPrediction = false,
   });
 
@@ -40,6 +44,8 @@ class Match {
       venue: json['venue'] ?? 'TBD',
       status: json['status'] ?? 'upcoming',
       result: json['result'],
+      team1Score: json['team1_score'],
+      team2Score: json['team2_score'],
       hasPrediction: json['has_prediction'] ?? false,
     );
   }

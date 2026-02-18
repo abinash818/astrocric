@@ -132,7 +132,7 @@ class _PredictionCard extends StatelessWidget {
             if (prediction.match?.matchDate != null) ...[
               const SizedBox(height: 4),
               Text(
-                DateFormat('MMM dd, yyyy').format(prediction.match!.matchDate),
+                DateFormat('MMM dd, yyyy').format(prediction.match!.matchDate.toLocal()),
                 style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
               ),
             ],

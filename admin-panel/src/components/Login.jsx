@@ -4,6 +4,7 @@ import './Login.css';
 
 function Login({ onLogin }) {
     const [phone, setPhone] = useState('');
+    const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -13,7 +14,7 @@ function Login({ onLogin }) {
         setLoading(true);
 
         try {
-            const response = await apiService.post('/auth/admin/login', { phone });
+            const response = await apiService.post('/auth/admin/login', { phone, password });
 
             if (response.success) {
                 apiService.setToken(response.token);
@@ -22,6 +23,10 @@ function Login({ onLogin }) {
                 setError('Login failed');
             }
         } catch (err) {
+            console.error('Login Error:', err);
+            if (err.response) {
+                console.error('Error Details:', err.response.data);
+            }
             setError(err.response?.data?.error || 'Login failed');
         } finally {
             setLoading(false);
@@ -42,6 +47,17 @@ function Login({ onLogin }) {
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                             placeholder="+919999999999"
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Password (Any value for now)</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Enter password"
                             required
                         />
                     </div>

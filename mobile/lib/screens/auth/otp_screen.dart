@@ -57,7 +57,7 @@ class _OTPScreenState extends State<OTPScreen> {
             TextField(
               controller: _otpController,
               keyboardType: TextInputType.number,
-              maxLength: 6,
+              maxLength: 4,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 24,
@@ -65,7 +65,7 @@ class _OTPScreenState extends State<OTPScreen> {
                 letterSpacing: 8,
               ),
               decoration: InputDecoration(
-                hintText: '000000',
+                hintText: '0000',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -114,8 +114,8 @@ class _OTPScreenState extends State<OTPScreen> {
   void _verifyOTP() async {
     final otp = _otpController.text.trim();
     
-    if (otp.isEmpty || otp.length != 6) {
-      _showError('Please enter valid 6-digit OTP');
+    if (otp.isEmpty || otp.length != 4) {
+      _showError('Please enter valid 4-digit OTP');
       return;
     }
 

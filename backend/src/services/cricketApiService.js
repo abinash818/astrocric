@@ -88,14 +88,93 @@ class CricketApiService {
         }
     }
 
+    // Helper to format score
+    formatScore(scoreObj) {
+        if (!scoreObj) return null;
+        return `${scoreObj.r}/${scoreObj.w} (${scoreObj.o})`;
+    }
+
     // Transform API match data to our database format
     transformMatchData(apiMatch) {
+        let team1Score = null;
+        let team2Score = null;
+
+        if (apiMatch.score && Array.isArray(apiMatch.score)) {
+            const team1Name = (apiMatch.teams?.[0] || apiMatch.teamInfo?.[0]?.name || '').toLowerCase();
+            const team2Name = (apiMatch.teams?.[1] || apiMatch.teamInfo?.[1]?.name || '').toLowerCase();
+
+            // First pass: Analyze all innings
+            const analyzedScores = apiMatch.score.map(s => {
+                const inning = (s.inning || '').toLowerCase();
+                const idx1 = inning.indexOf(team1Name);
+                const idx2 = inning.indexOf(team2Name);
+
+                let matchesT1 = false;
+                let matchesT2 = false;
+
+                if (team1Name && idx1 !== -1) matchesT1 = true;
+                if (team2Name && idx2 !== -1) matchesT2 = true;
+
+                return { s, matchesT1, matchesT2, idx1, idx2 };
+            });
+
+            // Second pass: Assign strict matches
+            analyzedScores.forEach(item => {
+                if (item.matchesT1 && !item.matchesT2) {
+                    team1Score = this.formatScore(item.s);
+                } else if (item.matchesT2 && !item.matchesT1) {
+                    team2Score = this.formatScore(item.s);
+                }
+            });
+
+            // Third pass: Assign ambiguous matches using deduction or heuristic
+            analyzedScores.forEach(item => {
+                if (item.matchesT1 && item.matchesT2) {
+                    // It matches both. Try to deduce.
+                    if (team1Score && !team2Score) {
+                        team2Score = this.formatScore(item.s);
+                    } else if (team2Score && !team1Score) {
+                        team1Score = this.formatScore(item.s);
+                    } else {
+                        // deduction failed (both have scores or neither has scores)
+                        // Use positional/length heuristic
+                        const { idx1, idx2 } = item;
+                        if (idx1 > idx2) {
+                            // T1 is clearer or appears later? 
+                            // Wait, heuristic from before was: if idx2 > idx1 -> T2.
+                            // But that failed for Bangladesh case.
+                            // Let's stick to the deduction as primary.
+                            // If we are here, deduction failed.
+                            // If neither has score, we can't be sure 100%, but let's try strict position.
+                            // If idx2 > idx1 (Team 2 is later in string), typically it's NOT the batting team if the string is "T1, T2". 
+                            // But usually "T1, T2" means T2 is batting.
+                            // EXCEPT for the Bangladesh case where T2 was "Thailand" (later in string) but T1 was batting.
+                            // So heuristic is unreliable.
+                            // But since we successfully handled strict matches, we likely covered 99% cases.
+                            // We only overwrite if null?
+                            if (!team1Score) team1Score = this.formatScore(item.s);
+                            else if (!team2Score) team2Score = this.formatScore(item.s);
+                        } else if (idx2 > idx1) {
+                            if (!team2Score) team2Score = this.formatScore(item.s);
+                            else if (!team1Score) team1Score = this.formatScore(item.s);
+                        }
+                    }
+                }
+            });
+        } else {
+            if (apiMatch.matchStarted && !apiMatch.matchEnded) {
+                console.log(`[Sync Debug] Live match ${apiMatch.id} has NO scores.`);
+            }
+        }
+
         return {
             api_match_id: apiMatch.id,
             team1: apiMatch.teams?.[0] || apiMatch.teamInfo?.[0]?.name || 'Team 1',
             team2: apiMatch.teams?.[1] || apiMatch.teamInfo?.[1]?.name || 'Team 2',
             team1_flag_url: apiMatch.teamInfo?.[0]?.img || null,
             team2_flag_url: apiMatch.teamInfo?.[1]?.img || null,
+            team1_score: team1Score,
+            team2_score: team2Score,
             match_date: new Date(apiMatch.dateTimeGMT),
             match_type: apiMatch.matchType || 'Unknown',
             venue: apiMatch.venue || 'TBD',

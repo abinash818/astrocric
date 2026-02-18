@@ -61,7 +61,7 @@ class MatchCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Expanded(
-                    child: _buildTeam(match.team1, match.team1FlagUrl),
+                    child: _buildTeam(match.team1, match.team1FlagUrl, match.team1Score),
                   ),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
@@ -75,7 +75,7 @@ class MatchCard extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    child: _buildTeam(match.team2, match.team2FlagUrl),
+                    child: _buildTeam(match.team2, match.team2FlagUrl, match.team2Score),
                   ),
                 ],
               ),
@@ -90,7 +90,7 @@ class MatchCard extends StatelessWidget {
                   const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
                   const SizedBox(width: 4),
                   Text(
-                    DateFormat('MMM dd, yyyy • hh:mm a').format(match.matchDate),
+                    DateFormat('MMM dd, yyyy • hh:mm a').format(match.matchDate.toLocal()),
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
@@ -144,7 +144,7 @@ class MatchCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTeam(String teamName, String? flagUrl) {
+  Widget _buildTeam(String teamName, String? flagUrl, String? score) {
     return Column(
       children: [
         Container(
@@ -177,6 +177,17 @@ class MatchCard extends StatelessWidget {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
+        if (score != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            score,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.blueGrey,
+            ),
+          ),
+        ],
       ],
     );
   }
