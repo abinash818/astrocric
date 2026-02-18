@@ -1,7 +1,72 @@
+import 'dart:convert';
+import 'package:phonepe_payment_sdk/phonepe_payment_sdk.dart';
+import 'package:astrocric/config/constants.dart';
 import 'api_service.dart';
 
 class PaymentService {
   final ApiService _apiService = ApiService();
+
+  // Initialize PhonePe SDK
+  Future<bool> initPhonePeSdk() async {
+    String environment = 'SANDBOX'; 
+    if (AppConstants.phonePeMerchantId != 'PGTESTPAYUAT') {
+        environment = 'PRODUCTION';
+    }
+    
+    try {
+      bool result = await PhonePePaymentSdk.init(
+        environment, 
+        AppConstants.phonePeMerchantId, 
+        'FLOW_${DateTime.now().millisecondsSinceEpoch}', 
+        true
+      );
+      print('PhonePe Init Result: $result');
+      return result;
+    } catch (e) {
+      print('PhonePe Init Error: $e');
+      return false;
+    }
+  }
+
+  // Start Transaction
+  Future<Map<String, dynamic>> startPhonePeTransaction(double amount) async {
+    try {
+      // 1. Get SDK Token and details from Backend
+      final tokenResponse = await _apiService.post(
+        '/payment/sdk-token',
+        {'amount': amount},
+      );
+      
+      String token = tokenResponse['token'];
+      String orderId = tokenResponse['orderId']; // PhonePe Order ID
+      String merchantId = tokenResponse['merchantId'];
+
+      // 2. Construct Payload
+      Map<String, dynamic> payload = {
+        "orderId": orderId, 
+        "merchantId": merchantId,
+        "token": token,
+        "paymentMode": {"type": "PAY_PAGE"}
+      };
+      
+      String body = jsonEncode(payload);
+
+      // 3. Start Transaction
+      // iOS: appSchema is required. For Android it's optional/empty.
+      // We added 'ppemerchantsdkv1' etc to Info.plist. Let's use one.
+      Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(body, 'ppemerchantsdkv1');
+
+      if (response != null && response['status'] == 'SUCCESS') {
+          return {'success': true, 'message': 'Payment Successful'};
+      } else {
+          return {'success': false, 'message': response?['error'] ?? 'Payment Failed'};
+      }
+      
+    } catch (e) {
+      print('PhonePe Transaction Error: $e');
+      return {'success': false, 'message': e.toString()};
+    }
+  }
 
   Future<Map<String, dynamic>> createOrder(int predictionId) async {
     final response = await _apiService.post(
@@ -10,23 +75,8 @@ class PaymentService {
     );
     return response;
   }
-
-  Future<Map<String, dynamic>> rechargeWallet(double amount) async {
-    final response = await _apiService.post(
-      '/payment/recharge',
-      {'amount': amount},
-    );
-    return response;
-  }
-
-  Future<Map<String, dynamic>> verifyPayment(String merchantTransactionId) async {
-    final response = await _apiService.post(
-      '/payment/verify',
-      {'merchantTransactionId': merchantTransactionId},
-    );
-    return response;
-  }
-
+  
+  // Legacy or standard verification if needed
   Future<List<Map<String, dynamic>>> getPaymentHistory() async {
     final response = await _apiService.get('/payment/history');
     return List<Map<String, dynamic>>.from(response['payments']);

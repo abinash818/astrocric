@@ -281,10 +281,49 @@ const getPaymentHistory = async (req, res) => {
     }
 };
 
+// Get SDK Token for Mobile App
+const getSdkToken = async (req, res) => {
+    try {
+        const { amount } = req.body;
+        const userId = req.user.id;
+
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid amount' });
+        }
+
+        // Generate a unique transaction ID (which acts as merchantOrderId)
+        const merchantTransactionId = `MT_SDK_${Date.now()}_${userId}`;
+
+        const sdkResponse = await phonePeService.getSdkToken({
+            amount,
+            merchantTransactionId
+        });
+
+        // Save pending purchase (using NULL for prediction_id)
+        await db.query(
+            `INSERT INTO purchases 
+             (user_id, prediction_id, phonepe_merchant_transaction_id, amount, payment_status)
+             VALUES ($1, NULL, $2, $3, 'pending')`,
+            [userId, merchantTransactionId, amount]
+        );
+
+        res.json({
+            token: sdkResponse.token,
+            orderId: sdkResponse.orderId,
+            merchantTransactionId,
+            merchantId: process.env.PHONEPE_MERCHANT_ID
+        });
+    } catch (error) {
+        console.error('Get SDK Token Error:', error);
+        res.status(500).json({ error: 'Failed to generate SDK token' });
+    }
+};
+
 module.exports = {
     createOrder,
     verifyPayment,
     webhook,
     getPaymentHistory,
-    rechargeWallet
+    rechargeWallet,
+    getSdkToken
 };

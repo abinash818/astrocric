@@ -1,4 +1,4 @@
-const { StandardCheckoutClient, Env, StandardCheckoutPayRequest } = require('pg-sdk-node');
+const { StandardCheckoutClient, Env, StandardCheckoutPayRequest, CreateSdkOrderRequest } = require('pg-sdk-node');
 const config = require('../config/phonepe');
 const crypto = require('crypto');
 
@@ -14,6 +14,26 @@ const client = StandardCheckoutClient.getInstance(
 );
 
 class PhonePeService {
+
+    // Get SDK Token for Mobile App
+    async getSdkToken({ amount, merchantTransactionId }) {
+        try {
+            const request = CreateSdkOrderRequest.StandardCheckoutBuilder()
+                .merchantOrderId(merchantTransactionId) // Note: SDK uses merchantOrderId
+                .amount(amount * 100)
+                .redirectUrl(config.redirectUrl)
+                .build();
+
+            const response = await client.createSdkOrder(request);
+            return {
+                token: response.token,
+                orderId: response.orderId // PhonePe's Order ID
+            };
+        } catch (error) {
+            console.error('PhonePe SDK Token error:', error);
+            throw new Error('Failed to generate SDK token');
+        }
+    }
 
     // Create payment request
     async initiatePayment({ amount, userId, predictionId, phone, merchantTransactionId }) {

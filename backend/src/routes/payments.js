@@ -9,6 +9,9 @@ router.post('/create-order', auth, paymentController.createOrder);
 // Recharge wallet (requires auth)
 router.post('/recharge', auth, paymentController.rechargeWallet);
 
+// Get SDK Token (requires auth)
+router.post('/sdk-token', auth, paymentController.getSdkToken);
+
 // Verify payment (requires auth)
 router.post('/verify', auth, paymentController.verifyPayment);
 

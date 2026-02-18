@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import 'wallet_payment_screen.dart';
+import '../../services/payment_service.dart';
 
 class RechargeScreen extends StatefulWidget {
   const RechargeScreen({Key? key}) : super(key: key);
@@ -13,6 +13,24 @@ class RechargeScreen extends StatefulWidget {
 class _RechargeScreenState extends State<RechargeScreen> {
   final TextEditingController _amountController = TextEditingController();
   final List<double> _presetAmounts = [100, 200, 500, 1000];
+  final PaymentService _paymentService = PaymentService();
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initSdk();
+  }
+
+  void _initSdk() {
+    _paymentService.initPhonePeSdk().then((success) {
+      if (!success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Payment SDK Initialization Failed')),
+        );
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -20,7 +38,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
     super.dispose();
   }
 
-  void _proceedToPay() {
+  Future<void> _proceedToPay() async {
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -29,21 +47,40 @@ class _RechargeScreenState extends State<RechargeScreen> {
       return;
     }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => WalletPaymentScreen(amount: amount),
-      ),
-    ).then((success) {
-      if (success == true) {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final result = await _paymentService.startPhonePeTransaction(amount);
+
+      if (!mounted) return;
+
+      if (result['success']) {
         // Refresh wallet balance
-        Provider.of<AuthProvider>(context, listen: false).init();
-        Navigator.pop(context);
+        // Provider.of<AuthProvider>(context, listen: false).init(); // AuthProvider might verify token to refresh? 
+        // Or we can just show success and pop. Ideally we fetch profile again.
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Wallet recharged successfully!')),
         );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'] ?? 'Payment Failed')),
+        );
       }
-    });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -95,7 +132,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: _proceedToPay,
+                onPressed: _isLoading ? null : _proceedToPay,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue.shade700,
                   foregroundColor: Colors.white,
@@ -103,10 +140,12 @@ class _RechargeScreenState extends State<RechargeScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
-                  'Proceed to Pay',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        'Proceed to Pay',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
               ),
             ),
           ],
