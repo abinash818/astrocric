@@ -291,9 +291,11 @@ const getSdkToken = async (req, res) => {
             return res.status(400).json({ error: 'Invalid amount' });
         }
 
-        // Generate a unique transaction ID (which acts as merchantOrderId)
-        // If predictionId exists, include it in the ID for validation but usually we track via DB
-        const merchantTransactionId = `MT_SDK_${Date.now()}_${userId}`;
+        // Generate a unique transaction ID (max 35 characters)
+        // Format: T<timestamp><last6_of_userId>
+        const userIdStr = userId.toString();
+        const shortUserId = userIdStr.length > 6 ? userIdStr.slice(-6) : userIdStr;
+        const merchantTransactionId = `T${Date.now()}${shortUserId}`;
 
         // Get user for phone number
         const userResult = await db.query(
