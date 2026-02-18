@@ -37,16 +37,11 @@ class PhonePeService {
             const stringToHash = base64Body + "/pg/v1/pay" + config.saltKey;
             const checksum = crypto.createHash('sha256').update(stringToHash).digest('hex') + "###" + config.saltIndex;
 
-            console.log('--- PhonePe SDK Debug ---');
-            console.log('TransactionID:', merchantTransactionId);
-            console.log('Checksum:', checksum);
-            console.log('-------------------------');
-
             return {
-                payload,
                 base64Body,
                 checksum,
-                merchantTransactionId
+                merchantTransactionId,
+                payload
             };
         } catch (error) {
             console.error('PhonePe SDK Token error:', error);

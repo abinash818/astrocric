@@ -17,7 +17,7 @@ class PaymentService {
       bool result = await PhonePePaymentSdk.init(
         environment, 
         AppConstants.phonePeMerchantId, 
-        'FLOW_${DateTime.now().millisecondsSinceEpoch}', 
+        'astrocric', 
         true
       );
       print('PhonePe Init Result: $result');
@@ -50,8 +50,15 @@ class PaymentService {
       }
 
       // 3. Start Transaction
-      // PhonePe SDK v3 expects a JSON string, usually wrapping the base64 request
-      String requestString = jsonEncode({'request': base64Body});
+      // PhonePe SDK v3 expects a JSON string containing standard checkout parameters
+      String requestString = jsonEncode({
+        'merchantId': AppConstants.phonePeMerchantId,
+        'orderId': merchantTransactionId,
+        'token': base64Body,
+        'paymentMode': {
+          'type': 'PAY_PAGE'
+        }
+      });
 
       Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(
           requestString, 
