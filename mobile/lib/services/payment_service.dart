@@ -16,7 +16,7 @@ class PaymentService {
 
     String environment = 'SANDBOX'; 
     if (AppConstants.phonePeMerchantId != 'PGTESTPAYUAT') {
-        environment = 'RELEASE'; // Some versions use RELEASE for production
+        environment = 'PRODUCTION'; 
     }
     
     try {
@@ -60,8 +60,10 @@ class PaymentService {
       print('Starting PhonePe Transaction SDK UI with JSON-wrapped Base64Body and Checksum...');
       
       // Standard Checkout V4/Hermes SDK expects the payload to be a JSON string with a "request" key
+      // Some versions also require "apiEndPoint" at the top level to match the checksum calculation
       String requestString = jsonEncode({
-        "request": base64Body
+        "request": base64Body,
+        "apiEndPoint": "/pg/v1/pay"
       });
 
       Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(
