@@ -54,23 +54,22 @@ class PaymentService {
       
       print('SDK Token Response Received: $tokenResponse');
       
-      String base64Body = tokenResponse['base64Body'] ?? '';
-      String checksum = tokenResponse['checksum'] ?? '';
+      String orderId = tokenResponse['orderId'] ?? '';
+      String token = tokenResponse['token'] ?? '';
       String mTxnId = tokenResponse['merchantTransactionId'] ?? '';
 
-      if (base64Body.isEmpty || checksum.isEmpty) {
-        throw Exception('Invalid response from server: Missing required payment data');
+      if (orderId.isEmpty || token.isEmpty) {
+        throw Exception('Invalid response from server: Missing required payment tokens');
       }
 
       // 3. Start Transaction
-      print('Starting PhonePe Transaction SDK UI...');
+      print('Starting PhonePe Transaction SDK UI (Unified SDK Flow)...');
       
-      // For PhonePe SDK v3.0.2 Flutter:
-      // The 'startTransaction' method takes ONLY TWO parameters: (String request, String appSchema)
-      // The 'request' parameter must be a JSON string containing at least 'request' (base64) and 'checksum'.
+      // For PhonePe Unified SDK (Hermes):
+      // The 'request' parameter must be a JSON string containing 'orderId' and 'token'.
       String requestJson = jsonEncode({
-        "request": base64Body,
-        "checksum": checksum,
+        "orderId": orderId,
+        "token": token,
       });
 
       Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(

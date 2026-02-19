@@ -15,37 +15,30 @@ const client = StandardCheckoutClient.getInstance(
 
 class PhonePeService {
 
-    // Get SDK Token for Mobile App (v3 compatibility)
+    // Unified SDK (Mobile) - Get Order ID and Token
     async getSdkToken({ amount, userId, merchantTransactionId, phone }) {
         try {
-            const payload = {
-                merchantId: config.merchantId,
-                merchantTransactionId: merchantTransactionId,
-                merchantUserId: `USER_${userId}`,
-                amount: Math.round(amount * 100), // in paise
-                mobileNumber: phone ? phone.replace('+91', '').replace('+', '') : '',
-                callbackUrl: config.callbackUrl,
-                paymentInstrument: {
-                    type: "PAY_PAGE"
-                }
-            };
+            const request = CreateSdkOrderRequest.CreateSdkOrderRequestBuilder()
+                .merchantId(config.merchantId)
+                .merchantTransactionId(merchantTransactionId)
+                .amount(Math.round(amount * 100))
+                .merchantUserId(`USER_${userId}`)
+                .callbackUrl(config.callbackUrl)
+                .mobileNumber(phone ? phone.replace('+91', '').replace('+', '') : '')
+                .paymentInstrument({ type: "PAY_PAGE" })
+                .build();
 
-            const jsonBody = JSON.stringify(payload);
-            const base64Body = Buffer.from(jsonBody).toString('base64');
-
-            // checksum for Hermes (SDK v3) usually matches the Base64 used
-            const stringToHash = base64Body + "/pg/v1/pay" + config.saltKey;
-            const checksum = crypto.createHash('sha256').update(stringToHash).digest('hex') + "###" + config.saltIndex;
+            const response = await client.createOrder(request);
 
             return {
-                base64Body,
-                checksum,
-                merchantTransactionId,
-                payload
+                merchantTransactionId: merchantTransactionId,
+                orderId: response.orderId,
+                token: response.token, // This is the orderToken for the SDK
+                payload: response // for debugging
             };
         } catch (error) {
-            console.error('PhonePe SDK Token error:', error);
-            throw new Error('Failed to generate SDK token');
+            console.error('PhonePe SDK Create Order error:', error);
+            throw new Error('Failed to create SDK order');
         }
     }
 
