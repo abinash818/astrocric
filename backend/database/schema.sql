@@ -85,6 +85,21 @@ CREATE TABLE IF NOT EXISTS otps (
 CREATE INDEX IF NOT EXISTS idx_otps_phone_verified ON otps(phone, verified);
 CREATE INDEX IF NOT EXISTS idx_otps_expires ON otps(expires_at);
 
+-- Wallet Ledger Table
+CREATE TABLE IF NOT EXISTS wallet_ledger (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    purchase_id INTEGER REFERENCES purchases(id) ON DELETE SET NULL,
+    type VARCHAR(20) CHECK (type IN ('CREDIT', 'DEBIT')),
+    amount DECIMAL(10,2) NOT NULL,
+    opening_balance DECIMAL(10,2) NOT NULL,
+    closing_balance DECIMAL(10,2) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_wallet_ledger_user ON wallet_ledger(user_id);
+
 -- Insert sample admin user (for development)
 INSERT INTO users (phone, name, is_admin) 
 VALUES ('+919999999999', 'Admin User', true)

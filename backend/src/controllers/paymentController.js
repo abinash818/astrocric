@@ -120,47 +120,81 @@ const rechargeWallet = async (req, res) => {
 
 // Verify payment
 const verifyPayment = async (req, res) => {
+    let client;
     try {
         const { merchantTransactionId } = req.body;
 
-        // Verify with PhonePe
+        // 1. Verify with PhonePe API
         const verificationResult = await phonePeService.verifyPayment(merchantTransactionId);
 
         if (verificationResult.success && verificationResult.state === 'COMPLETED') {
-            // Update purchase status
-            const purchase = await db.query(
-                `UPDATE purchases 
-         SET phonepe_transaction_id = $1, payment_status = 'success'
-         WHERE phonepe_merchant_transaction_id = $2
-         RETURNING *`,
-                [verificationResult.transactionId, merchantTransactionId]
+            // 2. Start SQL Transaction
+            client = await db.pool.connect();
+            await client.query('BEGIN');
+
+            // 3. Lock purchase row and check idempotency
+            const purchaseResult = await client.query(
+                'SELECT * FROM purchases WHERE phonepe_merchant_transaction_id = $1 FOR UPDATE',
+                [merchantTransactionId]
             );
 
-            if (purchase.rows.length === 0) {
+            if (purchaseResult.rows.length === 0) {
+                await client.query('ROLLBACK');
                 return res.status(404).json({ error: 'Transaction not found' });
             }
 
-            const transaction = purchase.rows[0];
+            const transaction = purchaseResult.rows[0];
 
-            // If it's a wallet recharge (prediction_id is NULL)
+            // IF already success, RETURN (Idempotency)
+            if (transaction.payment_status === 'success') {
+                await client.query('COMMIT');
+                return res.json({ success: true, message: 'Already processed' });
+            }
+
+            // 4. Update purchase status
+            await client.query(
+                "UPDATE purchases SET phonepe_transaction_id = $1, payment_status = 'success' WHERE id = $2",
+                [verificationResult.transactionId, transaction.id]
+            );
+
+            // 5. Lock user row and update balance if needed
+            const userResult = await client.query(
+                'SELECT wallet_balance FROM users WHERE id = $1 FOR UPDATE',
+                [transaction.user_id]
+            );
+            const openingBalance = parseFloat(userResult.rows[0].wallet_balance || 0);
+            const amount = parseFloat(transaction.amount);
+            const closingBalance = openingBalance + amount;
+
+            // Handle wallet recharge (prediction_id is NULL)
             if (transaction.prediction_id === null) {
-                // Update user wallet balance
-                await db.query(
-                    `UPDATE users 
-             SET wallet_balance = COALESCE(wallet_balance, 0) + $1 
-             WHERE id = $2`,
-                    [transaction.amount, transaction.user_id]
+                await client.query(
+                    'UPDATE users SET wallet_balance = $1 WHERE id = $2',
+                    [closingBalance, transaction.user_id]
                 );
 
+                // Add Ledger Entry
+                await client.query(
+                    `INSERT INTO wallet_ledger 
+                     (user_id, purchase_id, type, amount, opening_balance, closing_balance, description)
+                     VALUES ($1, $2, 'CREDIT', $3, $4, $5, 'Wallet Recharge')`,
+                    [transaction.user_id, transaction.id, amount, openingBalance, closingBalance]
+                );
+
+                await client.query('COMMIT');
                 return res.json({
                     success: true,
                     message: 'Wallet recharged successfully',
                     type: 'WALLET_RECHARGE',
-                    newBalance: parseFloat(transaction.amount) // This is just the added amount, ideally we fetch new balance
+                    newBalance: closingBalance
                 });
             }
 
-            // If it's a prediction purchase
+            // If it's a prediction purchase (already paid, so we just log and move on)
+            // Note: If you have a 'DEBIT' logic elsewhere, you'd use it here. 
+            // In this flow, the user paid via PhonePe DIRECTLY for the prediction.
+            await client.query('COMMIT');
+
             const prediction = await db.query(
                 'SELECT * FROM predictions WHERE id = $1',
                 [transaction.prediction_id]
@@ -181,9 +215,7 @@ const verifyPayment = async (req, res) => {
         } else {
             // Update to failed
             await db.query(
-                `UPDATE purchases 
-         SET payment_status = 'failed'
-         WHERE phonepe_merchant_transaction_id = $1`,
+                "UPDATE purchases SET payment_status = 'failed' WHERE phonepe_merchant_transaction_id = $1 AND payment_status = 'pending'",
                 [merchantTransactionId]
             );
 
@@ -193,13 +225,17 @@ const verifyPayment = async (req, res) => {
             });
         }
     } catch (error) {
+        if (client) await client.query('ROLLBACK');
         console.error('Verify payment error:', error);
         res.status(500).json({ error: 'Payment verification failed' });
+    } finally {
+        if (client) client.release();
     }
 };
 
 // PhonePe webhook handler
 const webhook = async (req, res) => {
+    let client;
     try {
         const { response } = req.body;
         const checksum = req.headers['x-verify'];
@@ -215,36 +251,72 @@ const webhook = async (req, res) => {
         console.log('PhonePe webhook received:', decodedResponse);
 
         if (decodedResponse.success && decodedResponse.data.state === 'COMPLETED') {
-            const purchase = await db.query(
-                `UPDATE purchases 
-         SET phonepe_transaction_id = $1, payment_status = 'success'
-         WHERE phonepe_merchant_transaction_id = $2
-         RETURNING *`,
-                [decodedResponse.data.transactionId, decodedResponse.data.merchantTransactionId]
+            const mTxnId = decodedResponse.data.merchantTransactionId;
+
+            client = await db.pool.connect();
+            await client.query('BEGIN');
+
+            const purchaseResult = await client.query(
+                'SELECT * FROM purchases WHERE phonepe_merchant_transaction_id = $1 FOR UPDATE',
+                [mTxnId]
             );
 
-            // Check if it's a wallet recharge and update balance
-            if (purchase.rows.length > 0 && purchase.rows[0].prediction_id === null) {
-                await db.query(
-                    `UPDATE users 
-             SET wallet_balance = COALESCE(wallet_balance, 0) + $1 
-             WHERE id = $2`,
-                    [purchase.rows[0].amount, purchase.rows[0].user_id]
+            if (purchaseResult.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(404).json({ error: 'Transaction not found' });
+            }
+
+            const transaction = purchaseResult.rows[0];
+
+            if (transaction.payment_status === 'success') {
+                await client.query('COMMIT');
+                return res.json({ success: true });
+            }
+
+            // Update status
+            await client.query(
+                "UPDATE purchases SET phonepe_transaction_id = $1, payment_status = 'success' WHERE id = $2",
+                [decodedResponse.data.transactionId, transaction.id]
+            );
+
+            // Handle balance update and ledger
+            if (transaction.prediction_id === null) {
+                const userResult = await client.query(
+                    'SELECT wallet_balance FROM users WHERE id = $1 FOR UPDATE',
+                    [transaction.user_id]
+                );
+                const openingBalance = parseFloat(userResult.rows[0].wallet_balance || 0);
+                const amount = parseFloat(transaction.amount);
+                const closingBalance = openingBalance + amount;
+
+                await client.query(
+                    'UPDATE users SET wallet_balance = $1 WHERE id = $2',
+                    [closingBalance, transaction.user_id]
+                );
+
+                await client.query(
+                    `INSERT INTO wallet_ledger 
+                     (user_id, purchase_id, type, amount, opening_balance, closing_balance, description)
+                     VALUES ($1, $2, 'CREDIT', $3, $4, $5, 'Wallet Recharge (Webhook)')`,
+                    [transaction.user_id, transaction.id, amount, openingBalance, closingBalance]
                 );
             }
+
+            await client.query('COMMIT');
         } else {
             await db.query(
-                `UPDATE purchases 
-         SET payment_status = 'failed'
-         WHERE phonepe_merchant_transaction_id = $1`,
+                "UPDATE purchases SET payment_status = 'failed' WHERE phonepe_merchant_transaction_id = $1 AND payment_status = 'pending'",
                 [decodedResponse.data.merchantTransactionId]
             );
         }
 
         res.json({ success: true });
     } catch (error) {
+        if (client) await client.query('ROLLBACK');
         console.error('Webhook error:', error);
         res.status(500).json({ error: 'Webhook processing failed' });
+    } finally {
+        if (client) client.release();
     }
 };
 
@@ -363,40 +435,67 @@ const checkPendingStatus = async (req, res) => {
         const updates = [];
 
         for (const order of result.rows) {
+            let client;
             try {
                 const status = await phonePeService.verifyPayment(order.phonepe_merchant_transaction_id);
 
                 if (status.success && status.state === 'COMPLETED') {
+                    client = await db.pool.connect();
+                    await client.query('BEGIN');
+
+                    // Lock and re-verify idempotency
+                    const pResult = await client.query(
+                        'SELECT * FROM purchases WHERE id = $1 FOR UPDATE',
+                        [order.id]
+                    );
+                    if (pResult.rows[0].payment_status === 'success') {
+                        await client.query('ROLLBACK');
+                        continue;
+                    }
+
                     // Update to success
-                    await db.query(
-                        `UPDATE purchases 
-                         SET phonepe_transaction_id = $1, payment_status = 'success'
-                         WHERE id = $2`,
+                    await client.query(
+                        "UPDATE purchases SET phonepe_transaction_id = $1, payment_status = 'success' WHERE id = $2",
                         [status.transactionId, order.id]
                     );
 
                     // If wallet recharge, credit balance
                     if (order.prediction_id === null) {
-                        await db.query(
-                            `UPDATE users 
-                             SET wallet_balance = COALESCE(wallet_balance, 0) + $1 
-                             WHERE id = $2`,
-                            [order.amount, order.user_id]
+                        const userResult = await client.query(
+                            'SELECT wallet_balance FROM users WHERE id = $1 FOR UPDATE',
+                            [order.user_id]
+                        );
+                        const openingBalance = parseFloat(userResult.rows[0].wallet_balance || 0);
+                        const amount = parseFloat(order.amount);
+                        const closingBalance = openingBalance + amount;
+
+                        await client.query(
+                            'UPDATE users SET wallet_balance = $1 WHERE id = $2',
+                            [closingBalance, order.user_id]
+                        );
+
+                        await client.query(
+                            `INSERT INTO wallet_ledger 
+                             (user_id, purchase_id, type, amount, opening_balance, closing_balance, description)
+                             VALUES ($1, $2, 'CREDIT', $3, $4, $5, 'Wallet Recharge (Reconciliation)')`,
+                            [order.user_id, order.id, amount, openingBalance, closingBalance]
                         );
                     }
+                    await client.query('COMMIT');
                     updates.push({ id: order.id, status: 'COMPLETED' });
                 } else if (status.state === 'FAILED') {
                     // Update to failed
                     await db.query(
-                        `UPDATE purchases 
-                         SET payment_status = 'failed'
-                         WHERE id = $1`,
+                        "UPDATE purchases SET payment_status = 'failed' WHERE id = $1 AND payment_status = 'pending'",
                         [order.id]
                     );
                     updates.push({ id: order.id, status: 'FAILED' });
                 }
             } catch (err) {
-                console.error(`Failed to verify order ${order.id}:`, err);
+                if (client) await client.query('ROLLBACK');
+                console.error(`Failed to verify/update order ${order.id}:`, err);
+            } finally {
+                if (client) client.release();
             }
         }
 

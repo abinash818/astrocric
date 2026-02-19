@@ -10,7 +10,7 @@ class PaymentService {
   Future<bool> initPhonePeSdk() async {
     String environment = 'SANDBOX'; 
     if (AppConstants.phonePeMerchantId != 'PGTESTPAYUAT') {
-        environment = 'PRODUCTION';
+        environment = 'RELEASE'; // Some versions use RELEASE for production
     }
     
     try {
@@ -44,6 +44,7 @@ class PaymentService {
       
       String base64Body = tokenResponse['base64Body'] ?? '';
       String checksum = tokenResponse['checksum'] ?? '';
+      String mTxnId = tokenResponse['merchantTransactionId'] ?? '';
 
       if (base64Body.isEmpty || checksum.isEmpty) {
         throw Exception('Invalid response from server: Missing required payment data');
@@ -51,14 +52,14 @@ class PaymentService {
 
       // 3. Start Transaction
       // PhonePe SDK v3 expects a JSON string containing standard checkout parameters
-      String requestString = jsonEncode({
-        'merchantId': AppConstants.phonePeMerchantId,
-        'orderId': merchantTransactionId,
-        'token': base64Body,
-        'paymentMode': {
-          'type': 'PAY_PAGE'
-        }
-      });
+      Map<String, dynamic> payload = {
+        "orderId": mTxnId,
+        "merchantId": AppConstants.phonePeMerchantId,
+        "token": base64Body,
+        "paymentMode": {"type": "PAY_PAGE"}
+      };
+      String requestString = jsonEncode(payload);
+      print("Payment Request: $requestString");
 
       Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(
           requestString, 
