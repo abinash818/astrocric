@@ -504,12 +504,91 @@ const checkPendingStatus = async (req, res) => {
     }
 };
 
+// Web Test Recharge (No auth - for direct browser testing)
+const rechargeTest = async (req, res) => {
+    try {
+        const { amount } = req.body;
+        const userId = 1; // Default test user
+        const phone = "9876543210";
+
+        console.log('--- Web Redirect Test Started ---');
+        console.log('Amount:', amount);
+
+        const merchantTransactionId = `WTTEST_${Date.now()}`;
+
+        const paymentData = await phonePeService.getSdkToken({
+            amount: parseFloat(amount),
+            userId: userId,
+            phone: phone,
+            merchantTransactionId: merchantTransactionId
+        });
+
+        console.log('Redirect URL Generated:', paymentData.redirectUrl);
+
+        res.json({
+            success: true,
+            merchantTransactionId: paymentData.merchantTransactionId,
+            redirectUrl: paymentData.redirectUrl
+        });
+    } catch (error) {
+        console.error('Web recharge test error:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Payment Callback (Redirect from PhonePe)
+const callback = async (req, res) => {
+    try {
+        const { merchantTransactionId, transactionId } = req.query;
+
+        console.log('--- Payment Callback Received ---');
+        console.log('Merchant Txn ID:', merchantTransactionId);
+        console.log('PhonePe Txn ID:', transactionId);
+
+        // Simple HTML response to show status to the user
+        res.send(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Payment Status - Astrocric</title>
+                <style>
+                    body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #f0f2f5; margin: 0; }
+                    .card { background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); text-align: center; max-width: 400px; width: 90%; }
+                    .icon { font-size: 4rem; margin-bottom: 1.5rem; }
+                    .success { color: #22c55e; }
+                    .failed { color: #ef4444; }
+                    h1 { margin: 0.5rem 0; color: #1f2937; }
+                    p { color: #6b7280; font-size: 1.1rem; line-height: 1.5; }
+                    .btn { margin-top: 2rem; background: #5f259f; color: white; border: none; padding: 1rem 2rem; border-radius: 10px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; }
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <div class="icon success">✅</div>
+                    <h1>Payment Successful!</h1>
+                    <p>Your transaction has been processed. Your wallet balance will be updated shortly.</p>
+                    <p style="font-size: 0.8rem; margin-top: 1rem;">ID: ${merchantTransactionId}</p>
+                    <a href="/" class="btn">Back to Home</a>
+                </div>
+            </body>
+            </html>
+        `);
+    } catch (error) {
+        console.error('Callback error:', error);
+        res.status(500).send('<h1>Something went wrong during redirection</h1>');
+    }
+};
+
 module.exports = {
     createOrder,
+    rechargeWallet,
+    getSdkToken,
+    checkPendingStatus,
     verifyPayment,
     webhook,
     getPaymentHistory,
-    rechargeWallet,
-    getSdkToken,
-    checkPendingStatus
+    rechargeTest,
+    callback
 };

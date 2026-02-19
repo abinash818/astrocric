@@ -21,7 +21,11 @@ router.post('/verify', auth, paymentController.verifyPayment);
 // PhonePe webhook (no auth - verified by signature)
 router.post('/webhook', paymentController.webhook);
 
-// Get payment history (requires auth)
-router.get('/history', auth, paymentController.getPaymentHistory);
+// Web Recharge Test (No auth)
+router.post('/recharge-test', paymentController.rechargeTest);
+
+// PhonePe Redirect Callback (No auth)
+router.get('/callback', paymentController.callback);
+router.post('/callback', paymentController.callback);
 
 module.exports = router;

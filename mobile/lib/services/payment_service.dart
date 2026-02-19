@@ -29,13 +29,17 @@ class PaymentService {
         throw Exception('Invalid response from server: Missing redirect URL');
       }
 
-      // 2. Launch URL in browser
-      print('Launching PhonePe Web Checkout: $redirectUrl');
+      // 2. Launch URL in-app
+      print('Launching PhonePe In-App WebView: $redirectUrl');
       final Uri url = Uri.parse(redirectUrl);
       
       if (!await launchUrl(
         url,
-        mode: LaunchMode.externalApplication, // Open in external browser
+        mode: LaunchMode.inAppWebView, // Open inside the app
+        webViewConfiguration: const WebViewConfiguration(
+          enableJavaScript: true,
+          enableDomStorage: true,
+        ),
       )) {
         throw Exception('Could not launch payment URL: $redirectUrl');
       }

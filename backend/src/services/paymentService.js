@@ -3,12 +3,12 @@ const config = require('../config/phonepe');
 const axios = require('axios');
 const crypto = require('crypto');
 
-// Initialize Client for Web forwarding
+// Initialize Client for Web forwarding (Unified SDK/Hermes)
 const env = config.apiUrl && config.apiUrl.includes('sandbox') ? Env.SANDBOX : Env.PRODUCTION;
 const client = StandardCheckoutClient.getInstance(
-    config.merchantId,
-    config.saltKey,
-    config.saltIndex,
+    config.clientId,
+    config.clientSecret,
+    config.clientVersion,
     env
 );
 
@@ -18,17 +18,20 @@ class PhonePeService {
         try {
             const txnId = merchantTransactionId || `T${Date.now()}`;
 
-            const request = StandardCheckoutPayRequest.StandardCheckoutBuilder()
-                .merchantId(config.merchantId)
-                .merchantTransactionId(txnId)
+            // Ensure we use the correct merchantId from config
+            const request = StandardCheckoutPayRequest.builder()
+                .merchantOrderId(txnId)
                 .amount(Math.round(amount * 100))
-                .merchantUserId(`USER_${userId}`)
                 .redirectUrl(config.redirectUrl)
-                .redirectMode("GET") // GET is safer for browser redirects from mobile
-                .callbackUrl(config.callbackUrl)
-                .mobileNumber(phone ? phone.replace('+91', '').replace('+', '') : '')
-                .paymentInstrument({ type: "PAY_PAGE" })
+                .message(`Payment for User ${userId}`)
                 .build();
+
+            // Explicitly set merchantId as required by PhonePe Backend
+            request.merchantId = config.merchantId;
+
+            console.log('--- Initiating PhonePe Pay ---');
+            console.log('MID:', config.merchantId);
+            console.log('Transaction:', txnId);
 
             const response = await client.pay(request);
 
@@ -46,32 +49,7 @@ class PhonePeService {
     // Create payment request
     async initiatePayment({ amount, userId, predictionId, phone, merchantTransactionId }) {
         const txnId = merchantTransactionId || `MT_${Date.now()}_${predictionId}`;
-
-        try {
-            const request = StandardCheckoutPayRequest.StandardCheckoutBuilder()
-                .merchantId(config.merchantId)
-                .merchantTransactionId(txnId)
-                .amount(amount * 100) // Convert to paise
-                .merchantUserId(`USER_${userId}`)
-                .redirectUrl(config.redirectUrl)
-                .redirectMode("POST")
-                .callbackUrl(config.callbackUrl)
-                .mobileNumber(phone.replace('+91', '').replace('+', ''))
-                .paymentInstrument({ type: "PAY_PAGE" })
-                .build();
-
-            const response = await client.pay(request);
-
-            return {
-                success: true,
-                merchantTransactionId: txnId,
-                redirectUrl: response.redirectUrl
-            };
-
-        } catch (error) {
-            console.error('PhonePe SDK initiation error:', error);
-            throw new Error('Payment initiation failed');
-        }
+        return this.getSdkToken({ amount, userId, merchantTransactionId: txnId, phone });
     }
 
     // Verify payment status
