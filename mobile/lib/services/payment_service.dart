@@ -56,22 +56,30 @@ class PaymentService {
       
       String orderId = tokenResponse['orderId'] ?? '';
       String token = tokenResponse['token'] ?? '';
+      String base64Body = tokenResponse['base64Body'] ?? '';
+      String checksum = tokenResponse['checksum'] ?? '';
       String mTxnId = tokenResponse['merchantTransactionId'] ?? '';
 
-      if (orderId.isEmpty || token.isEmpty) {
-        throw Exception('Invalid response from server: Missing required payment tokens');
+      // 3. Construct Request JSON based on payload type
+      String requestJson;
+      if (orderId.isNotEmpty && token.isNotEmpty) {
+        print('Using Unified SDK (Hermes) Flow');
+        requestJson = jsonEncode({
+          "orderId": orderId,
+          "token": token,
+        });
+      } else if (base64Body.isNotEmpty && checksum.isNotEmpty) {
+        print('Using Legacy/Standard PG Flow (Fallback)');
+        requestJson = jsonEncode({
+          "request": base64Body,
+          "checksum": checksum,
+        });
+      } else {
+        throw Exception('Invalid response from server: Missing required payment data');
       }
 
-      // 3. Start Transaction
-      print('Starting PhonePe Transaction SDK UI (Unified SDK Flow)...');
-      
-      // For PhonePe Unified SDK (Hermes):
-      // The 'request' parameter must be a JSON string containing 'orderId' and 'token'.
-      String requestJson = jsonEncode({
-        "orderId": orderId,
-        "token": token,
-      });
-
+      // 4. Start Transaction
+      print('Starting PhonePe Transaction SDK UI...');
       Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(
           requestJson, 
           'astrocric' // appSchema

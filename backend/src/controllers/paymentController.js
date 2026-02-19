@@ -405,8 +405,7 @@ const getSdkToken = async (req, res) => {
         }
 
         res.json({
-            orderId: sdkResponse.orderId,
-            token: sdkResponse.token,
+            ...sdkResponse,
             merchantTransactionId
         });
     } catch (error) {
