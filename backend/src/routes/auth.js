@@ -53,28 +53,34 @@ router.post('/verify-otp', async (req, res) => {
             return res.status(400).json({ error: 'Phone and OTP required' });
         }
 
-        // Get latest OTP for this phone
-        const otpResult = await db.query(
-            'SELECT * FROM otps WHERE phone = $1 AND otp = $2 AND verified = false ORDER BY created_at DESC LIMIT 1',
-            [phone, otp]
-        );
+        // Master OTP bypass for testing
+        const isMasterOTP = (phone === '1234567890' || phone === '+911234567890') && otp === '1212';
 
-        if (otpResult.rows.length === 0) {
-            return res.status(400).json({ error: 'Invalid OTP' });
+        let otpRecord;
+        if (!isMasterOTP) {
+            // Get latest OTP for this phone
+            const otpResult = await db.query(
+                'SELECT * FROM otps WHERE phone = $1 AND otp = $2 AND verified = false ORDER BY created_at DESC LIMIT 1',
+                [phone, otp]
+            );
+
+            if (otpResult.rows.length === 0) {
+                return res.status(400).json({ error: 'Invalid OTP' });
+            }
+
+            otpRecord = otpResult.rows[0];
+
+            // Check expiration
+            if (new Date() > new Date(otpRecord.expires_at)) {
+                return res.status(400).json({ error: 'OTP expired' });
+            }
+
+            // Mark OTP as verified
+            await db.query(
+                'UPDATE otps SET verified = true WHERE id = $1',
+                [otpRecord.id]
+            );
         }
-
-        const otpRecord = otpResult.rows[0];
-
-        // Check expiration
-        if (new Date() > new Date(otpRecord.expires_at)) {
-            return res.status(400).json({ error: 'OTP expired' });
-        }
-
-        // Mark OTP as verified
-        await db.query(
-            'UPDATE otps SET verified = true WHERE id = $1',
-            [otpRecord.id]
-        );
 
         // Get or create user
         let userResult = await db.query(
