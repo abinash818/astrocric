@@ -57,10 +57,15 @@ class PaymentService {
       }
 
       // 3. Start Transaction
-      print('Starting PhonePe Transaction SDK UI with Base64Body and Checksum...');
+      print('Starting PhonePe Transaction SDK UI with JSON-wrapped Base64Body and Checksum...');
+      
+      // Standard Checkout V4/Hermes SDK expects the payload to be a JSON string with a "request" key
+      String requestString = jsonEncode({
+        "request": base64Body
+      });
 
       Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(
-          base64Body, 
+          requestString, 
           checksum
       );
       print('PhonePe SDK Transaction Response: $response');
