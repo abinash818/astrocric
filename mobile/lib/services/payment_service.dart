@@ -59,11 +59,13 @@ class PaymentService {
       // 3. Start Transaction
       print('Starting PhonePe Transaction SDK UI with JSON-wrapped Base64Body and Checksum...');
       
-      // Standard Checkout V4/Hermes SDK expects the payload to be a JSON string with a "request" key
-      // Some versions also require "apiEndPoint" at the top level to match the checksum calculation
+      // Standard Checkout V4/Hermes SDK expects the payload to be a JSON string
+      // For Direct Integration, we often need to provide orderId and merchantId explicitly at the top level
       String requestString = jsonEncode({
         "request": base64Body,
-        "apiEndPoint": "/pg/v1/pay"
+        "apiEndPoint": "/pg/v1/pay",
+        "merchantId": AppConstants.phonePeMerchantId,
+        "orderId": mTxnId
       });
 
       Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(
