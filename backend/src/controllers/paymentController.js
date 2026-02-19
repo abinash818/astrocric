@@ -360,7 +360,7 @@ const getPaymentHistory = async (req, res) => {
 // Get SDK Token for Mobile App
 const getSdkToken = async (req, res) => {
     try {
-        const { amount, predictionId } = req.body; // Accept predictionId
+        const { amount, predictionId, restrictToUpi } = req.body; // Accept restrictToUpi flag
         const userId = req.user.id;
 
         if (!amount || amount <= 0) {
@@ -383,11 +383,20 @@ const getSdkToken = async (req, res) => {
             throw new Error('User not found');
         }
 
+        // Configure payment modes if requested (e.g. force UPI only)
+        let paymentModeConfig = null;
+        if (restrictToUpi) {
+            paymentModeConfig = {
+                "enabledPaymentModes": [{ "type": "UPI" }]
+            };
+        }
+
         const sdkResponse = await phonePeService.getSdkToken({
             amount,
             userId,
             merchantTransactionId,
-            phone: userResult.rows[0].phone
+            phone: userResult.rows[0].phone,
+            paymentModeConfig
         });
 
         // Save pending purchase

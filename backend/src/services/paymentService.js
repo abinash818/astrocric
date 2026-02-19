@@ -14,7 +14,8 @@ const client = StandardCheckoutClient.getInstance(
 
 class PhonePeService {
     // Web Checkout (Mobile) - Support for Standard MIDs
-    async getSdkToken({ amount, userId, merchantTransactionId, phone }) {
+    // Web Checkout (Mobile) - Support for Standard MIDs
+    async getSdkToken({ amount, userId, merchantTransactionId, phone, paymentModeConfig }) {
         try {
             const txnId = merchantTransactionId || `T${Date.now()}`;
 
@@ -28,6 +29,11 @@ class PhonePeService {
 
             // Explicitly set merchantId as required by PhonePe Backend
             request.merchantId = config.merchantId;
+
+            // Inject paymentModeConfig if provided (e.g. to restrict to UPI)
+            if (paymentModeConfig) {
+                request.paymentFlow.paymentModeConfig = paymentModeConfig;
+            }
 
             console.log('--- Initiating PhonePe Pay ---');
             console.log('MID:', config.merchantId);

@@ -1,26 +1,40 @@
 import 'package:url_launcher/url_launcher.dart';
+import 'package:upi_pay/upi_pay.dart';
+import 'package:upi_pay/types/meta.dart';
 import 'api_service.dart';
 
 class PaymentService {
   final ApiService _apiService = ApiService();
+  final UpiPay _upiPay = UpiPay();
+
+  // Get installed UPI apps
+  Future<List<ApplicationMeta>> getInstalledUpiApps() async {
+    try {
+      return await _upiPay.getInstalledUpiApplications();
+    } catch (e) {
+      print('Error getting UPI apps: $e');
+      return [];
+    }
+  }
 
   // Create SDK Token (from Backend) - used for both SDK and Web Flow
-  Future<Map<String, dynamic>> getSdkToken(double amount, {int? predictionId}) async {
+  Future<Map<String, dynamic>> getSdkToken(double amount, {int? predictionId, bool restrictToUpi = false}) async {
     return await _apiService.post(
       '/payment/sdk-token',
       {
         'amount': amount,
         if (predictionId != null) 'predictionId': predictionId,
+        'restrictToUpi': restrictToUpi,
       },
     );
   }
 
   // Start PhonePe Web Checkout
-  Future<Map<String, dynamic>> startPhonePeTransaction(double amount, {int? predictionId}) async {
+  Future<Map<String, dynamic>> startPhonePeTransaction(double amount, {int? predictionId, bool restrictToUpi = false}) async {
     try {
       // 1. Get Redirect URL from backend
-      print('Requesting Web Checkout URL from backend for amount: $amount');
-      final tokenResponse = await getSdkToken(amount, predictionId: predictionId);
+      print('Requesting Web Checkout URL from backend for amount: $amount upiOnly: $restrictToUpi');
+      final tokenResponse = await getSdkToken(amount, predictionId: predictionId, restrictToUpi: restrictToUpi);
       
       String redirectUrl = tokenResponse['redirectUrl'] ?? '';
       String mTxnId = tokenResponse['merchantTransactionId'] ?? '';
@@ -51,6 +65,27 @@ class PaymentService {
     } catch (e) {
       print('Payment Web Checkout Error: $e');
       return {'success': false, 'message': e.toString()};
+    }
+  }
+
+  // Start Payment with specific UPI App
+  Future<UpiTransactionResponse?> startUpiTransaction({
+    required ApplicationMeta app,
+    required double amount,
+    required String merchantTransactionId,
+  }) async {
+    try {
+      return await _upiPay.initiateTransaction(
+        amount: amount.toString(),
+        app: app.upiApplication,
+        receiverUpiAddress: "merchant@ybl", // This should come from backend config
+        receiverName: 'Astrocric',
+        transactionRef: merchantTransactionId,
+        transactionNote: 'Recharge Wallet',
+      );
+    } catch (e) {
+      print('UPI Transaction Error: $e');
+      return null;
     }
   }
 

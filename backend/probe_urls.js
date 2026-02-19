@@ -1,49 +1,73 @@
 const axios = require('axios');
 const crypto = require('crypto');
 
-const merchantId = 'M23VW0EJ3IVEK';
-const saltKey = '07bad376-5933-41d1-9a54-4b926e23e672';
-const saltIndex = '1';
+const config = {
+    merchantId: 'M23VW0EJ3IVEK',
+    saltKey: '07bad376-5933-41d1-9a54-4b926e23e672',
+    saltIndex: '1'
+};
 
-const urls = [
-    'https://api.phonepe.com/apis/hermes/pg/v1/pay',
-    'https://api.phonepe.com/apis/hermes/v1/pay',
-    'https://api.phonepe.com/apis/pg/v1/pay',
-    'https://api.phonepe.com/apis/v3/pay',
-    'https://api.phonepe.com/apis/hermes/v3/pay',
-    'https://api.phonepe.com/apis/hermes/standard/v1/pay'
+const hosts = [
+    'https://api.phonepe.com/apis/hermes',
+    'https://api.phonepe.com/apis/pg',
+    'https://api.phonepe.com',
+    'https://api-preprod.phonepe.com/apis/pg-sandbox',
+    'https://api-preprod.phonepe.com/apis/hermes'
 ];
 
-async function test(url) {
-    const payload = {
-        merchantId: merchantId,
-        merchantTransactionId: 'TX' + Date.now(),
-        merchantUserId: 'USER_61',
-        amount: 100,
-        callbackUrl: 'https://astrocric.onrender.com/api/payment/webhook',
-        mobileNumber: '9999999999',
-        paymentInstrument: { type: "PAY_PAGE" }
-    };
-    const base64Body = Buffer.from(JSON.stringify(payload)).toString('base64');
-    const path = new URL(url).pathname.replace('/apis/hermes', '').replace('/apis', '');
-    const stringToHash = base64Body + path + saltKey;
-    const checksum = crypto.createHash('sha256').update(stringToHash).digest('hex') + "###" + saltIndex;
+const paths = [
+    '/pg/v1/pay',
+    '/v1/pay',
+    '/pg/v1/pay/page',
+    '/api/pg/v1/pay'
+];
 
-    try {
-        console.log(`Testing URL: ${url} (Path: ${path})`);
-        const response = await axios.post(url, { request: base64Body }, {
-            headers: { 'X-VERIFY': checksum, 'Content-Type': 'application/json' }
-        });
-        console.log(`SUCCESS: ${url} ->`, response.data.code || 'OK');
-    } catch (e) {
-        console.log(`FAILED: ${url} -> ${e.response ? e.response.status + ' ' + (e.response.data.code || '') : e.message}`);
+async function probe() {
+    console.log('--- Aggressive URL Probe ---');
+    for (const host of hosts) {
+        for (const path of paths) {
+            const url = host + path;
+            const txnId = 'T' + Date.now();
+            const payload = {
+                merchantId: config.merchantId,
+                merchantTransactionId: txnId,
+                merchantUserId: 'USER_1',
+                amount: 100,
+                redirectUrl: 'https://astrocric.onrender.com/api/payment/callback',
+                redirectMode: 'GET',
+                callbackUrl: 'https://astrocric.onrender.com/api/payment/webhook',
+                paymentInstrument: { type: 'PAY_PAGE' }
+            };
+
+            const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64');
+            const checksum = crypto.createHash('sha256')
+                .update(base64Payload + path + config.saltKey)
+                .digest('hex') + '###' + config.saltIndex;
+
+            try {
+                process.stdout.write(`V: ${url} ... `);
+                const response = await axios.post(url,
+                    { request: base64Payload },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-VERIFY': checksum,
+                            'accept': 'application/json'
+                        },
+                        timeout: 5000
+                    }
+                );
+                console.log(`[FOUND!] REDIRECT: ${response.data.data.instrumentResponse.redirectInfo.url}`);
+                return;
+            } catch (error) {
+                if (error.response) {
+                    console.log(`[${error.response.status}] ${error.response.data ? error.response.data.code : ''}`);
+                } else {
+                    console.log(`[ERR] ${error.message}`);
+                }
+            }
+        }
     }
 }
 
-async function run() {
-    for (const url of urls) {
-        await test(url);
-    }
-}
-
-run();
+probe();
