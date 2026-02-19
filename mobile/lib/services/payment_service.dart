@@ -23,10 +23,10 @@ class PaymentService {
       bool result = await PhonePePaymentSdk.init(
         environment, 
         AppConstants.phonePeMerchantId, 
-        'astrocric', 
+        '', // Pass empty string for appId as per SDK v3 requirements
         true
       );
-      print('PhonePe Init Result: $result');
+      print('PhonePe SDK Initialized in $environment mode: $result');
       return result;
     } catch (e) {
       print('PhonePe Init Error: $e');
@@ -50,22 +50,17 @@ class PaymentService {
       
       String base64Body = tokenResponse['base64Body'] ?? '';
       String checksum = tokenResponse['checksum'] ?? '';
-      String mTxnId = tokenResponse['merchantTransactionId'] ?? '';
 
       if (base64Body.isEmpty || checksum.isEmpty) {
         throw Exception('Invalid response from server: Missing required payment data');
       }
 
       // 3. Start Transaction
-      print('Starting PhonePe Transaction SDK UI with JSON-wrapped Base64Body and Checksum...');
+      print('Starting PhonePe Transaction SDK UI...');
       
-      // Standard Checkout V4/Hermes SDK expects the payload to be a JSON string
-      // For Direct Integration, we often need to provide orderId and merchantId explicitly at the top level
+      // Standard Checkout V4/Hermes SDK for Flutter expects the request to be a JSON string with "request" key
       String requestString = jsonEncode({
-        "request": base64Body,
-        "apiEndPoint": "/pg/v1/pay",
-        "merchantId": AppConstants.phonePeMerchantId,
-        "orderId": mTxnId
+        "request": base64Body
       });
 
       Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(
