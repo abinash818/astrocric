@@ -8,6 +8,12 @@ class PaymentService {
 
   // Initialize PhonePe SDK
   Future<bool> initPhonePeSdk() async {
+    // PhonePe SDK does not support Web
+    if (identical(0, 0.0)) { // Simple way to check for web if kIsWeb is not imported
+        print('PhonePe SDK is not supported on Web');
+        return false;
+    }
+
     String environment = 'SANDBOX'; 
     if (AppConstants.phonePeMerchantId != 'PGTESTPAYUAT') {
         environment = 'RELEASE'; // Some versions use RELEASE for production
@@ -51,19 +57,10 @@ class PaymentService {
       }
 
       // 3. Start Transaction
-      // PhonePe SDK v3 expects a JSON string containing standard checkout parameters
-      Map<String, dynamic> payload = {
-        "orderId": mTxnId,
-        "merchantId": AppConstants.phonePeMerchantId,
-        "token": base64Body,
-        "paymentMode": {"type": "PAY_PAGE"}
-      };
-      String requestString = jsonEncode(payload);
-      print("Payment Request: $requestString");
-      print('Starting PhonePe Transaction SDK UI...');
+      print('Starting PhonePe Transaction SDK UI with Base64Body and Checksum...');
 
       Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(
-          requestString, 
+          base64Body, 
           checksum
       );
       print('PhonePe SDK Transaction Response: $response');
@@ -71,7 +68,10 @@ class PaymentService {
       if (response != null && response['status'] == 'SUCCESS') {
           return {'success': true, 'message': 'Payment Successful'};
       } else {
-          return {'success': false, 'message': response?['error'] ?? 'Payment Failed'};
+          String errorMsg = response?['error'] ?? 'Payment Failed';
+          // Handle specific case where response is cancelled or null
+          if (response == null) errorMsg = 'Payment Cancelled or SDK Error';
+          return {'success': false, 'message': errorMsg};
       }
       
     } catch (e) {
