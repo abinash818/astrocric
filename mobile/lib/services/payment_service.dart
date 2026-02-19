@@ -31,7 +31,7 @@ class PaymentService {
   // Start Transaction
   Future<Map<String, dynamic>> startPhonePeTransaction(double amount, {int? predictionId}) async {
     try {
-      // 1. Get SDK Token and details from Backend
+      print('Calling Backend /payment/sdk-token with amount: $amount');
       final tokenResponse = await _apiService.post(
         '/payment/sdk-token',
         {
@@ -40,7 +40,7 @@ class PaymentService {
         },
       );
       
-      print('SDK Token Response: $tokenResponse');
+      print('SDK Token Response Received: $tokenResponse');
       
       String base64Body = tokenResponse['base64Body'] ?? '';
       String checksum = tokenResponse['checksum'] ?? '';
@@ -60,11 +60,13 @@ class PaymentService {
       };
       String requestString = jsonEncode(payload);
       print("Payment Request: $requestString");
+      print('Starting PhonePe Transaction SDK UI...');
 
       Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(
           requestString, 
           checksum
       );
+      print('PhonePe SDK Transaction Response: $response');
 
       if (response != null && response['status'] == 'SUCCESS') {
           return {'success': true, 'message': 'Payment Successful'};
