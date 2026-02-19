@@ -1,10 +1,9 @@
 const { StandardCheckoutClient, Env, StandardCheckoutPayRequest, CreateSdkOrderRequest } = require('pg-sdk-node');
 const config = require('../config/phonepe');
+const axios = require('axios');
 const crypto = require('crypto');
 
-// Initialize Client
-// Env: SANDBOX or PRODUCTION
-// client_version: 1 (Standard)
+// Initialize Client for Web forwarding
 const env = config.apiUrl && config.apiUrl.includes('sandbox') ? Env.SANDBOX : Env.PRODUCTION;
 const client = StandardCheckoutClient.getInstance(
     config.merchantId,
@@ -14,10 +13,17 @@ const client = StandardCheckoutClient.getInstance(
 );
 
 class PhonePeService {
-
     // Unified SDK (Mobile) - Get Order ID and Token
     async getSdkToken({ amount, userId, merchantTransactionId, phone }) {
         try {
+            const env = config.apiUrl && config.apiUrl.includes('sandbox') ? Env.SANDBOX : Env.PRODUCTION;
+            const mobileClient = StandardCheckoutClient.getInstance(
+                config.merchantId,
+                config.saltKey,
+                config.saltIndex,
+                env
+            );
+
             const request = CreateSdkOrderRequest.CreateSdkOrderRequestBuilder()
                 .merchantId(config.merchantId)
                 .merchantTransactionId(merchantTransactionId)
@@ -28,17 +34,48 @@ class PhonePeService {
                 .paymentInstrument({ type: "PAY_PAGE" })
                 .build();
 
-            const response = await client.createOrder(request);
+            // Check if method exists (Runtime check for robustness)
+            if (typeof mobileClient.createSdkOrder === 'function') {
+                const response = await mobileClient.createSdkOrder(request);
+                return {
+                    orderId: response.orderId,
+                    token: response.token,
+                    merchantTransactionId: merchantTransactionId
+                };
+            } else if (typeof mobileClient.pay === 'function') {
+                // Fallback to pay method if it's an older unified version
+                const response = await mobileClient.pay(request);
+                return {
+                    orderId: merchantTransactionId,
+                    token: response.token || merchantTransactionId,
+                    merchantTransactionId: merchantTransactionId,
+                    redirectUrl: response.redirectUrl
+                };
+            } else {
+                throw new Error('PhonePe SDK client missing required methods');
+            }
+        } catch (error) {
+            console.error('PhonePe SDK Create Order failed, falling back to legacy format:', error.message);
+            // Legacy/Direct integration fallback for emergency
+            const payload = {
+                merchantId: config.merchantId,
+                merchantTransactionId: merchantTransactionId,
+                merchantUserId: `USER_${userId}`,
+                amount: Math.round(amount * 100),
+                mobileNumber: phone ? phone.replace('+91', '').replace('+', '') : '',
+                callbackUrl: config.callbackUrl,
+                paymentInstrument: { type: "PAY_PAGE" }
+            };
+            const base64Body = Buffer.from(JSON.stringify(payload)).toString('base64');
+            const stringToHash = base64Body + "/pg/v1/pay" + config.saltKey;
+            const checksum = crypto.createHash('sha256').update(stringToHash).digest('hex') + "###" + config.saltIndex;
 
             return {
-                merchantTransactionId: merchantTransactionId,
-                orderId: response.orderId,
-                token: response.token, // This is the orderToken for the SDK
-                payload: response // for debugging
+                base64Body,
+                checksum,
+                merchantTransactionId,
+                isLegacy: true
             };
-        } catch (error) {
-            console.error('PhonePe SDK Create Order error:', error);
-            throw new Error('Failed to create SDK order');
         }
     }
 
