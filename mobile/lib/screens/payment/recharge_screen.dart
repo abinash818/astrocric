@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../services/payment_service.dart';
 
 class RechargeScreen extends StatefulWidget {
@@ -19,17 +17,6 @@ class _RechargeScreenState extends State<RechargeScreen> {
   @override
   void initState() {
     super.initState();
-    _initSdk();
-  }
-
-  void _initSdk() {
-    _paymentService.initPhonePeSdk().then((success) {
-      if (!success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Payment SDK Initialization Failed')),
-        );
-      }
-    });
   }
 
   @override

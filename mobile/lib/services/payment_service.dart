@@ -1,37 +1,18 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
-import '../constants/app_constants.dart';
 import 'api_service.dart';
-import 'auth_service.dart';
 
 class PaymentService {
   final ApiService _apiService = ApiService();
-  final AuthService _authService = AuthService();
 
-  // Create SDK Token (from Backend)
+  // Create SDK Token (from Backend) - used for both SDK and Web Flow
   Future<Map<String, dynamic>> getSdkToken(double amount, {int? predictionId}) async {
-    final token = await _authService.getToken();
-    if (token == null) throw Exception('User not authenticated');
-
-    final response = await http.post(
-      Uri.parse('${AppConstants.apiBaseUrl}/payment/sdk-token'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({
+    return await _apiService.post(
+      '/payment/sdk-token',
+      {
         'amount': amount,
-        if (predictionId != null) 'predictionId': predictionId
-      }),
+        if (predictionId != null) 'predictionId': predictionId,
+      },
     );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      final error = jsonDecode(response.body);
-      throw Exception(error['error'] ?? 'Failed to get payment token');
-    }
   }
 
   // Start PhonePe Web Checkout
@@ -69,31 +50,22 @@ class PaymentService {
     }
   }
 
-  // Verify Payment Status (Polling or manual check)
+  // Verify Payment Status
   Future<bool> verifyPayment(String merchantTransactionId) async {
-    final token = await _authService.getToken();
-    if (token == null) return false;
-
-    final response = await http.get(
-      Uri.parse('${AppConstants.apiBaseUrl}/payment/status/$merchantTransactionId'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return data['success'] == true;
+    try {
+      final response = await _apiService.get('/payment/status/$merchantTransactionId');
+      return response['success'] == true;
+    } catch (e) {
+      print('Verify Payment Error: $e');
+      return false;
     }
-    return false;
   }
 
   Future<Map<String, dynamic>> createOrder(int predictionId) async {
-    final response = await _apiService.post(
+    return await _apiService.post(
       '/payment/create-order',
       {'predictionId': predictionId},
     );
-    return response;
   }
   
   Future<List<dynamic>> getPaymentHistory() async {
