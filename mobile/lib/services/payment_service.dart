@@ -21,16 +21,21 @@ class PaymentService {
     }
     
     try {
+      print('Initializing PhonePe SDK in $environment mode for Merchant: ${AppConstants.phonePeMerchantId}');
       bool result = await PhonePePaymentSdk.init(
         environment, 
         AppConstants.phonePeMerchantId, 
-        '', // Use empty string (non-nullable) instead of null
+        'astrocric_user', // Use a descriptive flowId (non-empty)
         true
       );
-      print('PhonePe SDK Initialized in $environment mode: $result');
+      print('PhonePe SDK Initialized Result: $result');
+      if (!result) {
+          print('Warning: PhonePe SDK init returned false. This often happens if the Merchant ID is not whitelisted for the chosen environment or the Package Name mismatches.');
+      }
       return result;
-    } catch (e) {
-      print('PhonePe Init Error: $e');
+    } catch (e, stack) {
+      print('PhonePe Init Exception: $e');
+      print('Stacktrace: $stack');
       return false;
     }
   }
