@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:phonepe_payment_sdk/phonepe_payment_sdk.dart';
 import 'package:astrocric/config/constants.dart';
 import 'api_service.dart';
@@ -9,7 +10,7 @@ class PaymentService {
   // Initialize PhonePe SDK
   Future<bool> initPhonePeSdk() async {
     // PhonePe SDK does not support Web
-    if (identical(0, 0.0)) { // Simple way to check for web if kIsWeb is not imported
+    if (kIsWeb) {
         print('PhonePe SDK is not supported on Web');
         return false;
     }
@@ -23,7 +24,7 @@ class PaymentService {
       bool result = await PhonePePaymentSdk.init(
         environment, 
         AppConstants.phonePeMerchantId, 
-        '', // Pass empty string for appId as per SDK v3 requirements
+        '', // Use empty string (non-nullable) instead of null
         true
       );
       print('PhonePe SDK Initialized in $environment mode: $result');
@@ -50,6 +51,7 @@ class PaymentService {
       
       String base64Body = tokenResponse['base64Body'] ?? '';
       String checksum = tokenResponse['checksum'] ?? '';
+      String mTxnId = tokenResponse['merchantTransactionId'] ?? '';
 
       if (base64Body.isEmpty || checksum.isEmpty) {
         throw Exception('Invalid response from server: Missing required payment data');
@@ -58,14 +60,17 @@ class PaymentService {
       // 3. Start Transaction
       print('Starting PhonePe Transaction SDK UI...');
       
-      // Standard Checkout V4/Hermes SDK for Flutter expects the request to be a JSON string with "request" key
-      String requestString = jsonEncode({
-        "request": base64Body
+      // For PhonePe SDK v3.0.2 Flutter:
+      // The 'startTransaction' method takes ONLY TWO parameters: (String request, String appSchema)
+      // The 'request' parameter must be a JSON string containing at least 'request' (base64) and 'checksum'.
+      String requestJson = jsonEncode({
+        "request": base64Body,
+        "checksum": checksum,
       });
 
       Map<dynamic, dynamic>? response = await PhonePePaymentSdk.startTransaction(
-          requestString, 
-          checksum
+          requestJson, 
+          'astrocric' // appSchema
       );
       print('PhonePe SDK Transaction Response: $response');
 
