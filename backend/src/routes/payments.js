@@ -17,6 +17,7 @@ router.post('/reconcile', auth, paymentController.checkPendingStatus);
 
 // Verify payment (requires auth)
 router.post('/verify', auth, paymentController.verifyPayment);
+router.get('/status/:merchantTransactionId', auth, paymentController.verifyPayment);
 
 // PhonePe webhook (no auth - verified by signature)
 router.post('/webhook', paymentController.webhook);

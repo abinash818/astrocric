@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../services/payment_service.dart';
+import '../../providers/auth_provider.dart';
 
 class RechargeScreen extends StatefulWidget {
   const RechargeScreen({Key? key}) : super(key: key);
@@ -45,9 +47,11 @@ class _RechargeScreenState extends State<RechargeScreen> {
 
       if (result['success']) {
         // Refresh wallet balance
-        // Provider.of<AuthProvider>(context, listen: false).init(); // AuthProvider might verify token to refresh? 
-        // Or we can just show success and pop. Ideally we fetch profile again.
+        if (mounted) {
+          await context.read<AuthProvider>().init();
+        }
         
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Wallet recharged successfully!')),
         );

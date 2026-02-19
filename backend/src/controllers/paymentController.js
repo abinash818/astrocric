@@ -122,7 +122,11 @@ const rechargeWallet = async (req, res) => {
 const verifyPayment = async (req, res) => {
     let client;
     try {
-        const { merchantTransactionId } = req.body;
+        const merchantTransactionId = req.body.merchantTransactionId || req.params.merchantTransactionId;
+
+        if (!merchantTransactionId) {
+            return res.status(400).json({ error: 'Merchant Transaction ID is required' });
+        }
 
         // 1. Verify with PhonePe API
         const verificationResult = await phonePeService.verifyPayment(merchantTransactionId);
@@ -570,7 +574,8 @@ const callback = async (req, res) => {
                     <h1>Payment Successful!</h1>
                     <p>Your transaction has been processed. Your wallet balance will be updated shortly.</p>
                     <p style="font-size: 0.8rem; margin-top: 1rem;">ID: ${merchantTransactionId}</p>
-                    <a href="/" class="btn">Back to Home</a>
+                    <a href="astrocric://payment-success" class="btn">Back to App</a>
+                    <p style="margin-top: 1rem;"><a href="/" style="color: #6b7280; text-decoration: none; font-size: 0.8rem;">Back to Home</a></p>
                 </div>
             </body>
             </html>
