@@ -459,20 +459,30 @@ const getSdkToken = async (req, res) => {
         const userResult = await db.query('SELECT phone FROM users WHERE id = $1', [userId]);
         if (userResult.rows.length === 0) throw new Error('User not found');
 
-        // 4. Configure Payment Modes
-        let paymentModeConfig = null;
-        if (restrictToUpi) {
-            paymentModeConfig = { "enabledPaymentModes": [{ "type": "UPI" }] };
-        }
-
         // 5. Get Token from PhonePe
-        const sdkResponse = await phonePeService.getSdkToken({
-            amount,
-            userId,
-            merchantTransactionId,
-            phone: userResult.rows[0].phone,
-            paymentModeConfig
-        });
+        let sdkResponse;
+        if (restrictToUpi && req.body.nativeUpi) {
+            // Use UPI Intent Flow for Native App Selection
+            sdkResponse = await phonePeService.getUpiIntent({
+                amount,
+                userId,
+                merchantTransactionId,
+                phone: userResult.rows[0].phone
+            });
+        } else {
+            // Use Standard Web Checkout
+            let paymentModeConfig = null;
+            if (restrictToUpi) {
+                paymentModeConfig = { "enabledPaymentModes": [{ "type": "UPI" }] };
+            }
+            sdkResponse = await phonePeService.getSdkToken({
+                amount,
+                userId,
+                merchantTransactionId,
+                phone: userResult.rows[0].phone,
+                paymentModeConfig
+            });
+        }
 
         // 6. Create Payment Order (Bank-Level State Machine)
         await db.query(

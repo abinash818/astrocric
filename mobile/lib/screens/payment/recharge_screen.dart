@@ -44,27 +44,26 @@ class _RechargeScreenState extends State<RechargeScreen> {
       String? merchantTransactionId;
 
       // 1. Pay via Native UPI Module
+      // 1. Pay via Native UPI Module
       if (nativeUpi) {
-        final tokenResponse = await _paymentService.getSdkToken(amount);
-        merchantTransactionId = tokenResponse['merchantTransactionId'];
-        
-        if (merchantTransactionId != null && merchantTransactionId.isNotEmpty) {
-           final result = await _paymentService.launchNativeUpi(
+         final result = await _paymentService.startNativeUpiTransaction(
              amount: amount, 
-             merchantTransactionId: merchantTransactionId,
              note: "Wallet Recharge"
-           );
-           
-           if (result['status'] == 'success' || result['status'] == 'submitted') {
+         );
+         
+         if (result['status'] == 'success' || result['status'] == 'submitted') {
+             merchantTransactionId = result['merchantTransactionId'];
              // Verify with backend
-             await _pollPaymentStatus(merchantTransactionId, maxAttempts: 5); // Quick check
+             if (merchantTransactionId != null) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Checking Payment Status...')));
+                await _pollPaymentStatus(merchantTransactionId, maxAttempts: 10); 
+             }
              return;
-           } else if (result['status'] == 'cancelled') {
+         } else if (result['status'] == 'cancelled') {
              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Payment Cancelled')));
-           } else {
+         } else {
              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'] ?? 'Payment Failed')));
-           }
-        }
+         }
       } 
       // 2. Pay via Web Checkout
       else {

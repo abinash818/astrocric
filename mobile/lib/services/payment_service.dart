@@ -6,13 +6,14 @@ class PaymentService {
   final ApiService _apiService = ApiService();
 
   // Create SDK Token (from Backend) - used for both SDK and Web Flow
-  Future<Map<String, dynamic>> getSdkToken(double amount, {int? predictionId, bool restrictToUpi = false}) async {
+  Future<Map<String, dynamic>> getSdkToken(double amount, {int? predictionId, bool restrictToUpi = false, bool nativeUpi = false}) async {
     return await _apiService.post(
       '/payment/sdk-token',
       {
         'amount': amount,
         if (predictionId != null) 'predictionId': predictionId,
         'restrictToUpi': restrictToUpi,
+        'nativeUpi': nativeUpi
       },
     );
   }
@@ -83,27 +84,35 @@ class PaymentService {
 
   static const MethodChannel _channel = MethodChannel('com.example.astrocric/upi');
 
-  // Launch Native Android UPI Module (Compose UI)
-  Future<Map<String, dynamic>> launchNativeUpi({
+  // Launch Native Android UPI Module (Using Backend Intent)
+  Future<Map<String, dynamic>> startNativeUpiTransaction({
     required double amount, 
-    required String merchantTransactionId,
     String note = "Recharge Wallet"
   }) async {
     try {
-      // Construct standard UPI URI
-      // TODO: Fetch this signed URI from backend /payment/initiate in production
-      final uri = Uri.parse(
-        'upi://pay?pa=merchant@ybl&pn=Astrocric&am=$amount&tr=$merchantTransactionId&tn=$note&cu=INR'
-      );
+      // 1. Get UPI Intent from Backend
+      print("Fetching UPI Intent for amount: $amount");
+      final response = await getSdkToken(amount, restrictToUpi: true, nativeUpi: true);
       
-      print('Invoking Native UPI Activity with URI: $uri');
+      if (response['intentUrl'] == null) {
+          throw Exception("Failed to get UPI Intent URL");
+      }
+
+      final String intentUrl = response['intentUrl'];
+      final String merchantTransactionId = response['merchantTransactionId'];
       
+      print('Invoking Native UPI Activity with URI: $intentUrl');
+      
+      // 2. Launch Native Module
       final result = await _channel.invokeMethod('launchPayment', {
-        'upiLink': uri.toString(),
+        'upiLink': intentUrl,
       });
       
       if (result != null) {
-        return Map<String, dynamic>.from(result);
+        // Merge our transaction ID into result for easier UI handling
+        final map = Map<String, dynamic>.from(result);
+        map['merchantTransactionId'] = merchantTransactionId;
+        return map;
       } else {
         return {'status': 'failure', 'message': 'Null response from native module'};
       }

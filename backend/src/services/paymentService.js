@@ -52,10 +52,73 @@ class PhonePeService {
         }
     }
 
-    // Create payment request
+    // Create Standard Web Checkout Request
     async initiatePayment({ amount, userId, predictionId, phone, merchantTransactionId }) {
         const txnId = merchantTransactionId || `MT_${Date.now()}_${predictionId}`;
         return this.getSdkToken({ amount, userId, merchantTransactionId: txnId, phone });
+    }
+
+    // New: Get UPI Intent Deep Link (For Native Apps)
+    async getUpiIntent({ amount, userId, merchantTransactionId, phone }) {
+        try {
+            const txnId = merchantTransactionId || `T${Date.now()}`;
+
+            // Construct Payload
+            const payload = {
+                merchantId: config.merchantId,
+                merchantTransactionId: txnId,
+                merchantUserId: String(userId),
+                amount: Math.round(amount * 100),
+                redirectUrl: config.redirectUrl,
+                redirectMode: "POST",
+                callbackUrl: config.callbackUrl,
+                mobileNumber: phone,
+                paymentInstrument: {
+                    type: "UPI_INTENT",
+                    targetApp: "com.phonepe.app" // Optional: Omit for generic intent, or specific if needed. 
+                    // PhonePe doc says: type: UPI_INTENT returns intentUrl.
+                }
+            };
+
+            // Base64 Encode
+            const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64');
+
+            // Sign Request
+            const stringToSign = base64Payload + "/pg/v1/pay" + config.saltKey;
+            const sha256 = crypto.createHash('sha256').update(stringToSign).digest('hex');
+            const checksum = sha256 + "###" + config.saltIndex;
+
+            // API Call
+            const options = {
+                method: 'post',
+                url: `${config.apiUrl}/pg/v1/pay`,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-VERIFY': checksum
+                },
+                data: {
+                    request: base64Payload
+                }
+            };
+
+            console.log('--- Requesting UPI Intent ---');
+            const response = await axios(options);
+
+            if (response.data.success) {
+                // The intent is usually in response.data.data.instrumentResponse.intentUrl
+                return {
+                    merchantTransactionId: txnId,
+                    intentUrl: response.data.data.instrumentResponse.intentUrl,
+                    isNativeFlow: true
+                };
+            } else {
+                throw new Error(response.data.message || 'Payment initiation failed');
+            }
+
+        } catch (error) {
+            console.error('PhonePe UPI Intent Error:', error.response ? error.response.data : error.message);
+            throw new Error('Failed to get UPI Intent');
+        }
     }
 
     // Verify payment status
