@@ -33,6 +33,12 @@
                 <data android:scheme="astrocric" />
             </intent-filter>
         </activity>
+        
+        <activity 
+            android:name=".payment.ui.UpiPaymentActivity"
+            android:theme="@style/NormalTheme"
+            android:exported="false" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

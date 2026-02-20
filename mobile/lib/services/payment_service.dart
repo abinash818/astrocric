@@ -1,21 +1,9 @@
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:upi_pay/upi_pay.dart';
-import 'package:upi_pay/types/meta.dart';
 import 'api_service.dart';
 
 class PaymentService {
   final ApiService _apiService = ApiService();
-  final UpiPay _upiPay = UpiPay();
-
-  // Get installed UPI apps
-  Future<List<ApplicationMeta>> getInstalledUpiApps() async {
-    try {
-      return await _upiPay.getInstalledUpiApplications();
-    } catch (e) {
-      print('Error getting UPI apps: $e');
-      return [];
-    }
-  }
 
   // Create SDK Token (from Backend) - used for both SDK and Web Flow
   Future<Map<String, dynamic>> getSdkToken(double amount, {int? predictionId, bool restrictToUpi = false}) async {
@@ -68,35 +56,74 @@ class PaymentService {
     }
   }
 
-  // Start Payment with specific UPI App
-  Future<UpiTransactionResponse?> startUpiTransaction({
-    required ApplicationMeta app,
-    required double amount,
-    required String merchantTransactionId,
-  }) async {
+  // Launch Generic UPI Intent (Let Android OS choose app)
+  Future<bool> launchGenericUpi(double amount, String merchantTransactionId) async {
     try {
-      return await _upiPay.initiateTransaction(
-        amount: amount.toString(),
-        app: app.upiApplication,
-        receiverUpiAddress: "merchant@ybl", // This should come from backend config
-        receiverName: 'Astrocric',
-        transactionRef: merchantTransactionId,
-        transactionNote: 'Recharge Wallet',
+      // Construct standard UPI URI
+      // Note: In production you should get the VPA (pa) and Name (pn) from backend config too
+      final uri = Uri.parse(
+        'upi://pay?pa=merchant@ybl&pn=Astrocric&am=$amount&tr=$merchantTransactionId&tn=Recharge Wallet&cu=INR'
       );
+      
+      print('Launching Generic UPI URI: $uri');
+      
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        return true;
+      } else {
+        print('No UPI app found to handle URI');
+        // Fallback handled by UI
+        return false;
+      }
     } catch (e) {
-      print('UPI Transaction Error: $e');
-      return null;
+      print('Generic UPI Launch Error: $e');
+      return false;
     }
   }
 
-  // Verify Payment Status
-  Future<bool> verifyPayment(String merchantTransactionId) async {
+  static const MethodChannel _channel = MethodChannel('com.example.astrocric/upi');
+
+  // Launch Native Android UPI Module (Compose UI)
+  Future<Map<String, dynamic>> launchNativeUpi({
+    required double amount, 
+    required String merchantTransactionId,
+    String note = "Recharge Wallet"
+  }) async {
+    try {
+      // Construct standard UPI URI
+      // TODO: Fetch this signed URI from backend /payment/initiate in production
+      final uri = Uri.parse(
+        'upi://pay?pa=merchant@ybl&pn=Astrocric&am=$amount&tr=$merchantTransactionId&tn=$note&cu=INR'
+      );
+      
+      print('Invoking Native UPI Activity with URI: $uri');
+      
+      final result = await _channel.invokeMethod('launchPayment', {
+        'upiLink': uri.toString(),
+      });
+      
+      if (result != null) {
+        return Map<String, dynamic>.from(result);
+      } else {
+        return {'status': 'failure', 'message': 'Null response from native module'};
+      }
+    } on PlatformException catch (e) {
+      print("Native UPI PlatformException: ${e.message}");
+      return {'status': 'failure', 'message': e.message};
+    } catch (e) {
+      print("Native UPI Error: $e");
+      return {'status': 'failure', 'message': e.toString()};
+    }
+  }
+
+  // Verify Payment Status (Backend)
+  Future<Map<String, dynamic>> verifyPayment(String merchantTransactionId) async {
     try {
       final response = await _apiService.get('/payment/status/$merchantTransactionId');
-      return response['success'] == true;
+      return Map<String, dynamic>.from(response);
     } catch (e) {
       print('Verify Payment Error: $e');
-      return false;
+      return {'success': false, 'message': e.toString()};
     }
   }
 
@@ -109,6 +136,6 @@ class PaymentService {
   
   Future<List<dynamic>> getPaymentHistory() async {
     final response = await _apiService.get('/payment/history');
-    return response['history'] ?? [];
+    return response['payments'] ?? [];
   }
 }

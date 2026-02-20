@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:upi_pay/upi_pay.dart';
-import 'package:upi_pay/types/meta.dart';
 import '../../services/payment_service.dart';
 import '../../providers/auth_provider.dart';
 
@@ -17,22 +15,10 @@ class _RechargeScreenState extends State<RechargeScreen> {
   final List<double> _presetAmounts = [100, 200, 500, 1000];
   final PaymentService _paymentService = PaymentService();
   bool _isLoading = false;
-  List<ApplicationMeta> _installedApps = [];
-  ApplicationMeta? _selectedApp;
 
   @override
   void initState() {
     super.initState();
-    _loadInstalledApps();
-  }
-
-  Future<void> _loadInstalledApps() async {
-    final apps = await _paymentService.getInstalledUpiApps();
-    if (mounted) {
-      setState(() {
-        _installedApps = apps;
-      });
-    }
   }
 
   @override
@@ -41,7 +27,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
     super.dispose();
   }
 
-  Future<void> _proceedToPay({bool restrictToUpi = false}) async {
+  Future<void> _proceedToPay({bool restrictToUpi = false, bool nativeUpi = false}) async {
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -53,135 +39,107 @@ class _RechargeScreenState extends State<RechargeScreen> {
     setState(() {
       _isLoading = true;
     });
+
     try {
-      // If specific UPI web flow requested
-      if (restrictToUpi) {
-           final result = await _paymentService.startPhonePeTransaction(amount, restrictToUpi: true);
-           _handlePaymentResult(result);
-           return;
-      }
+      String? merchantTransactionId;
 
-      final tokenResponse = await _paymentService.getSdkToken(amount);
-      final String mTxnId = tokenResponse['merchantTransactionId'] ?? '';
-      
-      if (mTxnId.isEmpty) {
-        throw Exception('Failed to initiate transaction');
-      }
-
-      if (_selectedApp != null) {
-        // Start direct payment
-        _startUpiPayment(_selectedApp!, amount, mTxnId);
-      } else {
-        // Check for available UPI apps (if user clicks general proceed)
-        if (_installedApps.isNotEmpty) {
-           _showUpiAppSelection(context, _installedApps, amount, mTxnId);
+      // 1. Pay via Native UPI Module
+      if (nativeUpi) {
+        final tokenResponse = await _paymentService.getSdkToken(amount);
+        merchantTransactionId = tokenResponse['merchantTransactionId'];
+        
+        if (merchantTransactionId != null && merchantTransactionId.isNotEmpty) {
+           final result = await _paymentService.launchNativeUpi(
+             amount: amount, 
+             merchantTransactionId: merchantTransactionId,
+             note: "Wallet Recharge"
+           );
+           
+           if (result['status'] == 'success' || result['status'] == 'submitted') {
+             // Verify with backend
+             await _pollPaymentStatus(merchantTransactionId, maxAttempts: 5); // Quick check
+             return;
+           } else if (result['status'] == 'cancelled') {
+             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Payment Cancelled')));
+           } else {
+             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'] ?? 'Payment Failed')));
+           }
+        }
+      } 
+      // 2. Pay via Web Checkout
+      else {
+        final result = await _paymentService.startPhonePeTransaction(amount, restrictToUpi: restrictToUpi);
+        if (result['success'] == true) {
+           merchantTransactionId = result['merchantTransactionId'];
+           // Valid Merchant ID? Start Polling
+           if (merchantTransactionId != null) {
+              _showPollingDialog(merchantTransactionId);
+              return; 
+           }
         } else {
-          // Fallback to Web Checkout
-          final result = await _paymentService.startPhonePeTransaction(amount);
-          _handlePaymentResult(result);
+           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'] ?? 'Failed to initiate')));
         }
       }
+      
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() { _isLoading = false; });
     }
   }
 
-  void _handlePaymentResult(Map<String, dynamic> result) async {
-    if (!mounted) return;
-    if (result['success'] == true) {
-      await context.read<AuthProvider>().init();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Wallet recharged successfully!')),
-        );
-        Navigator.pop(context);
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'] ?? 'Payment Failed')),
-      );
-    }
-  }
-
-  void _showUpiAppSelection(BuildContext context, List<ApplicationMeta> apps, double amount, String txnId) {
-    showModalBottomSheet(
+  void _showPollingDialog(String merchantTransactionId) {
+    showDialog(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Processing Payment'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Please complete payment in your browser/app...'),
+          ],
+        ),
       ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Select UPI App',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              Flexible(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: apps.length,
-                  separatorBuilder: (_, __) => const Divider(),
-                  itemBuilder: (context, index) {
-                    final app = apps[index];
-                    return ListTile(
-                      leading: const Icon(Icons.payment, color: Colors.blue),
-                      title: Text(app.upiApplication.getAppName()),
-                      onTap: () {
-                        Navigator.pop(context);
-                        _startUpiPayment(app, amount, txnId);
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
+    // Start polling in background
+    _pollPaymentStatus(merchantTransactionId, isDialog: true);
   }
 
-  Future<void> _startUpiPayment(ApplicationMeta app, double amount, String txnId) async {
-    setState(() => _isLoading = true);
-    try {
-      final response = await _paymentService.startUpiTransaction(
-        app: app,
-        amount: amount,
-        merchantTransactionId: txnId,
-      );
+  Future<void> _pollPaymentStatus(String merchantTransactionId, {int maxAttempts = 20, bool isDialog = false}) async {
+    for (int i = 0; i < maxAttempts; i++) {
+        await Future.delayed(const Duration(seconds: 3));
+        if (!mounted) return;
 
-      if (!mounted) return;
-
-      if (response != null && response.status == UpiTransactionStatus.success) {
-        _handlePaymentResult({'success': true});
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Payment not completed or failed')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('UPI Error: $e')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+        final result = await _paymentService.verifyPayment(merchantTransactionId);
+        
+        if (result['success'] == true) {
+            if (isDialog && mounted) Navigator.of(context).pop(); // Close dialog
+            await context.read<AuthProvider>().init(); // Refresh wallet
+            if (mounted) {
+               ScaffoldMessenger.of(context).showSnackBar(
+                 SnackBar(content: Text(result['message'] ?? 'Wallet Recharged!'), backgroundColor: Colors.green),
+               );
+               Navigator.of(context).pop(); // Close Screen
+            }
+            return;
+        } else if (result['code'] == 'PAYMENT_ERROR') {
+            // Stop polling on definite failure
+             if (isDialog && mounted) Navigator.of(context).pop();
+             if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Payment Failed')));
+             return;
+        }
+    }
+    // Timeout
+    if (isDialog && mounted) Navigator.of(context).pop();
+    if (mounted) {
+       ScaffoldMessenger.of(context).showSnackBar(
+         const SnackBar(content: Text('Payment pending. Check history later.')),
+       );
     }
   }
 
@@ -229,118 +187,47 @@ class _RechargeScreenState extends State<RechargeScreen> {
                 );
               }).toList(),
             ),
-            if (_installedApps.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              const Text(
-                'Pay Directly via App',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            
+            const Spacer(),
+            
+            // Single Main Button - Standard Web Checkout
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : () => _proceedToPay(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade700,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Proceed to Pay (Web Checkout)',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                ),
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 80,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _installedApps.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 16),
-                  itemBuilder: (context, index) {
-                    final app = _installedApps[index];
-                    final isSelected = _selectedApp == app;
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedApp = app;
-                        });
-                      },
-                      child: Column(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: isSelected ? Colors.blue : Colors.grey.shade300,
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              color: isSelected ? Colors.blue.withOpacity(0.05) : Colors.transparent,
-                            ),
-                            child: const Icon(Icons.payment, color: Colors.blue, size: 28),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            app.upiApplication.getAppName(),
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              color: isSelected ? Colors.blue : Colors.black,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ] else ...[
-               const SizedBox(height: 24),
-               Container(
-                 padding: const EdgeInsets.all(12),
-                 decoration: BoxDecoration(
-                   color: Colors.amber.shade50,
-                   borderRadius: BorderRadius.circular(8),
-                   border: Border.all(color: Colors.amber.shade200),
-                 ),
-                 child: Column(
-                   children: [
-                     const Row(
-                       children: [
-                         Icon(Icons.info_outline, color: Colors.amber),
-                         SizedBox(width: 12),
-                         Expanded(
-                           child: Text(
-                             'No UPI apps detected. Use the button below to pay via UPI Web.',
-                             style: TextStyle(fontSize: 12, color: Colors.black87),
-                           ),
-                         ),
-                       ],
-                     ),
-                     const SizedBox(height: 12),
-                     SizedBox(
-                       width: double.infinity,
-                       child: OutlinedButton.icon(
-                         onPressed: _isLoading ? null : () => _proceedToPay(restrictToUpi: true),
-                         icon: const Icon(Icons.web),
-                         label: const Text("Pay via UPI (Web Checkout)"),
-                         style: OutlinedButton.styleFrom(
-                           foregroundColor: Colors.blue,
-                           side: const BorderSide(color: Colors.blue),
-                         ),
-                       ),
-                     ),
-                   ],
-                 ),
-               ),
-            ],
-            const Spacer(),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : () => _proceedToPay(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade700,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                width: double.infinity,
+                height: 50,
+                child: OutlinedButton.icon(
+                  onPressed: _isLoading ? null : () => _proceedToPay(nativeUpi: true),
+                  icon: const Icon(Icons.apps),
+                  label: const Text('Pay via Local UPI App'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.blue.shade700,
+                    side: BorderSide(color: Colors.blue.shade700),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        'Proceed to Pay',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
               ),
-            ),
           ],
         ),
       ),

@@ -1,5 +1,59 @@
 const db = require('../config/database');
 const phonePeService = require('../services/paymentService');
+const ledgerService = require('../services/ledgerService');
+
+// Helper: Settle Ledger Transaction (Idempotent)
+const settleLedgerTransaction = async (merchantTransactionId, amount) => {
+    try {
+        // 1. Determine Escrow Account
+        const escrowRes = await db.query("SELECT id FROM accounts WHERE type = 'PLATFORM_ESCROW' LIMIT 1");
+        let escrowAccountId;
+        if (escrowRes.rows.length === 0) {
+            const acc = await ledgerService.createAccount({
+                name: 'Platform Escrow (Gateway)',
+                type: 'PLATFORM_ESCROW',
+                nature: 'ASSET'
+            });
+            escrowAccountId = acc.id;
+        } else {
+            escrowAccountId = escrowRes.rows[0].id;
+        }
+
+        // 2. Find Payment Order
+        const orderRes = await db.query(
+            "SELECT * FROM payment_orders WHERE merchant_transaction_id = $1",
+            [merchantTransactionId]
+        );
+
+        if (orderRes.rows.length > 0) {
+            const order = orderRes.rows[0];
+            if (order.status !== 'SETTLED') {
+                const userAccount = await ledgerService.getUserWallet(order.user_id);
+
+                // 3. Post Double-Entry Transaction
+                await ledgerService.postTransaction({
+                    transactionId: `LEDGER_${merchantTransactionId}`,
+                    description: `Wallet Recharge: ${merchantTransactionId}`,
+                    referenceType: 'PAYMENT_ORDER',
+                    referenceId: order.id,
+                    lines: [
+                        { accountId: escrowAccountId, type: 'DEBIT', amount: order.amount }, // Increase Asset (Bank)
+                        { accountId: userAccount.id, type: 'CREDIT', amount: order.amount } // Increase Liability (User Wallet)
+                    ]
+                });
+
+                // 4. Update Payment Order Status
+                await db.query(
+                    "UPDATE payment_orders SET status = 'SETTLED', updated_at = NOW() WHERE id = $1",
+                    [order.id]
+                );
+                console.log(`[Ledger] Settled Order: ${merchantTransactionId}`);
+            }
+        }
+    } catch (err) {
+        console.warn(`[Ledger] Settlement Failed for ${merchantTransactionId}:`, err.message);
+    }
+};
 
 // Create payment order
 const createOrder = async (req, res) => {
@@ -132,11 +186,14 @@ const verifyPayment = async (req, res) => {
         const verificationResult = await phonePeService.verifyPayment(merchantTransactionId);
 
         if (verificationResult.success && verificationResult.state === 'COMPLETED') {
-            // 2. Start SQL Transaction
+
+            // --- Ledger Settlement ---
+            await settleLedgerTransaction(merchantTransactionId, verificationResult.amount);
+
+            // 2. Start SQL Transaction (Legacy)
             client = await db.pool.connect();
             await client.query('BEGIN');
 
-            // 3. Lock purchase row and check idempotency
             const purchaseResult = await client.query(
                 'SELECT * FROM purchases WHERE phonepe_merchant_transaction_id = $1 FOR UPDATE',
                 [merchantTransactionId]
@@ -149,7 +206,6 @@ const verifyPayment = async (req, res) => {
 
             const transaction = purchaseResult.rows[0];
 
-            // IF already success, RETURN (Idempotency)
             if (transaction.payment_status === 'success') {
                 await client.query('COMMIT');
                 return res.json({ success: true, message: 'Already processed' });
@@ -177,7 +233,6 @@ const verifyPayment = async (req, res) => {
                     [closingBalance, transaction.user_id]
                 );
 
-                // Add Ledger Entry
                 await client.query(
                     `INSERT INTO wallet_ledger 
                      (user_id, purchase_id, type, amount, opening_balance, closing_balance, description)
@@ -194,9 +249,7 @@ const verifyPayment = async (req, res) => {
                 });
             }
 
-            // If it's a prediction purchase (already paid, so we just log and move on)
-            // Note: If you have a 'DEBIT' logic elsewhere, you'd use it here. 
-            // In this flow, the user paid via PhonePe DIRECTLY for the prediction.
+            // If it's a prediction purchase
             await client.query('COMMIT');
 
             const prediction = await db.query(
@@ -217,11 +270,20 @@ const verifyPayment = async (req, res) => {
                 }
             });
         } else {
-            // Update to failed
-            await db.query(
-                "UPDATE purchases SET payment_status = 'failed' WHERE phonepe_merchant_transaction_id = $1 AND payment_status = 'pending'",
-                [merchantTransactionId]
-            );
+            // FAILED
+            client = await db.pool.connect();
+            try {
+                await client.query('BEGIN');
+                await client.query(
+                    "UPDATE purchases SET payment_status = 'failed' WHERE phonepe_merchant_transaction_id = $1 AND payment_status = 'pending'",
+                    [merchantTransactionId]
+                );
+                await db.query(
+                    "UPDATE payment_orders SET status = 'FAILED', updated_at = NOW() WHERE merchant_transaction_id = $1",
+                    [merchantTransactionId]
+                );
+                await client.query('COMMIT');
+            } catch (e) { await client.query('ROLLBACK'); }
 
             res.status(400).json({
                 error: 'Payment verification failed',
@@ -229,7 +291,7 @@ const verifyPayment = async (req, res) => {
             });
         }
     } catch (error) {
-        if (client) await client.query('ROLLBACK');
+        if (client) { try { await client.query('ROLLBACK'); } catch (e) { } }
         console.error('Verify payment error:', error);
         res.status(500).json({ error: 'Payment verification failed' });
     } finally {
@@ -251,12 +313,15 @@ const webhook = async (req, res) => {
 
         // Decode response
         const decodedResponse = JSON.parse(Buffer.from(response, 'base64').toString());
-
         console.log('PhonePe webhook received:', decodedResponse);
 
         if (decodedResponse.success && decodedResponse.data.state === 'COMPLETED') {
             const mTxnId = decodedResponse.data.merchantTransactionId;
 
+            // --- Ledger Settlement ---
+            await settleLedgerTransaction(mTxnId, decodedResponse.data.amount);
+
+            // 2. Legacy Update (Purchases + Users Table)
             client = await db.pool.connect();
             await client.query('BEGIN');
 
@@ -267,7 +332,7 @@ const webhook = async (req, res) => {
 
             if (purchaseResult.rows.length === 0) {
                 await client.query('ROLLBACK');
-                return res.status(404).json({ error: 'Transaction not found' });
+                return res.json({ success: true });
             }
 
             const transaction = purchaseResult.rows[0];
@@ -277,13 +342,14 @@ const webhook = async (req, res) => {
                 return res.json({ success: true });
             }
 
-            // Update status
+            // Update purchases status
             await client.query(
                 "UPDATE purchases SET phonepe_transaction_id = $1, payment_status = 'success' WHERE id = $2",
                 [decodedResponse.data.transactionId, transaction.id]
             );
 
-            // Handle balance update and ledger
+            // Handle balance update (Legacy Users Table)
+            // Only if it's a wallet recharge (prediction_id is NULL)
             if (transaction.prediction_id === null) {
                 const userResult = await client.query(
                     'SELECT wallet_balance FROM users WHERE id = $1 FOR UPDATE',
@@ -298,6 +364,7 @@ const webhook = async (req, res) => {
                     [closingBalance, transaction.user_id]
                 );
 
+                // Immutable Legacy Log
                 await client.query(
                     `INSERT INTO wallet_ledger 
                      (user_id, purchase_id, type, amount, opening_balance, closing_balance, description)
@@ -308,8 +375,13 @@ const webhook = async (req, res) => {
 
             await client.query('COMMIT');
         } else {
+            // FAILED (Simpler update)
             await db.query(
                 "UPDATE purchases SET payment_status = 'failed' WHERE phonepe_merchant_transaction_id = $1 AND payment_status = 'pending'",
+                [decodedResponse.data.merchantTransactionId]
+            );
+            await db.query(
+                "UPDATE payment_orders SET status = 'FAILED', updated_at = NOW() WHERE merchant_transaction_id = $1",
                 [decodedResponse.data.merchantTransactionId]
             );
         }
@@ -334,11 +406,11 @@ const getPaymentHistory = async (req, res) => {
         pu.id, pu.amount, pu.payment_status, pu.created_at,
         p.title as prediction_title,
         m.team1, m.team2
-       FROM purchases pu
-       JOIN predictions p ON pu.prediction_id = p.id
-       JOIN matches m ON p.match_id = m.id
-       WHERE pu.user_id = $1
-       ORDER BY pu.created_at DESC`,
+        FROM purchases pu
+        JOIN predictions p ON pu.prediction_id = p.id
+        JOIN matches m ON p.match_id = m.id
+        WHERE pu.user_id = $1
+        ORDER BY pu.created_at DESC`,
             [userId]
         );
 
@@ -360,37 +432,40 @@ const getPaymentHistory = async (req, res) => {
 // Get SDK Token for Mobile App
 const getSdkToken = async (req, res) => {
     try {
-        const { amount, predictionId, restrictToUpi } = req.body; // Accept restrictToUpi flag
+        const { amount, predictionId, restrictToUpi } = req.body;
         const userId = req.user.id;
 
         if (!amount || amount <= 0) {
             return res.status(400).json({ error: 'Invalid amount' });
         }
 
-        // Generate a unique transaction ID (max 35 characters)
-        // Format: T<timestamp><last6_of_userId>
+        // 1. Ensure User Ledger Account Exists
+        let userAccount = await ledgerService.getUserWallet(userId);
+        if (!userAccount) {
+            userAccount = await ledgerService.createAccount({
+                name: `User ${userId} Wallet`,
+                type: 'USER_WALLET',
+                nature: 'LIABILITY', // We owe this money to the user
+                ownerId: userId
+            });
+        }
+
+        // 2. Generate Transaction ID
         const userIdStr = userId.toString();
         const shortUserId = userIdStr.length > 6 ? userIdStr.slice(-6) : userIdStr;
         const merchantTransactionId = `T${Date.now()}${shortUserId}`;
 
-        // Get user for phone number
-        const userResult = await db.query(
-            'SELECT phone FROM users WHERE id = $1',
-            [userId]
-        );
+        // 3. Get user phone
+        const userResult = await db.query('SELECT phone FROM users WHERE id = $1', [userId]);
+        if (userResult.rows.length === 0) throw new Error('User not found');
 
-        if (userResult.rows.length === 0) {
-            throw new Error('User not found');
-        }
-
-        // Configure payment modes if requested (e.g. force UPI only)
+        // 4. Configure Payment Modes
         let paymentModeConfig = null;
         if (restrictToUpi) {
-            paymentModeConfig = {
-                "enabledPaymentModes": [{ "type": "UPI" }]
-            };
+            paymentModeConfig = { "enabledPaymentModes": [{ "type": "UPI" }] };
         }
 
+        // 5. Get Token from PhonePe
         const sdkResponse = await phonePeService.getSdkToken({
             amount,
             userId,
@@ -399,7 +474,15 @@ const getSdkToken = async (req, res) => {
             paymentModeConfig
         });
 
-        // Save pending purchase
+        // 6. Create Payment Order (Bank-Level State Machine)
+        await db.query(
+            `INSERT INTO payment_orders 
+             (merchant_transaction_id, user_id, amount, status, created_at)
+             VALUES ($1, $2, $3, 'CREATED', NOW())`,
+            [merchantTransactionId, userId, amount * 100] // Store in Paise
+        );
+
+        // 7. Maintain Backward Compatibility (Shadow Write to purchases)
         if (predictionId) {
             await db.query(
                 `INSERT INTO purchases 
@@ -408,7 +491,6 @@ const getSdkToken = async (req, res) => {
                 [userId, predictionId, merchantTransactionId, amount]
             );
         } else {
-            // Wallet recharge
             await db.query(
                 `INSERT INTO purchases 
                  (user_id, prediction_id, phonepe_merchant_transaction_id, amount, payment_status)
@@ -428,10 +510,8 @@ const getSdkToken = async (req, res) => {
 };
 
 // Check Pending Orders (Reconciliation)
-// Should be called via Cron or Admin API
 const checkPendingStatus = async (req, res) => {
     try {
-        // Find orders pending for > 5 minutes (or as per need)
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
         const result = await db.query(
@@ -451,6 +531,10 @@ const checkPendingStatus = async (req, res) => {
                 const status = await phonePeService.verifyPayment(order.phonepe_merchant_transaction_id);
 
                 if (status.success && status.state === 'COMPLETED') {
+
+                    // --- Ledger Settlement ---
+                    await settleLedgerTransaction(order.phonepe_merchant_transaction_id, status.amount);
+
                     client = await db.pool.connect();
                     await client.query('BEGIN');
 
@@ -495,10 +579,14 @@ const checkPendingStatus = async (req, res) => {
                     await client.query('COMMIT');
                     updates.push({ id: order.id, status: 'COMPLETED' });
                 } else if (status.state === 'FAILED') {
-                    // Update to failed
+                    // Update Status to FAILED
                     await db.query(
                         "UPDATE purchases SET payment_status = 'failed' WHERE id = $1 AND payment_status = 'pending'",
                         [order.id]
+                    );
+                    await db.query(
+                        "UPDATE payment_orders SET status = 'FAILED', updated_at = NOW() WHERE merchant_transaction_id = $1",
+                        [order.phonepe_merchant_transaction_id]
                     );
                     updates.push({ id: order.id, status: 'FAILED' });
                 }
@@ -528,6 +616,14 @@ const rechargeTest = async (req, res) => {
         console.log('Amount:', amount);
 
         const merchantTransactionId = `WTTEST_${Date.now()}`;
+
+        // 1. Create Payment Order (Ledger)
+        await db.query(
+            `INSERT INTO payment_orders 
+             (merchant_transaction_id, user_id, amount, status, created_at)
+             VALUES ($1, $2, $3, 'CREATED', NOW())`,
+            [merchantTransactionId, userId, amount * 100]
+        );
 
         const paymentData = await phonePeService.getSdkToken({
             amount: parseFloat(amount),
