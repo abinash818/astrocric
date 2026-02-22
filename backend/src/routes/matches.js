@@ -66,15 +66,18 @@ router.get('/finished', async (req, res) => {
         const offset = (page - 1) * limit;
 
         const result = await db.query(
-            `SELECT * FROM matches 
-       WHERE status = 'finished'
-       ORDER BY match_date DESC
+            `SELECT m.* FROM matches m
+       WHERE m.status = 'finished'
+       AND EXISTS (SELECT 1 FROM predictions p WHERE p.match_id = m.id AND p.is_published = true)
+       ORDER BY m.match_date DESC
        LIMIT $1 OFFSET $2`,
             [limit, offset]
         );
 
         const countResult = await db.query(
-            "SELECT COUNT(*) FROM matches WHERE status = 'finished'"
+            `SELECT COUNT(*) FROM matches m
+       WHERE m.status = 'finished'
+       AND EXISTS (SELECT 1 FROM predictions p WHERE p.match_id = m.id AND p.is_published = true)`
         );
 
         res.json({

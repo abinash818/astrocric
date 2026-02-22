@@ -111,9 +111,26 @@ app.use((err, req, res, next) => {
 
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Astrocric API running on port ${PORT}`);
   console.log(`📝 Environment: ${process.env.NODE_ENV}`);
+
+  // Schedule Payment Reconciliation Job (Every 10 minutes)
+  const cron = require('node-cron');
+  const paymentController = require('./src/controllers/paymentController');
+
+  cron.schedule('*/10 * * * *', async () => {
+    console.log('[Cron] Running Payment Reconciliation...');
+    try {
+      // We call the controller method directly. We mock req/res if needed, 
+      // but it's cleaner to refactor the logic. For now, we use a simple mock-res.
+      const mockRes = { json: (data) => console.log('[Cron] Recon Result:', data), status: () => mockRes };
+      await paymentController.checkPendingStatus({}, mockRes);
+    } catch (err) {
+      console.error('[Cron] Reconciliation Error:', err);
+    }
+  });
+  console.log('⏰ Payment Reconciliation Job scheduled (Every 10 minutes)');
 });
 
 module.exports = app;

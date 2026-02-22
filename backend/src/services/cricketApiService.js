@@ -88,6 +88,70 @@ class CricketApiService {
         }
     }
 
+    // Get match squad
+    async getMatchSquad(matchId) {
+        try {
+            const response = await axios.get(`${CRICKET_API_URL}/match_squad`, {
+                params: {
+                    apikey: CRICKET_API_KEY,
+                    id: matchId
+                }
+            });
+
+            if (response.data && response.data.data) {
+                return response.data.data;
+            }
+            return [];
+        } catch (error) {
+            console.error('Cricket API - Get match squad error:', error.response?.data || error.message);
+            return [];
+        }
+    }
+
+    // Get series list
+    async getSeriesList(offset = 0, search = '') {
+        try {
+            const response = await axios.get(`${CRICKET_API_URL}/series`, {
+                params: {
+                    apikey: CRICKET_API_KEY,
+                    offset,
+                    search
+                }
+            });
+
+            if (response.data && response.data.data) {
+                return {
+                    series: response.data.data,
+                    info: response.data.info
+                };
+            }
+            return { series: [], info: {} };
+        } catch (error) {
+            console.error('Cricket API - Get series list error:', error.response?.data || error.message);
+            throw new Error('Failed to fetch series list');
+        }
+    }
+
+    // Get series info (includes matches)
+    async getSeriesInfo(seriesId) {
+        try {
+            const response = await axios.get(`${CRICKET_API_URL}/series_info`, {
+                params: {
+                    apikey: CRICKET_API_KEY,
+                    id: seriesId
+                }
+            });
+
+            if (response.data && response.data.data) {
+                return response.data.data;
+            }
+            return null;
+        } catch (error) {
+            console.error('Cricket API - Get series info error:', error.response?.data || error.message);
+            throw new Error('Failed to fetch series info');
+        }
+    }
+
     // Helper to format score
     formatScore(scoreObj) {
         if (!scoreObj) return null;

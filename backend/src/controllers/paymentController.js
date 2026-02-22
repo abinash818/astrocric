@@ -187,12 +187,28 @@ const verifyPayment = async (req, res) => {
 
         if (verificationResult.success && verificationResult.state === 'COMPLETED') {
 
-            // --- Ledger Settlement ---
-            await settleLedgerTransaction(merchantTransactionId, verificationResult.amount);
-
-            // 2. Start SQL Transaction (Legacy)
+            // 2. Start SQL Transaction (Consolidated)
             client = await db.pool.connect();
             await client.query('BEGIN');
+
+            const orderResult = await client.query(
+                'SELECT * FROM payment_orders WHERE merchant_transaction_id = $1 FOR UPDATE',
+                [merchantTransactionId]
+            );
+
+            if (orderResult.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(404).json({ error: 'Order not found' });
+            }
+
+            const order = orderResult.rows[0];
+
+            // --- Amount Verification ---
+            if (Math.round(verificationResult.amount) !== Math.round(order.amount)) {
+                await client.query('ROLLBACK');
+                console.error(`[Fraud] Amount Mismatch: Order ${order.amount} vs Gateway ${verificationResult.amount}`);
+                return res.status(400).json({ error: 'Transaction amount mismatch' });
+            }
 
             const purchaseResult = await client.query(
                 'SELECT * FROM purchases WHERE phonepe_merchant_transaction_id = $1 FOR UPDATE',
@@ -201,21 +217,31 @@ const verifyPayment = async (req, res) => {
 
             if (purchaseResult.rows.length === 0) {
                 await client.query('ROLLBACK');
-                return res.status(404).json({ error: 'Transaction not found' });
+                return res.status(404).json({ error: 'Purchase record not found' });
             }
 
             const transaction = purchaseResult.rows[0];
 
-            if (transaction.payment_status === 'success') {
+            if (transaction.payment_status === 'success' || order.status === 'SETTLED') {
                 await client.query('COMMIT');
                 return res.json({ success: true, message: 'Already processed' });
             }
 
-            // 4. Update purchase status
+            // 4. Update Tables (Legacy + Order)
             await client.query(
                 "UPDATE purchases SET phonepe_transaction_id = $1, payment_status = 'success' WHERE id = $2",
                 [verificationResult.transactionId, transaction.id]
             );
+
+            await client.query(
+                "UPDATE payment_orders SET status = 'SETTLED', gateway_id = $1, updated_at = NOW() WHERE id = $2",
+                [verificationResult.transactionId, order.id]
+            );
+
+            // --- Ledger Settlement (Triggered within code, but Ledger handles its own Transaction) ---
+            // Note: Since LedgerService uses its own pool, we still have a small decoupling risk, 
+            // but by updating payment_orders status to SETTLED here, we maintain local consistency.
+            await settleLedgerTransaction(merchantTransactionId, verificationResult.amount);
 
             // 5. Lock user row and update balance if needed
             const userResult = await client.query(
@@ -318,12 +344,28 @@ const webhook = async (req, res) => {
         if (decodedResponse.success && decodedResponse.data.state === 'COMPLETED') {
             const mTxnId = decodedResponse.data.merchantTransactionId;
 
-            // --- Ledger Settlement ---
-            await settleLedgerTransaction(mTxnId, decodedResponse.data.amount);
-
-            // 2. Legacy Update (Purchases + Users Table)
+            // 2. Start SQL Transaction (Consolidated)
             client = await db.pool.connect();
             await client.query('BEGIN');
+
+            const orderResult = await client.query(
+                'SELECT * FROM payment_orders WHERE merchant_transaction_id = $1 FOR UPDATE',
+                [mTxnId]
+            );
+
+            if (orderResult.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.json({ success: true });
+            }
+
+            const order = orderResult.rows[0];
+
+            // --- Amount Verification ---
+            if (Math.round(decodedResponse.data.amount) !== Math.round(order.amount)) {
+                await client.query('ROLLBACK');
+                console.error(`[Fraud] Webhook Amount Mismatch: Order ${order.amount} vs Gateway ${decodedResponse.data.amount}`);
+                return res.json({ success: true }); // Acknowledge to stop retries, but don't credit
+            }
 
             const purchaseResult = await client.query(
                 'SELECT * FROM purchases WHERE phonepe_merchant_transaction_id = $1 FOR UPDATE',
@@ -337,16 +379,24 @@ const webhook = async (req, res) => {
 
             const transaction = purchaseResult.rows[0];
 
-            if (transaction.payment_status === 'success') {
+            if (transaction.payment_status === 'success' || order.status === 'SETTLED') {
                 await client.query('COMMIT');
                 return res.json({ success: true });
             }
 
-            // Update purchases status
+            // Update Statuses
             await client.query(
                 "UPDATE purchases SET phonepe_transaction_id = $1, payment_status = 'success' WHERE id = $2",
                 [decodedResponse.data.transactionId, transaction.id]
             );
+
+            await client.query(
+                "UPDATE payment_orders SET status = 'SETTLED', gateway_id = $1, updated_at = NOW() WHERE id = $2",
+                [decodedResponse.data.transactionId, order.id]
+            );
+
+            // Trigger Ledger
+            await settleLedgerTransaction(mTxnId, decodedResponse.data.amount);
 
             // Handle balance update (Legacy Users Table)
             // Only if it's a wallet recharge (prediction_id is NULL)
@@ -485,11 +535,12 @@ const getSdkToken = async (req, res) => {
         }
 
         // 6. Create Payment Order (Bank-Level State Machine)
+        const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 Minutes
         await db.query(
             `INSERT INTO payment_orders 
-             (merchant_transaction_id, user_id, amount, status, created_at)
-             VALUES ($1, $2, $3, 'CREATED', NOW())`,
-            [merchantTransactionId, userId, amount * 100] // Store in Paise
+             (merchant_transaction_id, user_id, amount, status, expires_at, created_at)
+             VALUES ($1, $2, $3, 'CREATED', $4, NOW())`,
+            [merchantTransactionId, userId, amount * 100, expiresAt] // Store in Paise
         );
 
         // 7. Maintain Backward Compatibility (Shadow Write to purchases)
@@ -542,29 +593,54 @@ const checkPendingStatus = async (req, res) => {
 
                 if (status.success && status.state === 'COMPLETED') {
 
-                    // --- Ledger Settlement ---
-                    await settleLedgerTransaction(order.phonepe_merchant_transaction_id, status.amount);
-
                     client = await db.pool.connect();
                     await client.query('BEGIN');
 
-                    // Lock and re-verify idempotency
-                    const pResult = await client.query(
-                        'SELECT * FROM purchases WHERE id = $1 FOR UPDATE',
-                        [order.id]
+                    // 1. Lock and fetch original Order record for Amount Verification
+                    const orderResult = await client.query(
+                        'SELECT * FROM payment_orders WHERE merchant_transaction_id = $1 FOR UPDATE',
+                        [order.phonepe_merchant_transaction_id]
                     );
-                    if (pResult.rows[0].payment_status === 'success') {
+
+                    if (orderResult.rows.length === 0) {
                         await client.query('ROLLBACK');
                         continue;
                     }
 
-                    // Update to success
+                    const orderDetail = orderResult.rows[0];
+
+                    // --- Amount Verification ---
+                    if (Math.round(status.amount) !== Math.round(orderDetail.amount)) {
+                        await client.query('ROLLBACK');
+                        console.error(`[Fraud] Recon Amount Mismatch: Order ${orderDetail.amount} vs Gateway ${status.amount}`);
+                        continue;
+                    }
+
+                    // 2. Lock and re-verify Purchase record idempotency
+                    const pResult = await client.query(
+                        'SELECT * FROM purchases WHERE id = $1 FOR UPDATE',
+                        [order.id]
+                    );
+                    if (pResult.rows[0].payment_status === 'success' || orderDetail.status === 'SETTLED') {
+                        await client.query('ROLLBACK');
+                        continue;
+                    }
+
+                    // 3. Update Statuses
                     await client.query(
                         "UPDATE purchases SET phonepe_transaction_id = $1, payment_status = 'success' WHERE id = $2",
                         [status.transactionId, order.id]
                     );
 
-                    // If wallet recharge, credit balance
+                    await client.query(
+                        "UPDATE payment_orders SET status = 'SETTLED', gateway_id = $1, updated_at = NOW() WHERE id = $2",
+                        [status.transactionId, orderDetail.id]
+                    );
+
+                    // --- Ledger Settlement ---
+                    await settleLedgerTransaction(order.phonepe_merchant_transaction_id, status.amount);
+
+                    // 4. Handle Legacy Wallet logic
                     if (order.prediction_id === null) {
                         const userResult = await client.query(
                             'SELECT wallet_balance FROM users WHERE id = $1 FOR UPDATE',
@@ -588,7 +664,7 @@ const checkPendingStatus = async (req, res) => {
                     }
                     await client.query('COMMIT');
                     updates.push({ id: order.id, status: 'COMPLETED' });
-                } else if (status.state === 'FAILED') {
+                } else if (status.state === 'FAILED' || status.state === 'EXPIRED') {
                     // Update Status to FAILED
                     await db.query(
                         "UPDATE purchases SET payment_status = 'failed' WHERE id = $1 AND payment_status = 'pending'",

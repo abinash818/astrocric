@@ -121,6 +121,9 @@ const createPrediction = async (req, res) => {
             predictedWinner,
             confidencePercentage,
             price,
+            player_prediction_price,
+            combo_price,
+            key_players,
             isPublished
         } = req.body;
 
@@ -143,12 +146,14 @@ const createPrediction = async (req, res) => {
         const result = await db.query(
             `INSERT INTO predictions 
        (match_id, title, preview_text, full_prediction, predicted_winner,
-        confidence_percentage, price, is_published, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        confidence_percentage, price, player_prediction_price, combo_price, key_players, is_published, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
             [
                 matchId, title, previewText, fullPrediction, predictedWinner,
-                confidencePercentage, price, isPublished || false, req.user.id
+                confidencePercentage, price, player_prediction_price, combo_price,
+                key_players ? JSON.stringify(key_players) : null,
+                isPublished || false, req.user.id
             ]
         );
 
@@ -178,6 +183,9 @@ const updatePrediction = async (req, res) => {
             predictedWinner,
             confidencePercentage,
             price,
+            player_prediction_price,
+            combo_price,
+            key_players,
             isPublished
         } = req.body;
 
@@ -189,11 +197,19 @@ const updatePrediction = async (req, res) => {
            predicted_winner = COALESCE($4, predicted_winner),
            confidence_percentage = COALESCE($5, confidence_percentage),
            price = COALESCE($6, price),
-           is_published = COALESCE($7, is_published),
+           player_prediction_price = COALESCE($7, player_prediction_price),
+           combo_price = COALESCE($8, combo_price),
+           key_players = COALESCE($9, key_players),
+           is_published = COALESCE($10, is_published),
            updated_at = NOW()
-       WHERE id = $8
+       WHERE id = $11
        RETURNING *`,
-            [title, previewText, fullPrediction, predictedWinner, confidencePercentage, price, isPublished, id]
+            [
+                title, previewText, fullPrediction, predictedWinner,
+                confidencePercentage, price, player_prediction_price, combo_price,
+                key_players ? JSON.stringify(key_players) : null,
+                isPublished, id
+            ]
         );
 
         if (result.rows.length === 0) {
@@ -253,11 +269,224 @@ const getDashboardStats = async (req, res) => {
     }
 };
 
+// Get match squad
+const getMatchSquad = async (req, res) => {
+    try {
+        const { id } = req.params; // Internal match ID
+
+        // Get api_match_id
+        const matchResult = await db.query(
+            'SELECT api_match_id FROM matches WHERE id = $1',
+            [id]
+        );
+
+        if (matchResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Match not found' });
+        }
+
+        const apiMatchId = matchResult.rows[0].api_match_id;
+        const squad = await cricketApiService.getMatchSquad(apiMatchId);
+
+        res.json({
+            success: true,
+            squad
+        });
+    } catch (error) {
+        console.error('Get match squad error:', error);
+        res.status(500).json({ error: 'Failed to fetch match squad' });
+    }
+};
+
+// Get series list
+const getSeriesList = async (req, res) => {
+    try {
+        const { offset, search } = req.query;
+        const result = await cricketApiService.getSeriesList(offset || 0, search || '');
+        res.json(result);
+    } catch (error) {
+        console.error('Get series list error:', error);
+        res.status(500).json({ error: 'Failed to fetch series list' });
+    }
+};
+
+// Sync matches for a specific series
+const syncSeriesMatches = async (req, res) => {
+    try {
+        const { id } = req.params; // Series ID
+        console.log(`🔄 Syncing matches for series: ${id}`);
+
+        const seriesData = await cricketApiService.getSeriesInfo(id);
+
+        if (!seriesData || !seriesData.matchList) {
+            return res.status(404).json({ error: 'Series not found or no matches available' });
+        }
+
+        let syncedCount = 0;
+        let updatedCount = 0;
+
+        for (const apiMatch of seriesData.matchList) {
+            const matchData = cricketApiService.transformMatchData(apiMatch);
+
+            // Check if match exists
+            const existing = await db.query(
+                'SELECT id FROM matches WHERE api_match_id = $1',
+                [matchData.api_match_id]
+            );
+
+            if (existing.rows.length > 0) {
+                // Update existing match
+                await db.query(
+                    `UPDATE matches 
+                     SET team1 = $1, team2 = $2, team1_flag_url = $3, team2_flag_url = $4,
+                         match_date = $5, match_type = $6, venue = $7, status = $8,
+                         result = $9, team1_score = $10, team2_score = $11, synced_at = NOW()
+                     WHERE api_match_id = $12`,
+                    [
+                        matchData.team1, matchData.team2, matchData.team1_flag_url,
+                        matchData.team2_flag_url, matchData.match_date, matchData.match_type,
+                        matchData.venue, matchData.status, matchData.result,
+                        matchData.team1_score, matchData.team2_score,
+                        matchData.api_match_id
+                    ]
+                );
+                updatedCount++;
+            } else {
+                // Insert new match
+                await db.query(
+                    `INSERT INTO matches 
+                     (api_match_id, team1, team2, team1_flag_url, team2_flag_url,
+                      match_date, match_type, venue, status, result, team1_score, team2_score, synced_at)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())`,
+                    [
+                        matchData.api_match_id, matchData.team1, matchData.team2,
+                        matchData.team1_flag_url, matchData.team2_flag_url,
+                        matchData.match_date, matchData.match_type, matchData.venue,
+                        matchData.status, matchData.result,
+                        matchData.team1_score, matchData.team2_score
+                    ]
+                );
+                syncedCount++;
+            }
+        }
+
+        res.json({
+            success: true,
+            message: `Series matches synced: ${syncedCount} new, ${updatedCount} updated`,
+            stats: {
+                new: syncedCount,
+                updated: updatedCount,
+                total: seriesData.matchList.length
+            }
+        });
+    } catch (error) {
+        console.error('Series sync error:', error);
+        res.status(500).json({ error: 'Failed to sync series matches' });
+    }
+};
+
+// Get list of matches available in the API for sync
+const getAvailableMatches = async (req, res) => {
+    try {
+        console.log('🔄 Fetching available matches from API for selective sync');
+        const apiMatches = await cricketApiService.getCurrentMatches();
+
+        if (!apiMatches || !Array.isArray(apiMatches)) {
+            return res.json({ success: true, matches: [] });
+        }
+
+        // Get already synced matches from DB to show status
+        const syncedMatchesResult = await db.query('SELECT api_match_id FROM matches');
+        const syncedIds = new Set(syncedMatchesResult.rows.map(r => r.api_match_id));
+
+        const availableMatches = apiMatches.map(match => ({
+            ...match,
+            isSynced: syncedIds.has(match.id)
+        }));
+
+        res.json({
+            success: true,
+            matches: availableMatches
+        });
+    } catch (error) {
+        console.error('Available matches error:', error);
+        res.status(500).json({ error: 'Failed to fetch available matches' });
+    }
+};
+
+// Sync a single match by API ID
+const syncSingleMatch = async (req, res) => {
+    try {
+        const { apiMatchId } = req.params;
+        console.log(`🔄 Syncing single match: ${apiMatchId}`);
+
+        // Fetch details from API
+        const apiMatch = await cricketApiService.getMatchDetails(apiMatchId);
+
+        if (!apiMatch) {
+            return res.status(404).json({ error: 'Match not found in API' });
+        }
+
+        const matchData = cricketApiService.transformMatchData(apiMatch);
+
+        // Check if match exists
+        const existing = await db.query(
+            'SELECT id FROM matches WHERE api_match_id = $1',
+            [matchData.api_match_id]
+        );
+
+        if (existing.rows.length > 0) {
+            // Update
+            await db.query(
+                `UPDATE matches 
+                 SET team1 = $1, team2 = $2, team1_flag_url = $3, team2_flag_url = $4,
+                     match_date = $5, match_type = $6, venue = $7, status = $8,
+                     result = $9, team1_score = $10, team2_score = $11, synced_at = NOW()
+                 WHERE api_match_id = $12`,
+                [
+                    matchData.team1, matchData.team2, matchData.team1_flag_url,
+                    matchData.team2_flag_url, matchData.match_date, matchData.match_type,
+                    matchData.venue, matchData.status, matchData.result,
+                    matchData.team1_score, matchData.team2_score,
+                    matchData.api_match_id
+                ]
+            );
+        } else {
+            // Insert
+            await db.query(
+                `INSERT INTO matches 
+                 (api_match_id, team1, team2, team1_flag_url, team2_flag_url,
+                  match_date, match_type, venue, status, result, team1_score, team2_score, synced_at)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())`,
+                [
+                    matchData.api_match_id, matchData.team1, matchData.team2,
+                    matchData.team1_flag_url, matchData.team2_flag_url,
+                    matchData.match_date, matchData.match_type, matchData.venue,
+                    matchData.status, matchData.result,
+                    matchData.team1_score, matchData.team2_score
+                ]
+            );
+        }
+
+        res.json({
+            success: true,
+            message: 'Match synced successfully'
+        });
+    } catch (error) {
+        console.error('Single match sync error:', error);
+        res.status(500).json({ error: 'Failed to sync match' });
+    }
+};
+
 module.exports = {
     adminAuth,
     syncMatches,
+    getSeriesList,
+    syncSeriesMatches,
+    getAvailableMatches,
+    syncSingleMatch,
     createPrediction,
     updatePrediction,
     deletePrediction,
-    getDashboardStats
+    getDashboardStats,
+    getMatchSquad
 };
