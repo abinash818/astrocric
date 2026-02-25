@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import 'signup_screen.dart';
-import 'reset_password_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({Key? key}) : super(key: key);
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -34,20 +33,20 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 60),
-                const Icon(
-                  Icons.sports_cricket,
-                  size: 80,
-                  color: Color(0xFFD4AF37), // Gold
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 const Text(
-                  'S&B Astro',
+                  'Create Account',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
-                    letterSpacing: 1.2,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -55,15 +54,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 _buildCard(
                   child: Column(
                     children: [
-                      const Text(
-                        'Login',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
                       _buildTextField(
                         controller: _emailController,
                         label: 'Email',
@@ -75,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       _buildTextField(
                         controller: _passwordController,
                         label: 'Password',
-                        hint: 'Enter password',
+                        hint: 'Min 6 characters',
                         icon: Icons.lock_outline,
                         isPassword: true,
                         obscureText: _obscurePassword,
@@ -83,60 +73,22 @@ class _LoginScreenState extends State<LoginScreen> {
                           setState(() => _obscurePassword = !_obscurePassword);
                         },
                       ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const ResetPasswordScreen()),
-                            );
-                          },
-                          child: Text(
-                            'Forgot Password?',
-                            style: TextStyle(color: Colors.blue.shade300),
-                          ),
-                        ),
-                      ),
                       const SizedBox(height: 16),
+                      _buildTextField(
+                        controller: _confirmPasswordController,
+                        label: 'Confirm Password',
+                        hint: 'Repeat password',
+                        icon: Icons.lock_clock_outlined,
+                        isPassword: true,
+                        obscureText: _obscurePassword,
+                      ),
+                      const SizedBox(height: 32),
                       _buildMainButton(
-                        label: 'Login',
-                        onPressed: _isLoading ? null : _login,
+                        label: 'Sign Up',
+                        onPressed: _isLoading ? null : _signup,
                       ),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          Expanded(child: Divider(color: Colors.white24)),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text('OR', style: TextStyle(color: Colors.white38, fontSize: 12)),
-                          ),
-                          Expanded(child: Divider(color: Colors.white24)),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      _buildGoogleButton(),
                     ],
                   ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('Don\'t have an account? ', style: TextStyle(color: Colors.white70)),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const SignupScreen()),
-                        );
-                      },
-                      child: const Text(
-                        'Sign Up',
-                        style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),
@@ -185,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
             hintText: hint,
             hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
             prefixIcon: Icon(icon, color: Colors.blue.shade300, size: 20),
-            suffixIcon: isPassword
+            suffixIcon: isPassword && onTogglePassword != null
                 ? IconButton(
                     icon: Icon(
                       obscureText ? Icons.visibility_off : Icons.visibility,
@@ -231,53 +183,34 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildGoogleButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: _isLoading ? null : _loginWithGoogle,
-        icon: Image.network('https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg', height: 20, errorBuilder: (_, __, ___) => const Icon(Icons.g_mobiledata)),
-        label: const Text('Sign in with Google'),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.white,
-          side: BorderSide(color: Colors.white.withOpacity(0.2)),
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      ),
-    );
-  }
-
-  void _login() async {
+  void _signup() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+    final confirm = _confirmPasswordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
+    if (email.isEmpty || password.isEmpty || confirm.isEmpty) {
       _showError('Please fill all fields');
+      return;
+    }
+
+    if (password != confirm) {
+      _showError('Passwords do not match');
       return;
     }
 
     setState(() => _isLoading = true);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final error = await authProvider.loginWithEmail(email, password);
+    final error = await authProvider.signupWithEmail(email, password);
     
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (error != null) {
-      _showError(error);
-    }
-  }
-
-  void _loginWithGoogle() async {
-    setState(() => _isLoading = true);
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final error = await authProvider.loginWithGoogle();
-    
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    if (error != null) {
+    if (error == null) {
+      Navigator.pop(context); // Go back to login
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account created! Please login.')),
+      );
+    } else {
       _showError(error);
     }
   }
@@ -292,6 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 }

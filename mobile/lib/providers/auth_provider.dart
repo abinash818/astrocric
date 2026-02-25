@@ -1,60 +1,73 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../services/auth_service.dart';
-import '../services/api_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
-  final ApiService _apiService = ApiService();
   
   User? _user;
   bool _isAuthenticated = false;
-  bool _isLoading = false;
+  bool _isLoading = true;
 
   User? get user => _user;
   bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
 
   Future<void> init() async {
-    _isLoading = true;
-    notifyListeners();
+    _authService.userChanges.listen((firebaseUser) async {
+      _isLoading = true;
+      notifyListeners();
 
-    try {
-      await _apiService.loadToken();
-      if (_apiService.token != null) {
-        _user = await _authService.getProfile();
-        _isAuthenticated = true;
+      if (firebaseUser != null) {
+        try {
+          _user = await _authService.getProfile();
+          _isAuthenticated = true;
+        } catch (e) {
+          _user = null;
+          _isAuthenticated = false;
+        }
+      } else {
+        _user = null;
+        _isAuthenticated = false;
       }
-    } catch (e) {
-      _isAuthenticated = false;
-      _user = null;
-    }
 
-    _isLoading = false;
-    notifyListeners();
+      _isLoading = false;
+      notifyListeners();
+    });
   }
 
-  Future<bool> sendOTP(String phone) async {
+  Future<String?> loginWithEmail(String email, String password) async {
     try {
-      final response = await _authService.sendOTP(phone);
-      return response['success'] == true;
+      await _authService.loginWithEmail(email, password);
+      return null;
     } catch (e) {
-      return false;
+      return e.toString();
     }
   }
 
-  Future<String?> verifyOTP(String phone, String otp) async {
+  Future<String?> signupWithEmail(String email, String password) async {
     try {
-      final response = await _authService.verifyOTP(phone, otp);
-      
-      if (response['success'] == true) {
-        _user = User.fromJson(response['user']);
-        _isAuthenticated = true;
-        notifyListeners();
-        return null; // Success
-      }
-      
-      return 'Verification failed';
+      await _authService.signupWithEmail(email, password);
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Future<String?> loginWithGoogle() async {
+    try {
+      final result = await _authService.loginWithGoogle();
+      if (result == null) return 'Google sign in cancelled';
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Future<String?> resetPassword(String email) async {
+    try {
+      await _authService.resetPassword(email);
+      return null;
     } catch (e) {
       return e.toString();
     }
@@ -62,8 +75,9 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> logout() async {
     await _authService.logout();
-    _user = null;
-    _isAuthenticated = false;
-    notifyListeners();
   }
+
+  // Legacy support for older components during transition
+  Future<bool> sendOTP(String phone) async => false;
+  Future<String?> verifyOTP(String phone, String otp) async => 'Service deprecated';
 }
