@@ -1,0 +1,28 @@
+.toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid var(--border-light);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    padding: 0;
+    font-family: var(--font-body);
+}
+
+.toggle:hover {
+    border-color: var(--border-gold);
+    color: var(--accent-gold);
+}
+
+.toggle svg {
+    transition: transform var(--transition-spring);
+}
+
+.toggle:hover svg {
+    transform: rotate(15deg);
+}

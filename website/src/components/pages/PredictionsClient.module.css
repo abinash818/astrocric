@@ -1,0 +1,233 @@
+.page {
+    padding: 6rem 0 4rem;
+    min-height: 100vh;
+    padding-top: 120px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    margin-top: 0.5rem;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1.0625rem;
+    margin-top: 0.5rem;
+}
+
+.disclaimer {
+    text-align: center;
+    padding: 0.75rem 1rem;
+    background: rgba(217, 119, 6, 0.06);
+    border: 1px solid rgba(217, 119, 6, 0.15);
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    color: var(--warning);
+    margin-bottom: 2rem;
+}
+
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+}
+
+.tab {
+    padding: 0.625rem 1.5rem;
+    border: 1px solid var(--border-light);
+    background: var(--bg-card);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-primary);
+}
+
+.tabActive {
+    background: var(--accent-gradient);
+    color: var(--btn-primary-text);
+    border-color: transparent;
+}
+
+.loading {
+    text-align: center;
+    padding: 4rem 0;
+    color: var(--text-muted);
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-light);
+    border-top-color: var(--accent-gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.empty {
+    text-align: center;
+    padding: 4rem 0;
+    color: var(--text-muted);
+    font-size: 1.125rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+}
+
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.2s;
+}
+
+.card:hover {
+    border-color: var(--border-gold);
+    box-shadow: var(--shadow-md);
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.matchType {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.teams {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 1rem 0;
+}
+
+.team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    font-weight: 700;
+    font-size: 0.9375rem;
+}
+
+.flag {
+    width: 36px;
+    height: 24px;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+.vs {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.venue {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.predictionAvailable {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.predictionBadge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent-gold);
+}
+
+.buyBtn {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--accent-gradient);
+    color: var(--btn-primary-text);
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-primary);
+}
+
+.buyBtn:hover {
+    box-shadow: var(--shadow-gold);
+    transform: translateY(-1px);
+}
+
+.noPrediction {
+    text-align: center;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-top: 1px solid var(--border-light);
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+    font-style: italic;
+}
+
+.resultBanner {
+    margin-top: 0.75rem;
+    padding: 0.625rem;
+    text-align: center;
+    background: rgba(5, 150, 105, 0.06);
+    border-radius: var(--radius-md);
+    color: var(--success);
+    font-weight: 600;
+    font-size: 0.8125rem;
+}
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .header h1 {
+        font-size: 1.75rem;
+    }
+}

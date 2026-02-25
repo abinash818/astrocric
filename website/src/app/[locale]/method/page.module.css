@@ -1,0 +1,136 @@
+.page {
+    padding: 6rem 0 4rem;
+    min-height: 100vh;
+    padding-top: 120px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    margin-top: 0.5rem;
+}
+
+.intro {
+    color: var(--text-secondary);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    max-width: 600px;
+    margin: 1rem auto 0;
+}
+
+.steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.step {
+    display: flex;
+    gap: 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 1.75rem;
+    transition: all 0.2s;
+}
+
+.step:hover {
+    border-color: var(--border-gold);
+}
+
+.stepLeft {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 60px;
+}
+
+.stepNum {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--accent-gold);
+    opacity: 0.3;
+}
+
+.stepIcon {
+    font-size: 2rem;
+}
+
+.stepContent h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stepContent p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: 0.9375rem;
+}
+
+.kpBox {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 2.5rem;
+    border-left: 4px solid var(--accent-gold);
+    margin-bottom: 2rem;
+}
+
+.kpBox h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.kpBox p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.kpBox ul {
+    padding-left: 1.5rem;
+}
+
+.kpBox li {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 0.25rem;
+}
+
+.disclaimer {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(217, 119, 6, 0.06);
+    border: 1px solid rgba(217, 119, 6, 0.15);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    color: var(--warning);
+}
+
+@media (max-width: 768px) {
+    .step {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .stepLeft {
+        flex-direction: row;
+    }
+
+    .header h1 {
+        font-size: 1.75rem;
+    }
+}

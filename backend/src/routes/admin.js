@@ -11,6 +11,7 @@ router.get('/series', adminController.getSeriesList);
 router.post('/series/:id/sync', adminController.syncSeriesMatches);
 router.get('/available-matches', adminController.getAvailableMatches);
 router.post('/matches/sync/:apiMatchId', adminController.syncSingleMatch);
+router.post('/matches/cleanup', adminController.cleanupMatches);
 
 // Prediction management
 router.post('/predictions', adminController.createPrediction);

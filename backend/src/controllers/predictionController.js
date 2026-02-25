@@ -41,6 +41,9 @@ const getPredictionByMatch = async (req, res) => {
                 predictedWinner: prediction.predicted_winner,
                 confidencePercentage: prediction.confidence_percentage,
                 price: parseFloat(prediction.price),
+                playerPredictionPrice: parseFloat(prediction.player_prediction_price),
+                comboPrice: parseFloat(prediction.combo_price),
+                keyPlayers: prediction.key_players,
                 isPurchased: true,
                 match: {
                     team1: prediction.team1,
@@ -58,6 +61,8 @@ const getPredictionByMatch = async (req, res) => {
                 previewText: prediction.preview_text,
                 confidencePercentage: prediction.confidence_percentage,
                 price: parseFloat(prediction.price),
+                playerPredictionPrice: parseFloat(prediction.player_prediction_price),
+                comboPrice: parseFloat(prediction.combo_price),
                 isPurchased: false,
                 fullPrediction: null,
                 match: {
@@ -82,7 +87,7 @@ const getPurchasedPredictions = async (req, res) => {
         const result = await db.query(
             `SELECT 
         p.id, p.title, p.full_prediction, p.predicted_winner, 
-        p.confidence_percentage, p.price,
+        p.confidence_percentage, p.price, p.player_prediction_price, p.combo_price, p.key_players,
         m.team1, m.team2, m.match_date, m.status as match_status,
         pu.created_at as purchased_at
        FROM purchases pu
@@ -100,6 +105,9 @@ const getPurchasedPredictions = async (req, res) => {
             predictedWinner: row.predicted_winner,
             confidencePercentage: row.confidence_percentage,
             price: parseFloat(row.price),
+            playerPredictionPrice: parseFloat(row.player_prediction_price),
+            comboPrice: parseFloat(row.combo_price),
+            keyPlayers: row.key_players,
             purchasedAt: row.purchased_at,
             match: {
                 team1: row.team1,

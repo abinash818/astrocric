@@ -1,0 +1,104 @@
+﻿≡ƒöä Fetching from API...
+Received 25 matches from currentMatches.
+Received 19 matches from matches.
+Found 44 raw matches in API.
+[Skipping Minor] Lions vs Western Province, 2nd Match, CSA Provincial One-Day Challenge Division One 2026
+[Skipping Minor] Eastern Storm vs South Western Districts, 9th Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Hong Kong, China vs Kuwait, 3rd T20I, Kuwait tour of Hong Kong, China, 2026
+[Skipping Minor] Tbc vs Tbc, Final, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] Tbc vs Tbc, 3rd place play-off, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] Warriors vs Dolphins, 1st Match, CSA Provincial One-Day Challenge Division One 2026
+[Skipping Minor] Thailand vs Bahrain, 6th Match, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] Bhutan vs Japan, 5th Match, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] South Africa Emerging Players vs Limpopo, undefined, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Knights vs Border, 7th Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Hong Kong, China vs Kuwait, 2nd T20I, Kuwait tour of Hong Kong, China, 2026
+[Skipping Minor] Bahrain vs Japan, 4th Match, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] Thailand vs Bhutan, 3rd Match, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] Northern Cape vs Eastern Storm, 5th Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Mpumalanga Rhinos vs South Western Districts, 6th Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Hong Kong, China vs Kuwait, 1st T20I, Kuwait tour of Hong Kong, China, 2026
+[Skipping Minor] Bahrain vs Bhutan, 2nd Match, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] Thailand vs Japan, 1st Match, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] Pakistan A vs England Lions, 3rd T20, Pakistan A v England Lions in UAE, 2026
+[Skipping Minor] Karnataka vs Jammu and Kashmir, Final, Ranji Trophy Elite 2025-26
+[Skipping Minor] Pakistan A vs England Lions, 2nd T20, Pakistan A v England Lions in UAE, 2026
+[Skipping Minor] Limpopo vs Knights, 4th Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Border vs South Africa Emerging Players, 3rd Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Eastern Storm vs Mpumalanga Rhinos, 2nd Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] South Western Districts vs Northern Cape, 1st Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Bengal vs Andhra, 3rd Quarter-Final (C1 v A2), Ranji Trophy Elite 2025-26
+[Skipping Minor] Jharkhand vs Uttarakhand, 1st Quarter-Final (A1 v C2), Ranji Trophy Elite 2025-26
+[Skipping Minor] Pakistan A vs England Lions, 1st T20, Pakistan A v England Lions in UAE, 2026
+[Skipping Minor] West Indies Women vs Sri Lanka Women, 2nd ODI, Sri Lanka Women tour of West Indies 2026
+[Skipping Minor] West Indies Women vs Sri Lanka Women, 1st ODI, Sri Lanka Women tour of West Indies 2026
+[Syncing] India A Women vs Bangladesh A Women (Sun Feb 22 2026 12:30:00 GMT+0530 (India Standard Time))
+node : (node:21104) 
+Warning: SECURITY 
+WARNING: The SSL 
+modes 'prefer', 
+'require', and 
+'verify-ca' are 
+treated as aliases 
+for 'verify-full'.
+At line:1 char:1
++ node manual_sync_ver
+bose.js 2>&1 | 
+Out-File -FilePath 
+sync_final_2.tx ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: ((node:2110   
+ 4) Wa... 'verify-    
+full'.:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+In the next major 
+version 
+(pg-connection-string 
+v3.0.0 and pg 
+v9.0.0), these modes 
+will adopt standard 
+libpq semantics, 
+which have weaker 
+security guarantees.
+
+To prepare for this 
+change:
+- If you want the 
+current behavior, 
+explicitly use 
+'sslmode=verify-full'
+- If you want libpq 
+compatibility now, 
+use 'uselibpqcompat=tr
+ue&sslmode=require'
+
+See https://www.postgr
+esql.org/docs/current/
+libpq-ssl.html for 
+libpq SSL mode 
+definitions.
+(Use `node 
+--trace-warnings ...` 
+to show where the 
+warning was created)
+[Syncing] Bangladesh A Women vs Pakistan A Women (Fri Feb 20 2026 12:30:00 GMT+0530 (India Standard Time))
+[Syncing] India A Women vs Sri Lanka A Women (Fri Feb 20 2026 08:00:00 GMT+0530 (India Standard Time))
+[Syncing] Zimbabwe vs West Indies (Mon Feb 23 2026 19:00:00 GMT+0530 (India Standard Time))
+[Syncing] India vs South Africa (Sun Feb 22 2026 19:00:00 GMT+0530 (India Standard Time))
+[Syncing] England vs Sri Lanka (Sun Feb 22 2026 15:00:00 GMT+0530 (India Standard Time))
+[Syncing] New Zealand vs Pakistan (Sat Feb 21 2026 19:00:00 GMT+0530 (India Standard Time))
+[Syncing] Australia vs Oman (Fri Feb 20 2026 19:00:00 GMT+0530 (India Standard Time))
+[Syncing] Western Australia vs Victoria (Sat Feb 21 2026 11:30:00 GMT+0530 (India Standard Time))
+[Skipping Minor] Tasmania vs New South Wales, 20th Match, Australia Domestic One-Day Cup 2025-26
+[Syncing] Queensland vs South Australia (Sat Feb 21 2026 05:30:00 GMT+0530 (India Standard Time))
+[Syncing] South Africa Women vs Pakistan Women (Sun Feb 22 2026 13:30:00 GMT+0530 (India Standard Time))
+[Syncing] Australia Women vs India Women (Tue Feb 24 2026 09:00:00 GMT+0530 (India Standard Time))
+[Syncing] Australia Women vs India Women (Sat Feb 21 2026 14:00:00 GMT+0530 (India Standard Time))
+Γ£à Finished. Synced 13, Skipped 31.

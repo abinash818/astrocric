@@ -158,18 +158,18 @@ function Matches() {
                             <div className="loading-text">Fetching current matches...</div>
                         ) : availableMatches.length > 0 ? (
                             availableMatches.map((match) => (
-                                <div key={match.id} className={`match-card ${match.status.toLowerCase().includes('won') ? 'finished' : ''}`}>
+                                <div key={match.id} className={`match-card ${(match.status || '').toLowerCase().includes('won') ? 'finished' : ''}`}>
                                     <div className="match-time">
                                         <span>{new Date(match.dateTimeGMT).toLocaleDateString()}</span>
                                         <span>{new Date(match.dateTimeGMT).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                     </div>
                                     <div className="match-teams">
-                                        <div className="team">{match.teams[0]}</div>
+                                        <div className="team">{match.teams?.[0] || 'Team 1'}</div>
                                         <div className="vs">VS</div>
-                                        <div className="team">{match.teams[1]}</div>
+                                        <div className="team">{match.teams?.[1] || 'Team 2'}</div>
                                     </div>
                                     <div className="match-info-mini">
-                                        <span className="type">{match.matchType.toUpperCase()}</span>
+                                        <span className="type">{(match.matchType || 'Unknown').toUpperCase()}</span>
                                         <span className="venue">{match.venue}</span>
                                     </div>
                                     <div className="match-footer">

@@ -1,0 +1,34 @@
+﻿≡ƒöä Fetching from API...
+node : Cricket API - 
+Get current matches 
+error: Invalid URL
+At line:1 char:1
++ node manual_sync_ver
+bose.js 2>&1 | 
+Out-File -FilePath 
+sync_log.txt -E ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (Cricket AP   
+ I - G...or: Inval    
+id URL:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+Failed to fetch 
+current matches: 
+Failed to fetch 
+current matches
+Found 0 raw matches in API.
+Cricket API - Get 
+upcoming matches 
+error: Invalid URL
+Failed to fetch 
+upcoming matches: 
+Failed to fetch 
+upcoming matches
+Γ£à Finished. Synced 0, Skipped 0.

@@ -30,16 +30,13 @@ const adminAuth = async (req, res, next) => {
     }
 };
 
-// Sync matches from Cricket API
-const syncMatches = async (req, res) => {
+// Core logic for syncing matches (used by both controller and cron)
+const performMatchSync = async () => {
+    console.log('🔄 Performing background match sync...');
     try {
-        console.log('🔄 Starting match sync from Cricket API...');
-
-        // Fetch current and upcoming matches
         const currentMatches = await cricketApiService.getCurrentMatches();
         const upcomingMatches = await cricketApiService.getUpcomingMatches();
 
-        // Combine and deduplicate (Put currentMatches LAST so they overwrite upcoming if duplicates exist)
         const allMatches = [...upcomingMatches, ...currentMatches];
         const uniqueMatches = Array.from(
             new Map(allMatches.map(match => [match.id, match])).values()
@@ -49,16 +46,18 @@ const syncMatches = async (req, res) => {
         let updatedCount = 0;
 
         for (const apiMatch of uniqueMatches) {
+            if (!cricketApiService.isMajorEvent(apiMatch)) {
+                continue;
+            }
+
             const matchData = cricketApiService.transformMatchData(apiMatch);
 
-            // Check if match exists
             const existing = await db.query(
                 'SELECT id FROM matches WHERE api_match_id = $1',
                 [matchData.api_match_id]
             );
 
             if (existing.rows.length > 0) {
-                // Update existing match
                 await db.query(
                     `UPDATE matches 
                      SET team1 = $1, team2 = $2, team1_flag_url = $3, team2_flag_url = $4,
@@ -75,7 +74,6 @@ const syncMatches = async (req, res) => {
                 );
                 updatedCount++;
             } else {
-                // Insert new match
                 await db.query(
                     `INSERT INTO matches 
                      (api_match_id, team1, team2, team1_flag_url, team2_flag_url,
@@ -92,16 +90,27 @@ const syncMatches = async (req, res) => {
                 syncedCount++;
             }
         }
+        return { syncedCount, updatedCount, total: uniqueMatches.length };
+    } catch (error) {
+        console.error('Error in performMatchSync:', error);
+        throw error;
+    }
+};
 
-        console.log(`✅ Match sync complete: ${syncedCount} new, ${updatedCount} updated`);
+// Sync matches from Cricket API
+const syncMatches = async (req, res) => {
+    try {
+        console.log('🔄 Starting manual match sync...');
+        const stats = await performMatchSync();
+        console.log(`✅ Match sync complete: ${stats.syncedCount} new, ${stats.updatedCount} updated`);
 
         res.json({
             success: true,
             message: 'Matches synced successfully',
             stats: {
-                new: syncedCount,
-                updated: updatedCount,
-                total: uniqueMatches.length
+                new: stats.syncedCount,
+                updated: stats.updatedCount,
+                total: stats.total
             }
         });
     } catch (error) {
@@ -325,6 +334,12 @@ const syncSeriesMatches = async (req, res) => {
         let updatedCount = 0;
 
         for (const apiMatch of seriesData.matchList) {
+            // Filter: Sync only major events
+            if (!cricketApiService.isMajorEvent(apiMatch)) {
+                console.log(`[SeriesSync] Skipping minor/test match: ${apiMatch.name || apiMatch.id} (${apiMatch.matchType})`);
+                continue;
+            }
+
             const matchData = cricketApiService.transformMatchData(apiMatch);
 
             // Check if match exists
@@ -477,6 +492,53 @@ const syncSingleMatch = async (req, res) => {
     }
 };
 
+// Cleanup matches that don't pass the major event filter
+const cleanupMatches = async (req, res) => {
+    try {
+        console.log('🧹 Starting match cleanup...');
+
+        // Fetch all matches from DB
+        const result = await db.query('SELECT * FROM matches');
+        const matches = result.rows;
+
+        let deletedCount = 0;
+
+        for (const match of matches) {
+            // Re-check against the filter
+            // We need to reconstruct enough of the apiMatch object for isMajorEvent
+            const apiMatchMock = {
+                id: match.api_match_id,
+                name: `${match.team1} vs ${match.team2}`,
+                teams: [match.team1, match.team2],
+                matchType: match.match_type
+            };
+
+            if (!cricketApiService.isMajorEvent(apiMatchMock)) {
+                // Check if it has a prediction before deleting
+                const predCheck = await db.query('SELECT id FROM predictions WHERE match_id = $1', [match.id]);
+
+                if (predCheck.rows.length === 0) {
+                    await db.query('DELETE FROM matches WHERE id = $1', [match.id]);
+                    deletedCount++;
+                } else {
+                    console.log(`[Cleanup] Skipping match ${match.team1} vs ${match.team2} because it has a prediction.`);
+                }
+            }
+        }
+
+        console.log(`✅ Cleanup complete: ${deletedCount} matches removed`);
+
+        res.json({
+            success: true,
+            message: `Cleanup complete: ${deletedCount} matches removed`,
+            deletedCount
+        });
+    } catch (error) {
+        console.error('Match cleanup error:', error);
+        res.status(500).json({ error: 'Failed to cleanup matches' });
+    }
+};
+
 module.exports = {
     adminAuth,
     syncMatches,
@@ -488,5 +550,8 @@ module.exports = {
     updatePrediction,
     deletePrediction,
     getDashboardStats,
-    getMatchSquad
+    getMatchSquad,
+    cleanupMatches,
+    performMatchSync
 };
+

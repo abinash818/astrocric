@@ -29,4 +29,7 @@ router.post('/recharge-test', paymentController.rechargeTest);
 router.get('/callback', paymentController.callback);
 router.post('/callback', paymentController.callback);
 
+// Submit Dispute (UTR Support) - requires auth
+router.post('/dispute', auth, paymentController.submitDispute);
+
 module.exports = router;

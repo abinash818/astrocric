@@ -1,22 +1,35 @@
 const db = require('../config/database');
 const phonePeService = require('../services/paymentService');
 const ledgerService = require('../services/ledgerService');
+const crypto = require('crypto');
 
-// Helper: Settle Ledger Transaction (Idempotent)
+// Helper: Velocity Check (Rate Limiting)
+const checkVelocity = async (userId) => {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const res = await db.query(
+        "SELECT count(*) FROM payment_orders WHERE user_id = $1 AND created_at > $2",
+        [userId, oneHourAgo]
+    );
+    if (parseInt(res.rows[0].count) >= 5) {
+        throw new Error('Transaction velocity limit reached. Please try again after an hour.');
+    }
+};
+
+// Helper: Settle Ledger Transaction (Hardened)
 const settleLedgerTransaction = async (merchantTransactionId, amount) => {
     try {
-        // 1. Determine Escrow Account
-        const escrowRes = await db.query("SELECT id FROM accounts WHERE type = 'PLATFORM_ESCROW' LIMIT 1");
-        let escrowAccountId;
-        if (escrowRes.rows.length === 0) {
+        // 1. Determine Accounts
+        const gatewayRes = await db.query("SELECT id FROM accounts WHERE type = 'GATEWAY_RECEIVABLE' LIMIT 1");
+        let gatewayAccountId;
+        if (gatewayRes.rows.length === 0) {
             const acc = await ledgerService.createAccount({
-                name: 'Platform Escrow (Gateway)',
-                type: 'PLATFORM_ESCROW',
+                name: 'PhonePe Receivable',
+                type: 'GATEWAY_RECEIVABLE',
                 nature: 'ASSET'
             });
-            escrowAccountId = acc.id;
+            gatewayAccountId = acc.id;
         } else {
-            escrowAccountId = escrowRes.rows[0].id;
+            gatewayAccountId = gatewayRes.rows[0].id;
         }
 
         // 2. Find Payment Order
@@ -32,12 +45,12 @@ const settleLedgerTransaction = async (merchantTransactionId, amount) => {
 
                 // 3. Post Double-Entry Transaction
                 await ledgerService.postTransaction({
-                    transactionId: `LEDGER_${merchantTransactionId}`,
-                    description: `Wallet Recharge: ${merchantTransactionId}`,
+                    transactionId: `SETTLE_${merchantTransactionId}`,
+                    description: `Wallet Settlement: ${merchantTransactionId}`,
                     referenceType: 'PAYMENT_ORDER',
                     referenceId: order.id,
                     lines: [
-                        { accountId: escrowAccountId, type: 'DEBIT', amount: order.amount }, // Increase Asset (Bank)
+                        { accountId: gatewayAccountId, type: 'DEBIT', amount: order.amount }, // Increase Asset (Gateway Owed)
                         { accountId: userAccount.id, type: 'CREDIT', amount: order.amount } // Increase Liability (User Wallet)
                     ]
                 });
@@ -47,7 +60,7 @@ const settleLedgerTransaction = async (merchantTransactionId, amount) => {
                     "UPDATE payment_orders SET status = 'SETTLED', updated_at = NOW() WHERE id = $1",
                     [order.id]
                 );
-                console.log(`[Ledger] Settled Order: ${merchantTransactionId}`);
+                console.log(`[Ledger] Hardened Settlement Committed: ${merchantTransactionId}`);
             }
         }
     } catch (err) {
@@ -228,14 +241,16 @@ const verifyPayment = async (req, res) => {
             }
 
             // 4. Update Tables (Legacy + Order)
+            const idempotencyKey = crypto.createHash('sha256').update(`${verificationResult.transactionId}_COMPLETED`).digest('hex');
+
             await client.query(
                 "UPDATE purchases SET phonepe_transaction_id = $1, payment_status = 'success' WHERE id = $2",
                 [verificationResult.transactionId, transaction.id]
             );
 
             await client.query(
-                "UPDATE payment_orders SET status = 'SETTLED', gateway_id = $1, updated_at = NOW() WHERE id = $2",
-                [verificationResult.transactionId, order.id]
+                "UPDATE payment_orders SET status = 'SUCCESS', gateway_id = $1, idempotency_key = $2, updated_at = NOW() WHERE id = $3",
+                [verificationResult.transactionId, idempotencyKey, order.id]
             );
 
             // --- Ledger Settlement (Triggered within code, but Ledger handles its own Transaction) ---
@@ -385,14 +400,16 @@ const webhook = async (req, res) => {
             }
 
             // Update Statuses
+            const idempotencyKey = crypto.createHash('sha256').update(`${decodedResponse.data.transactionId}_COMPLETED`).digest('hex');
+
             await client.query(
                 "UPDATE purchases SET phonepe_transaction_id = $1, payment_status = 'success' WHERE id = $2",
                 [decodedResponse.data.transactionId, transaction.id]
             );
 
             await client.query(
-                "UPDATE payment_orders SET status = 'SETTLED', gateway_id = $1, updated_at = NOW() WHERE id = $2",
-                [decodedResponse.data.transactionId, order.id]
+                "UPDATE payment_orders SET status = 'SUCCESS', gateway_id = $1, idempotency_key = $2, updated_at = NOW() WHERE id = $3",
+                [decodedResponse.data.transactionId, idempotencyKey, order.id]
             );
 
             // Trigger Ledger
@@ -534,12 +551,12 @@ const getSdkToken = async (req, res) => {
             });
         }
 
-        // 6. Create Payment Order (Bank-Level State Machine)
+        // 6. Create Payment Order (Hardened State Machine)
         const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 Minutes
         await db.query(
             `INSERT INTO payment_orders 
              (merchant_transaction_id, user_id, amount, status, expires_at, created_at)
-             VALUES ($1, $2, $3, 'CREATED', $4, NOW())`,
+             VALUES ($1, $2, $3, 'INITIATED', $4, NOW())`,
             [merchantTransactionId, userId, amount * 100, expiresAt] // Store in Paise
         );
 
@@ -573,15 +590,17 @@ const getSdkToken = async (req, res) => {
 // Check Pending Orders (Reconciliation)
 const checkPendingStatus = async (req, res) => {
     try {
-        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        // Support dynamic windows for tiered reconciliation (T+5m, T+30m, T+2h)
+        const minutes = req.body.minutes || req.query.minutes || 5;
+        const cutoffTime = new Date(Date.now() - minutes * 60 * 1000);
 
         const result = await db.query(
             `SELECT * FROM purchases 
              WHERE payment_status = 'pending' 
              AND phonepe_merchant_transaction_id IS NOT NULL
              AND created_at < $1
-             LIMIT 10`,
-            [fiveMinutesAgo]
+             LIMIT 20`,
+            [cutoffTime]
         );
 
         const updates = [];
@@ -627,14 +646,16 @@ const checkPendingStatus = async (req, res) => {
                     }
 
                     // 3. Update Statuses
+                    const idempotencyKey = crypto.createHash('sha256').update(`${status.transactionId}_COMPLETED`).digest('hex');
+
                     await client.query(
                         "UPDATE purchases SET phonepe_transaction_id = $1, payment_status = 'success' WHERE id = $2",
                         [status.transactionId, order.id]
                     );
 
                     await client.query(
-                        "UPDATE payment_orders SET status = 'SETTLED', gateway_id = $1, updated_at = NOW() WHERE id = $2",
-                        [status.transactionId, orderDetail.id]
+                        "UPDATE payment_orders SET status = 'SUCCESS', gateway_id = $1, idempotency_key = $2, updated_at = NOW() WHERE id = $3",
+                        [status.transactionId, idempotencyKey, orderDetail.id]
                     );
 
                     // --- Ledger Settlement ---
@@ -777,6 +798,51 @@ const callback = async (req, res) => {
     }
 };
 
+// Submit Dispute (UTR Support)
+const submitDispute = async (req, res) => {
+    try {
+        const { merchantTransactionId, utrNumber, reason, screenshotUrl } = req.body;
+        const userId = req.user.id;
+
+        if (!merchantTransactionId || !utrNumber) {
+            return res.status(400).json({ error: 'Merchant Transaction ID and UTR Number are required' });
+        }
+
+        const orderRes = await db.query(
+            "SELECT id, status FROM payment_orders WHERE merchant_transaction_id = $1 AND user_id = $2",
+            [merchantTransactionId, userId]
+        );
+
+        if (orderRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        const order = orderRes.rows[0];
+
+        if (order.status === 'SETTLED') {
+            return res.status(400).json({ error: 'Order is already settled' });
+        }
+
+        // 1. Update Order Status
+        await db.query(
+            "UPDATE payment_orders SET status = 'DISPUTED', utr_number = $1, dispute_reason = $2 WHERE id = $3",
+            [utrNumber, reason || 'Transaction Verification Requested', order.id]
+        );
+
+        // 2. Create Dispute Record
+        await db.query(
+            `INSERT INTO disputes (payment_order_id, user_id, utr_number, screenshot_url, reason)
+             VALUES ($1, $2, $3, $4, $5)`,
+            [order.id, userId, utrNumber, screenshotUrl, reason]
+        );
+
+        res.json({ success: true, message: 'Dispute submitted. Our team will verify the payment within 24 hours.' });
+    } catch (error) {
+        console.error('Submit dispute error:', error);
+        res.status(500).json({ error: 'Failed to submit dispute' });
+    }
+};
+
 module.exports = {
     createOrder,
     rechargeWallet,
@@ -786,5 +852,6 @@ module.exports = {
     webhook,
     getPaymentHistory,
     rechargeTest,
-    callback
+    callback,
+    submitDispute
 };

@@ -119,18 +119,39 @@ const server = app.listen(PORT, () => {
   const cron = require('node-cron');
   const paymentController = require('./src/controllers/paymentController');
 
+  // 1. Tier 1: Aggressive Reconcile (T+5m) - Every 10 minutes
   cron.schedule('*/10 * * * *', async () => {
-    console.log('[Cron] Running Payment Reconciliation...');
+    console.log('🔄 Running Tier 1 Reconciliation (T+5m)...');
     try {
-      // We call the controller method directly. We mock req/res if needed, 
-      // but it's cleaner to refactor the logic. For now, we use a simple mock-res.
-      const mockRes = { json: (data) => console.log('[Cron] Recon Result:', data), status: () => mockRes };
-      await paymentController.checkPendingStatus({}, mockRes);
-    } catch (err) {
-      console.error('[Cron] Reconciliation Error:', err);
-    }
+      await paymentController.checkPendingStatus({ body: { minutes: 5 } }, { json: () => { }, status: () => ({ json: () => { } }) });
+    } catch (e) { console.error('T1 Recon Error:', e.message); }
   });
-  console.log('⏰ Payment Reconciliation Job scheduled (Every 10 minutes)');
+
+  // 2. Tier 2: Medium-Term Reconcile (T+30m) - Every hour
+  cron.schedule('0 * * * *', async () => {
+    console.log('🔄 Running Tier 2 Reconciliation (T+30m)...');
+    try {
+      await paymentController.checkPendingStatus({ body: { minutes: 30 } }, { json: () => { }, status: () => ({ json: () => { } }) });
+    } catch (e) { console.error('T2 Recon Error:', e.message); }
+  });
+
+  // 3. Tier 3: Long-Term Reconcile (T+2h) - Every 6 hours
+  cron.schedule('0 */6 * * *', async () => {
+    console.log('🔄 Running Tier 3 Reconciliation (T+2h)...');
+    try {
+      await paymentController.checkPendingStatus({ body: { minutes: 120 } }, { json: () => { }, status: () => ({ json: () => { } }) });
+    } catch (e) { console.error('T3 Recon Error:', e.message); }
+  });
+  console.log('⏰ Tiered Reconciliation Jobs scheduled (T+5m, T+30m, T+2h)');
+
+  // 4. Match Sync Job: Sync all matches every 2 minutes
+  const adminController = require('./src/controllers/adminController');
+  cron.schedule('*/2 * * * *', async () => {
+    console.log('🔄 Running Background Match Sync (Every 2m)...');
+    try {
+      await adminController.performMatchSync();
+    } catch (e) { console.error('Match Sync Job Error:', e.message); }
+  });
 });
 
 module.exports = app;

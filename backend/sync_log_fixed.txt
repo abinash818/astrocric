@@ -1,0 +1,227 @@
+﻿≡ƒöä Fetching from API...
+Received 25 matches from currentMatches.
+Received 19 matches from matches.
+Found 44 raw matches in API.
+[Skipping Minor] Lions vs Western Province, 2nd Match, CSA Provincial One-Day Challenge Division One 2026
+[Skipping Minor] Eastern Storm vs South Western Districts, 9th Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Hong Kong, China vs Kuwait, 3rd T20I, Kuwait tour of Hong Kong, China, 2026
+[Skipping Minor] Tbc vs Tbc, Final, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] Tbc vs Tbc, 3rd place play-off, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] Warriors vs Dolphins, 1st Match, CSA Provincial One-Day Challenge Division One 2026
+[Skipping Minor] Thailand vs Bahrain, 6th Match, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] Bhutan vs Japan, 5th Match, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] South Africa Emerging Players vs Limpopo, undefined, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Knights vs Border, 7th Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Hong Kong, China vs Kuwait, 2nd T20I, Kuwait tour of Hong Kong, China, 2026
+[Skipping Minor] Bahrain vs Japan, 4th Match, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] Thailand vs Bhutan, 3rd Match, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] Northern Cape vs Eastern Storm, 5th Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Mpumalanga Rhinos vs South Western Districts, 6th Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Hong Kong, China vs Kuwait, 1st T20I, Kuwait tour of Hong Kong, China, 2026
+[Skipping Minor] Bahrain vs Bhutan, 2nd Match, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] Thailand vs Japan, 1st Match, Quadrangular T20I Series in Thailand 2026
+[Skipping Minor] Pakistan A vs England Lions, 3rd T20, Pakistan A v England Lions in UAE, 2026
+[Skipping Minor] Karnataka vs Jammu and Kashmir, Final, Ranji Trophy Elite 2025-26
+[Skipping Minor] Pakistan A vs England Lions, 2nd T20, Pakistan A v England Lions in UAE, 2026
+[Skipping Minor] Limpopo vs Knights, 4th Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Border vs South Africa Emerging Players, 3rd Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Eastern Storm vs Mpumalanga Rhinos, 2nd Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] South Western Districts vs Northern Cape, 1st Match, CSA Provincial One-Day Challenge Division Two 2026
+[Skipping Minor] Bengal vs Andhra, 3rd Quarter-Final (C1 v A2), Ranji Trophy Elite 2025-26
+[Skipping Minor] Jharkhand vs Uttarakhand, 1st Quarter-Final (A1 v C2), Ranji Trophy Elite 2025-26
+[Skipping Minor] Pakistan A vs England Lions, 1st T20, Pakistan A v England Lions in UAE, 2026
+[Skipping Minor] West Indies Women vs Sri Lanka Women, 2nd ODI, Sri Lanka Women tour of West Indies 2026
+[Skipping Minor] West Indies Women vs Sri Lanka Women, 1st ODI, Sri Lanka Women tour of West Indies 2026
+[Syncing] India A Women vs Bangladesh A Women (Invalid Date)
+node : (node:23532) 
+Warning: SECURITY 
+WARNING: The SSL 
+modes 'prefer', 
+'require', and 
+'verify-ca' are 
+treated as aliases 
+for 'verify-full'.
+At line:1 char:1
++ node manual_sync_ver
+bose.js 2>&1 | 
+Out-File -FilePath 
+sync_log_fixed. ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: ((node:2353   
+ 2) Wa... 'verify-    
+full'.:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+In the next major 
+version 
+(pg-connection-string 
+v3.0.0 and pg 
+v9.0.0), these modes 
+will adopt standard 
+libpq semantics, 
+which have weaker 
+security guarantees.
+
+To prepare for this 
+change:
+- If you want the 
+current behavior, 
+explicitly use 
+'sslmode=verify-full'
+- If you want libpq 
+compatibility now, 
+use 'uselibpqcompat=tr
+ue&sslmode=require'
+
+See https://www.postgr
+esql.org/docs/current/
+libpq-ssl.html for 
+libpq SSL mode 
+definitions.
+(Use `node 
+--trace-warnings ...` 
+to show where the 
+warning was created)
+[DB Error] India A 
+Women vs Bangladesh A 
+Women, Final, ACC 
+Women's Asia Cup 
+Rising Stars 2026: 
+invalid input syntax 
+for type timestamp: "0
+NaN-NaN-NaNTNaN:NaN:Na
+N.NaN+NaN:NaN"
+[Syncing] Bangladesh A Women vs Pakistan A Women (Invalid Date)
+[DB Error] Bangladesh 
+A Women vs Pakistan A 
+Women, Semi Final 2 
+(B1vA2), ACC Women's 
+Asia Cup Rising Stars 
+2026: invalid input 
+syntax for type 
+timestamp: "0NaN-NaN-N
+aNTNaN:NaN:NaN.NaN+NaN
+:NaN"
+[Syncing] India A Women vs Sri Lanka A Women (Invalid Date)
+[DB Error] India A 
+Women vs Sri Lanka A 
+Women, Semi Final 1 
+(A1vB2), ACC Women's 
+Asia Cup Rising Stars 
+2026: invalid input 
+syntax for type 
+timestamp: "0NaN-NaN-N
+aNTNaN:NaN:NaN.NaN+NaN
+:NaN"
+[Syncing] Zimbabwe vs West Indies (Invalid Date)
+[DB Error] Zimbabwe 
+vs West Indies, 44th 
+Match, Super 8 Group 
+1 (X2 v X3), ICC 
+Men's T20 World Cup 
+2026: invalid input 
+syntax for type 
+timestamp: "0NaN-NaN-N
+aNTNaN:NaN:NaN.NaN+NaN
+:NaN"
+[Syncing] India vs South Africa (Invalid Date)
+[DB Error] India vs 
+South Africa, 43rd 
+Match, Super 8 Group 
+1 (X1 v X4), ICC 
+Men's T20 World Cup 
+2026: invalid input 
+syntax for type 
+timestamp: "0NaN-NaN-N
+aNTNaN:NaN:NaN.NaN+NaN
+:NaN"
+[Syncing] England vs Sri Lanka (Invalid Date)
+[DB Error] England vs 
+Sri Lanka, 42nd 
+Match, Super 8 Group 
+2 (Y1 v Y4), ICC 
+Men's T20 World Cup 
+2026: invalid input 
+syntax for type 
+timestamp: "0NaN-NaN-N
+aNTNaN:NaN:NaN.NaN+NaN
+:NaN"
+[Syncing] New Zealand vs Pakistan (Invalid Date)
+[DB Error] New 
+Zealand vs Pakistan, 
+41st Match, Super 8 
+Group 2 (Y2 v Y3), 
+ICC Men's T20 World 
+Cup 2026: invalid 
+input syntax for type 
+timestamp: "0NaN-NaN-N
+aNTNaN:NaN:NaN.NaN+NaN
+:NaN"
+[Syncing] Australia vs Oman (Invalid Date)
+[DB Error] Australia 
+vs Oman, 40th Match, 
+Group B, ICC Men's 
+T20 World Cup 2026: 
+invalid input syntax 
+for type timestamp: "0
+NaN-NaN-NaNTNaN:NaN:Na
+N.NaN+NaN:NaN"
+[Syncing] Western Australia vs Victoria (Invalid Date)
+[DB Error] Western 
+Australia vs 
+Victoria, 21st Match, 
+Australia Domestic 
+One-Day Cup 2025-26: 
+invalid input syntax 
+for type timestamp: "0
+NaN-NaN-NaNTNaN:NaN:Na
+N.NaN+NaN:NaN"
+[Skipping Minor] Tasmania vs New South Wales, 20th Match, Australia Domestic One-Day Cup 2025-26
+[Syncing] Queensland vs South Australia (Invalid Date)
+[DB Error] Queensland 
+vs South Australia, 
+19th Match, Australia 
+Domestic One-Day Cup 
+2025-26: invalid 
+input syntax for type 
+timestamp: "0NaN-NaN-N
+aNTNaN:NaN:NaN.NaN+NaN
+:NaN"
+[Syncing] South Africa Women vs Pakistan Women (Invalid Date)
+[DB Error] South 
+Africa Women vs 
+Pakistan Women, 1st 
+ODI, Pakistan Women 
+tour of South Africa, 
+2026: invalid input 
+syntax for type 
+timestamp: "0NaN-NaN-N
+aNTNaN:NaN:NaN.NaN+NaN
+:NaN"
+[Syncing] Australia Women vs India Women (Invalid Date)
+[DB Error] Australia 
+Women vs India Women, 
+1st ODI, India Women 
+tour of Australia, 
+2026: invalid input 
+syntax for type 
+timestamp: "0NaN-NaN-N
+aNTNaN:NaN:NaN.NaN+NaN
+:NaN"
+[Syncing] Australia Women vs India Women (Invalid Date)
+[DB Error] Australia 
+Women vs India Women, 
+3rd T20I, India Women 
+tour of Australia, 
+2026: invalid input 
+syntax for type 
+timestamp: "0NaN-NaN-N
+aNTNaN:NaN:NaN.NaN+NaN
+:NaN"
+Γ£à Finished. Synced 0, Skipped 31.

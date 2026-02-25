@@ -239,12 +239,82 @@ class CricketApiService {
             team2_flag_url: apiMatch.teamInfo?.[1]?.img || null,
             team1_score: team1Score,
             team2_score: team2Score,
-            match_date: new Date(apiMatch.dateTimeGMT),
+            match_date: apiMatch.dateTimeGMT
+                ? new Date(apiMatch.dateTimeGMT.includes('T') ? apiMatch.dateTimeGMT + 'Z' : apiMatch.dateTimeGMT + ' GMT')
+                : new Date(),
             match_type: apiMatch.matchType || 'Unknown',
             venue: apiMatch.venue || 'TBD',
             status: this.determineMatchStatus(apiMatch),
             result: apiMatch.status || null
         };
+    }
+
+    // Determine if a match is a major event
+    isMajorEvent(apiMatch) {
+        if (!apiMatch) return false;
+
+        const matchType = (apiMatch.matchType || '').toLowerCase();
+        const teams = (apiMatch.teams || []).map(t => t.toLowerCase());
+        const seriesName = (apiMatch.name || '').toLowerCase();
+
+        // 1. Exclude Test matches
+        if (matchType === 'test') return false;
+
+        // 2. Exclude Minor/Domestic/A-teams keywords
+        const minorKeywords = [
+            'lions', 'academy', 'under-19', 'u19', 'u-19', 'youth', 'emerging', 'pro',
+            'ranji trophy', 'vijay hazare', 'syed mushtaq ali', 'county championship',
+            'plunket shield', 'sheffield shield', 'marsh cup', 'provincial', 'development',
+            'sub regional', 'sub-regional'
+        ];
+
+        if (minorKeywords.some(keyword =>
+            seriesName.includes(keyword) ||
+            teams.some(team => team.includes(keyword))
+        )) {
+            return false;
+        }
+
+        // 3. Define major league and event keywords
+        const majorKeywords = [
+            'ipl', 'indian premier league', 'big bash', 'bbl', 'psl', 'pakistan premier league',
+            'cpl', 'caribbean premier league', 'sa20', 'ilt20', 'world cup', 't20 world cup',
+            'asia cup', 'the hundred', 'wpl', 'womens premier league',
+            'mlc', 'major league cricket', 'bpl', 'bangladesh premier league',
+            'lpl', 'lanka premier league', 'global t20', 'vitality blast'
+        ];
+
+        // Check for major keywords in series name OR match type
+        if (majorKeywords.some(keyword =>
+            seriesName.includes(keyword) ||
+            matchType.includes(keyword)
+        )) {
+            return true;
+        }
+
+        // 4. Check for major international teams (Full National Teams + Top Associates)
+        const majorTeams = [
+            'india', 'australia', 'england', 'south africa', 'pakistan', 'new zealand',
+            'west indies', 'sri lanka', 'bangladesh', 'afghanistan', 'netherlands', 'ireland',
+            'zimbabwe', 'scotland', 'united arab emirates', 'nepal', 'usa', 'namibia', 'oman', 'canada'
+        ];
+
+        const hasMajorTeam = teams.some(team =>
+            majorTeams.some(mt => team.includes(mt))
+        );
+
+        // 5. International match formats - ONLY if they involve at least one Major Team
+        // This filters out "local" associate friendlies (e.g., Thailand vs Japan)
+        // Check if matchType contains t20, odi, or t20i
+        if (hasMajorTeam && (
+            matchType.includes('t20') ||
+            matchType.includes('odi') ||
+            matchType.includes('t20i')
+        )) {
+            return true;
+        }
+
+        return false;
     }
 
     // Determine match status

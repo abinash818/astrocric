@@ -12,9 +12,8 @@ router.get('/upcoming', async (req, res) => {
 
         const result = await db.query(
             `SELECT m.*, 
-        CASE WHEN p.id IS NOT NULL THEN true ELSE false END as has_prediction
+        (SELECT COUNT(*) FROM predictions p WHERE m.id = p.match_id AND p.is_published = true) > 0 as has_prediction
        FROM matches m
-       LEFT JOIN predictions p ON m.id = p.match_id AND p.is_published = true
        WHERE m.status = 'upcoming'
        ORDER BY m.match_date ASC
        LIMIT $1 OFFSET $2`,
@@ -44,9 +43,8 @@ router.get('/live', async (req, res) => {
     try {
         const result = await db.query(
             `SELECT m.*, 
-        CASE WHEN p.id IS NOT NULL THEN true ELSE false END as has_prediction
+        (SELECT COUNT(*) FROM predictions p WHERE m.id = p.match_id AND p.is_published = true) > 0 as has_prediction
        FROM matches m
-       LEFT JOIN predictions p ON m.id = p.match_id AND p.is_published = true
        WHERE m.status = 'live'
        ORDER BY m.match_date DESC`
         );
@@ -66,18 +64,17 @@ router.get('/finished', async (req, res) => {
         const offset = (page - 1) * limit;
 
         const result = await db.query(
-            `SELECT m.* FROM matches m
+            `SELECT m.*,
+        (SELECT COUNT(*) FROM predictions p WHERE m.id = p.match_id AND p.is_published = true) > 0 as has_prediction
+       FROM matches m
        WHERE m.status = 'finished'
-       AND EXISTS (SELECT 1 FROM predictions p WHERE p.match_id = m.id AND p.is_published = true)
        ORDER BY m.match_date DESC
        LIMIT $1 OFFSET $2`,
             [limit, offset]
         );
 
         const countResult = await db.query(
-            `SELECT COUNT(*) FROM matches m
-       WHERE m.status = 'finished'
-       AND EXISTS (SELECT 1 FROM predictions p WHERE p.match_id = m.id AND p.is_published = true)`
+            "SELECT COUNT(*) FROM matches WHERE status = 'finished'"
         );
 
         res.json({
