@@ -1,6 +1,6 @@
-const API_BASE = typeof window !== 'undefined' && window.location.hostname === 'sbastro.com'
-    ? 'https://sbastro.com'
-    : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000');
+const API_BASE = process.env.NODE_ENV === 'production'
+    ? 'https://sbastro.com/api'
+    : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api');
 
 async function fetchAPI(endpoint, options = {}) {
     const url = `${API_BASE}${endpoint}`;
