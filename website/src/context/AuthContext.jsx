@@ -10,7 +10,8 @@ import {
     sendPasswordResetEmail,
     linkWithCredential,
     EmailAuthProvider,
-    fetchSignInMethodsForEmail
+    fetchSignInMethodsForEmail,
+    GoogleAuthProvider
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
 

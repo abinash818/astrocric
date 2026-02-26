@@ -39,10 +39,11 @@ export default function LoginPage() {
             await loginWithGoogle();
             router.push(`/${locale}/dashboard`);
         } catch (err) {
+            console.error('Google Sign-In Error:', err);
             if (err.code === 'auth/account-exists-with-different-credential') {
                 setError(t('linkingDesc'));
             } else {
-                setError(t('errors.general'));
+                setError(err.message || t('errors.general'));
             }
         }
     };
