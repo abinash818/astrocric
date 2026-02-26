@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_URL = window.location.hostname === 'localhost'
     ? 'http://localhost:3000/api'
-    : 'https://astrocric.onrender.com/api';
+    : 'https://sbastro.com/api';
 
 class ApiService {
     constructor() {
