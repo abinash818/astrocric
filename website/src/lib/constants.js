@@ -4,9 +4,9 @@ export const SITE_NAME = "S&B Astro";
 export const SITE_DOMAIN = "sbastro.com";
 export const SITE_URL = "https://sbastro.com";
 
-export const API_URL = process.env.NODE_ENV === 'production'
-    ? "https://sbastro.com/api"
-    : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api");
+export const API_URL = typeof window !== 'undefined'
+    ? "/api"
+    : "http://localhost:5000/api";
 
 // App download links (replace with real links)
 export const ANDROID_DOWNLOAD_URL = "#";
