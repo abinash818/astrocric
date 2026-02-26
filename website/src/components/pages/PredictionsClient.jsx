@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import styles from './PredictionsClient.module.css';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+import { getUpcomingMatches, getFinishedMatches } from '@/lib/api';
 
 export default function PredictionsClient() {
     const t = useTranslations('predictions');
@@ -20,11 +20,11 @@ export default function PredictionsClient() {
             setLoading(true);
             try {
                 const [upcoming, finished] = await Promise.all([
-                    fetch(`${API_BASE}/api/matches/upcoming?limit=20`).then(r => r.ok ? r.json() : { matches: [] }),
-                    fetch(`${API_BASE}/api/matches/finished?limit=20`).then(r => r.ok ? r.json() : { matches: [] }),
+                    getUpcomingMatches(1, 20),
+                    getFinishedMatches(1, 20),
                 ]);
-                setUpcomingMatches(upcoming.matches || []);
-                setFinishedMatches(finished.matches || []);
+                setUpcomingMatches(upcoming?.matches || []);
+                setFinishedMatches(finished?.matches || []);
             } catch (e) {
                 console.error('Failed to fetch:', e);
             }

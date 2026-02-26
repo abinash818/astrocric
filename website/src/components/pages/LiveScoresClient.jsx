@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './LiveScoresClient.module.css';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+import { getLiveMatches, getUpcomingMatches, getFinishedMatches, getMatchScorecard } from '@/lib/api';
 
 export default function LiveScoresClient() {
     const t = useTranslations('liveScores');
@@ -28,20 +28,20 @@ export default function LiveScoresClient() {
         setLoading(true);
         try {
             const [live, upcoming, finished] = await Promise.all([
-                fetch(`${API_BASE}/api/matches/live`).then(r => r.ok ? r.json() : { matches: [] }),
-                fetch(`${API_BASE}/api/matches/upcoming?limit=20`).then(r => r.ok ? r.json() : { matches: [] }),
-                fetch(`${API_BASE}/api/matches/finished?limit=20`).then(r => r.ok ? r.json() : { matches: [] }),
+                getLiveMatches(),
+                getUpcomingMatches(1, 20),
+                getFinishedMatches(1, 20),
             ]);
-            setLiveMatches(live.matches || []);
-            setUpcomingMatches(upcoming.matches || []);
-            setFinishedMatches(finished.matches || []);
+            setLiveMatches(live?.matches || []);
+            setUpcomingMatches(upcoming?.matches || []);
+            setFinishedMatches(finished?.matches || []);
 
             // Fetch scorecards for live matches
-            if (live.matches?.length) {
+            if (live?.matches?.length) {
                 const cards = {};
                 for (const match of live.matches) {
                     try {
-                        const sc = await fetch(`${API_BASE}/api/matches/${match.id}/scorecard`).then(r => r.ok ? r.json() : null);
+                        const sc = await getMatchScorecard(match.id);
                         if (sc) cards[match.id] = sc;
                     } catch (e) { /* ignore */ }
                 }
