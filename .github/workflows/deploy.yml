@@ -1,10 +1,12 @@
-name: Deploy Backend
+name: Deploy Project
 
 on:
   push:
     branches: [ master ]
     paths:
       - 'backend/**'
+      - 'website/**'
+      - 'admin-panel/**'
 
 jobs:
   deploy:
@@ -17,7 +19,23 @@ jobs:
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /var/www/astrocric/backend
-            git pull origin main
-            npm install
-            pm2 restart astrocric-backend
+            cd /var/www/astrocric
+            git pull origin master
+
+            # Update Backend if changed
+            if [[ $(git diff --name-only HEAD HEAD~1 | grep "^backend/") ]]; then
+              echo "Updating Backend..."
+              cd backend && npm install && pm2 restart astrocric-backend && cd ..
+            fi
+
+            # Update Website if changed
+            if [[ $(git diff --name-only HEAD HEAD~1 | grep "^website/") ]]; then
+              echo "Updating Website..."
+              cd website && npm install && npm run build && pm2 restart astrocric-website && cd ..
+            fi
+
+            # Update Admin Dashboard if changed
+            if [[ $(git diff --name-only HEAD HEAD~1 | grep "^admin-panel/") ]]; then
+              echo "Updating Admin Dashboard..."
+              cd admin-panel && npm install && npm run build && cd ..
+            fi
