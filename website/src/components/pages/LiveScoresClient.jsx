@@ -103,6 +103,17 @@ export default function LiveScoresClient() {
         return score;
     }
 
+    function getScoreForTeam(match, teamName, fallbackScore) {
+        const scorecard = scorecards[match.id];
+        if (scorecard && scorecard.score) {
+            const teamScore = scorecard.score.find(s => s.inning && s.inning.toLowerCase().includes(teamName.toLowerCase()));
+            if (teamScore) {
+                return renderScore(teamScore);
+            }
+        }
+        return fallbackScore ? renderScore(fallbackScore) : null;
+    }
+
     const currentMatches = activeTab === 'live' ? liveMatches : activeTab === 'upcoming' ? upcomingMatches : finishedMatches;
 
     return (
@@ -174,20 +185,16 @@ export default function LiveScoresClient() {
                                     <div className={styles.team}>
                                         {match.team1_flag_url && <img src={match.team1_flag_url} alt="" className={styles.flag} />}
                                         <span className={styles.teamName}>{match.team1}</span>
-                                        {scorecards[match.id]?.score?.[0] ? (
-                                            <span className={styles.score}>{renderScore(scorecards[match.id].score[0])}</span>
-                                        ) : match.team1_score && (
-                                            <span className={styles.score}>{renderScore(match.team1_score)}</span>
+                                        {getScoreForTeam(match, match.team1, match.team1_score) && (
+                                            <span className={styles.score}>{getScoreForTeam(match, match.team1, match.team1_score)}</span>
                                         )}
                                     </div>
                                     <span className={styles.vs}>VS</span>
                                     <div className={styles.team}>
                                         {match.team2_flag_url && <img src={match.team2_flag_url} alt="" className={styles.flag} />}
                                         <span className={styles.teamName}>{match.team2}</span>
-                                        {scorecards[match.id]?.score?.[1] ? (
-                                            <span className={styles.score}>{renderScore(scorecards[match.id].score[1])}</span>
-                                        ) : match.team2_score && (
-                                            <span className={styles.score}>{renderScore(match.team2_score)}</span>
+                                        {getScoreForTeam(match, match.team2, match.team2_score) && (
+                                            <span className={styles.score}>{getScoreForTeam(match, match.team2, match.team2_score)}</span>
                                         )}
                                     </div>
                                 </div>
