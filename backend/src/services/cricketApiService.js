@@ -16,8 +16,10 @@ class CricketApiService {
             });
 
             if (response.data && response.data.data) {
+                console.log(`[CricketAPI] Fetched ${response.data.data.length} current matches.`);
                 return response.data.data;
             }
+            console.log('[CricketAPI] No current matches found in response.');
             return [];
         } catch (error) {
             console.error('Cricket API - Get current matches error:', error.response?.data || error.message);
@@ -314,6 +316,7 @@ class CricketApiService {
             return true;
         }
 
+        console.log(`[Sync Filter] Skipping match: ${apiMatch.name} | Type: ${apiMatch.matchType} | Series: ${apiMatch.series_id || 'N/A'}`);
         return false;
     }
 
