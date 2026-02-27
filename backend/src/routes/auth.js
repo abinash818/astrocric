@@ -4,6 +4,10 @@ const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const db = require('../config/database');
 const otpService = require('../services/otpService');
+const authController = require('../controllers/authController');
+
+// Sync Firebase User
+router.post('/sync', authController.syncFirebaseUser);
 
 // Rate limiter for OTP requests
 const otpLimiter = rateLimit({

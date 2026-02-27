@@ -137,7 +137,7 @@ class MatchCard extends StatelessWidget {
                       Icon(Icons.stars, size: 16, color: Colors.green.shade700),
                       const SizedBox(width: 4),
                       Text(
-                        'Prediction Available',
+                        'Analysis Available',
                         style: TextStyle(
                           color: Colors.green.shade700,
                           fontSize: 12,

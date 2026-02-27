@@ -1,5 +1,5 @@
 class User {
-  final int id;
+  final String id;
   final String phone;
   final String? name;
   final String? email;

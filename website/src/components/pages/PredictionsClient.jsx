@@ -1,19 +1,25 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import styles from './PredictionsClient.module.css';
-
-import { getUpcomingMatches, getFinishedMatches } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
+import { getUpcomingMatches, getFinishedMatches, unlockAnalysis } from '@/lib/api';
 
 export default function PredictionsClient() {
     const t = useTranslations('predictions');
     const { locale } = useParams();
+    const router = useRouter();
+    const { user, backendToken, walletBalance, refreshProfile } = useAuth();
+
     const [upcomingMatches, setUpcomingMatches] = useState([]);
     const [finishedMatches, setFinishedMatches] = useState([]);
     const [activeTab, setActiveTab] = useState('upcoming');
     const [loading, setLoading] = useState(true);
+    const [unlockingMatch, setUnlockingMatch] = useState(null);
+    const [isUnlocking, setIsUnlocking] = useState(false);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         async function fetchData() {
@@ -33,21 +39,69 @@ export default function PredictionsClient() {
         fetchData();
     }, []);
 
+    const handleUnlockInitiate = (match) => {
+        if (!user) {
+            router.push(`/${locale}/login`);
+            return;
+        }
+        setUnlockingMatch(match);
+        setError('');
+    };
+
+    const handleConfirmUnlock = async () => {
+        if (!unlockingMatch || !backendToken) return;
+
+        setIsUnlocking(true);
+        setError('');
+
+        try {
+            const response = await unlockAnalysis(unlockingMatch.id, backendToken);
+            if (response && response.success) {
+                // Refresh profile to update wallet balance
+                await refreshProfile();
+                // Close modal and maybe show success or redirect
+                setUnlockingMatch(null);
+                // In a production app, we'd probably redirect to a dedicated analysis view 
+                // or update the local state to show the prediction content.
+                // For now, let's just refresh the dashboard or matches.
+                alert(response.message || 'Unlocked successfully!');
+                window.location.reload(); // Quick way to refresh states
+            } else if (response && response.error) {
+                setError(response.error === 'Insufficient Astro Coins' ? t('insufficientBalance') : response.error);
+            } else {
+                setError(t('errors.general'));
+            }
+        } catch (err) {
+            console.error('Unlock failed:', err);
+            setError(t('errors.general'));
+        } finally {
+            setIsUnlocking(false);
+        }
+    };
+
     const currentMatches = activeTab === 'upcoming' ? upcomingMatches : finishedMatches;
 
     return (
         <section className={styles.page}>
             <div className={styles.container}>
                 <div className={styles.header}>
-                    <span className="section-label">{t('label')}</span>
-                    <h1>{t('title')}</h1>
+                    <div className={styles.headerMain}>
+                        <div>
+                            <span className="section-label">{t('label')}</span>
+                            <h1>{t('title')}</h1>
+                        </div>
+                        {user && (
+                            <div className={styles.walletBadge}>
+                                <span className={styles.coinIcon}>🪙</span>
+                                <span className={styles.balanceText}>{walletBalance} Astro Coins</span>
+                            </div>
+                        )}
+                    </div>
                     <p className={styles.subtitle}>{t('subtitle')}</p>
                 </div>
 
                 <div className={styles.disclaimer}>
-                    ⚠️ {locale === 'ta'
-                        ? 'கணிப்புகள் பொழுதுபோக்கு நோக்கத்திற்காக மட்டுமே. பந்தயம் கூடாது.'
-                        : 'Predictions are for entertainment purposes only. No betting.'}
+                    ⚠️ {t('disclaimerBanner')}
                 </div>
 
                 {/* Tabs */}
@@ -63,12 +117,12 @@ export default function PredictionsClient() {
                 {loading ? (
                     <div className={styles.loading}>
                         <div className={styles.spinner}></div>
-                        <p>{locale === 'ta' ? 'ஏற்றுகிறது...' : 'Loading predictions...'}</p>
+                        <p>{locale === 'ta' ? 'ஏற்றுகிறது...' : 'Loading...'}</p>
                     </div>
                 ) : currentMatches.length === 0 ? (
                     <div className={styles.empty}>
                         <p>{activeTab === 'upcoming'
-                            ? (locale === 'ta' ? 'வரவிருக்கும் போட்டிகள் இல்லை' : 'No upcoming matches with predictions')
+                            ? (locale === 'ta' ? 'வரவிருக்கும் ஆய்வுகள் இல்லை' : 'No upcoming matches with analysis')
                             : (locale === 'ta' ? 'முடிவுகள் இல்லை' : 'No results yet')
                         }</p>
                     </div>
@@ -101,14 +155,19 @@ export default function PredictionsClient() {
 
                                 {match.has_prediction ? (
                                     <div className={styles.predictionAvailable}>
-                                        <span className={styles.predictionBadge}>✦ {locale === 'ta' ? 'கணிப்பு உள்ளது' : 'Prediction Available'}</span>
-                                        <button className={styles.buyBtn}>
-                                            {locale === 'ta' ? 'கணிப்பு வாங்கு' : 'Buy Prediction'}
+                                        <div className={styles.priceTag}>
+                                            <span className={styles.coinValue}>🪙 {match.prediction_price || 49}</span>
+                                        </div>
+                                        <button
+                                            className={styles.buyBtn}
+                                            onClick={() => handleUnlockInitiate(match)}
+                                        >
+                                            {t('buyPrediction')}
                                         </button>
                                     </div>
                                 ) : (
                                     <div className={styles.noPrediction}>
-                                        {locale === 'ta' ? 'கணிப்பு விரைவில்' : 'Prediction Coming Soon'}
+                                        {locale === 'ta' ? 'ஆய்வு விரைவில்' : 'Analysis Coming Soon'}
                                     </div>
                                 )}
 
@@ -122,6 +181,61 @@ export default function PredictionsClient() {
                     </div>
                 )}
             </div>
+
+            {/* Unlock Modal */}
+            {unlockingMatch && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modal}>
+                        <h3>{t('buyPrediction')}</h3>
+                        <div className={styles.modalContent}>
+                            <p>{unlockingMatch.team1} vs {unlockingMatch.team2}</p>
+                            <div className={styles.unlockDetails}>
+                                <div className={styles.detailRow}>
+                                    <span>{locale === 'ta' ? 'விலை' : 'Price'}:</span>
+                                    <strong>🪙 {unlockingMatch.prediction_price || 49}</strong>
+                                </div>
+                                <div className={styles.detailRow}>
+                                    <span>{locale === 'ta' ? 'உங்கள் இருப்பு' : 'Your Balance'}:</span>
+                                    <span className={walletBalance < (unlockingMatch.prediction_price || 49) ? styles.lowBalance : ''}>
+                                        🪙 {walletBalance}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {error && <div className={styles.errorText}>{error}</div>}
+
+                            {walletBalance < (unlockingMatch.prediction_price || 49) ? (
+                                <div className={styles.rechargePrompt}>
+                                    <p>{t('insufficientBalance')}</p>
+                                    <button
+                                        className={styles.rechargeBtn}
+                                        onClick={() => router.push(`/${locale}/dashboard`)}
+                                    >
+                                        {t('rechargeWallet')}
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className={styles.modalActions}>
+                                    <button
+                                        className={styles.cancelBtn}
+                                        onClick={() => setUnlockingMatch(null)}
+                                        disabled={isUnlocking}
+                                    >
+                                        {locale === 'ta' ? 'ரத்து' : 'Cancel'}
+                                    </button>
+                                    <button
+                                        className={styles.confirmBtn}
+                                        onClick={handleConfirmUnlock}
+                                        disabled={isUnlocking}
+                                    >
+                                        {isUnlocking ? '...' : (locale === 'ta' ? 'உறுதி செய்' : 'Confirm Unlock')}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </section>
     );
 }

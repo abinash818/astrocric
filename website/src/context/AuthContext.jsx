@@ -14,6 +14,7 @@ import {
     GoogleAuthProvider
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
+import { syncAuth, getUserProfile } from '@/lib/api';
 
 const AuthContext = createContext({});
 
@@ -21,14 +22,54 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [backendToken, setBackendToken] = useState(null);
+    const [walletBalance, setWalletBalance] = useState(0);
     const [loading, setLoading] = useState(true);
 
+    const refreshProfile = async (token) => {
+        const profile = await getUserProfile(token || backendToken);
+        if (profile) {
+            setWalletBalance(profile.walletBalance);
+            return profile;
+        }
+    };
+
+    const syncWithBackend = async (firebaseUser) => {
+        if (!firebaseUser) return;
+
+        try {
+            const syncData = {
+                email: firebaseUser.email,
+                name: firebaseUser.displayName,
+                uid: firebaseUser.uid,
+                photoURL: firebaseUser.photoURL
+            };
+
+            const response = await syncAuth(syncData);
+            if (response && response.token) {
+                setBackendToken(response.token);
+                setWalletBalance(response.user.walletBalance);
+                localStorage.setItem('backendToken', response.token);
+            }
+        } catch (error) {
+            console.error('Backend sync failed:', error);
+        }
+    };
+
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
+        // Recover token from localStorage
+        const savedToken = localStorage.getItem('backendToken');
+        if (savedToken) setBackendToken(savedToken);
+
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 setUser(user);
+                await syncWithBackend(user);
             } else {
                 setUser(null);
+                setBackendToken(null);
+                setWalletBalance(0);
+                localStorage.removeItem('backendToken');
             }
             setLoading(false);
         });
@@ -49,16 +90,7 @@ export const AuthProvider = ({ children }) => {
             const result = await signInWithPopup(auth, googleProvider);
             return result.user;
         } catch (error) {
-            // Handle account linking if email already exists
             if (error.code === 'auth/account-exists-with-different-credential') {
-                const email = error.customData.email;
-                const pendingCred = GoogleAuthProvider.credentialFromError(error);
-
-                // Fetch sign-in methods for this email
-                const methods = await fetchSignInMethodsForEmail(auth, email);
-
-                // If they have password method, we can prompt them to link
-                // For now, we'll throw the error so the UI can handle the prompt
                 throw error;
             }
             throw error;
@@ -83,7 +115,10 @@ export const AuthProvider = ({ children }) => {
     return (
         <AuthContext.Provider value={{
             user,
+            backendToken,
+            walletBalance,
             loading,
+            refreshProfile,
             signupWithEmail,
             loginWithEmail,
             loginWithGoogle,

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../models/prediction.dart';
 import '../../services/prediction_service.dart';
 import 'payment_screen.dart';
@@ -15,6 +17,7 @@ class PredictionDetailScreen extends StatefulWidget {
 class _PredictionDetailScreenState extends State<PredictionDetailScreen> {
   final PredictionService _predictionService = PredictionService();
   late Future<Prediction> _predictionFuture;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -30,7 +33,7 @@ class _PredictionDetailScreenState extends State<PredictionDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Prediction'),
+        title: const Text('Analysis'),
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
       ),
@@ -170,7 +173,7 @@ class _PredictionDetailScreenState extends State<PredictionDetailScreen> {
               Icon(Icons.lock, size: 48, color: Colors.grey.shade600),
               const SizedBox(height: 16),
               const Text(
-                'Full Prediction Locked',
+                'Full Analysis Locked',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -205,7 +208,7 @@ class _PredictionDetailScreenState extends State<PredictionDetailScreen> {
               const Icon(Icons.lock_open),
               const SizedBox(width: 8),
               Text(
-                'Unlock for ₹${prediction.price.toStringAsFixed(2)}',
+                'Unlock for 🪙 ${prediction.price.toStringAsFixed(0)}',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -293,20 +296,91 @@ class _PredictionDetailScreenState extends State<PredictionDetailScreen> {
   }
 
   void _unlockPrediction(Prediction prediction) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PaymentScreen(
-          predictionId: prediction.id,
-          amount: prediction.price,
-          title: prediction.title,
-        ),
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final walletBalance = authProvider.user?.walletBalance ?? 0.0;
+    
+    if (walletBalance < prediction.price) {
+      _showRechargeDialog();
+      return;
+    }
+
+    // Show Confirmation Dialog
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Unlock Analysis'),
+        content: Text('Confirm unlocking this analysis for 🪙 ${prediction.price.toStringAsFixed(0)}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade700, foregroundColor: Colors.white),
+            child: const Text('Confirm'),
+          ),
+        ],
       ),
     );
 
-    if (result == true) {
-      // Payment successful, reload prediction
-      setState(() => _loadPrediction());
+    if (confirm != true) return;
+
+    setState(() => _isLoading = true);
+    
+    try {
+      final response = await _predictionService.unlockAnalysisWithWallet(prediction.matchId);
+      
+      if (response['success'] == true) {
+        await authProvider.refreshProfile();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Analysis unlocked successfully!'), backgroundColor: Colors.green),
+          );
+          _loadPrediction();
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(response['error'] ?? 'Failed to unlock analysis'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+  }
+
+  void _showRechargeDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Insufficient Astro Coins'),
+        content: const Text('You don\'t have enough coins to unlock this analysis. Please recharge your wallet.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Navigate to recharge screen if available
+              // For now, let's assume there's a dashboard or profile screen
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+            child: const Text('Recharge'),
+          ),
+        ],
+      ),
+    );
   }
 }

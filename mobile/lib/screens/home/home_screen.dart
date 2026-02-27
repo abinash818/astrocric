@@ -88,9 +88,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             const Divider(),
             ListTile(
               leading: const Icon(Icons.account_balance_wallet),
-              title: const Text('Wallet Balance'),
+              title: const Text('Astro Coins'),
               trailing: Text(
-                '₹${authProvider.user?.walletBalance.toStringAsFixed(2) ?? '0.00'}',
+                '🪙 ${authProvider.user?.walletBalance.toStringAsFixed(0) ?? '0'}',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -108,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
             ListTile(
               leading: const Icon(Icons.history),
-              title: const Text('My Predictions'),
+              title: const Text('My Analysis'),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(

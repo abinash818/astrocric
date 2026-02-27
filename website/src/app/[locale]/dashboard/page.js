@@ -7,7 +7,7 @@ import styles from './Dashboard.module.css';
 
 export default function DashboardPage() {
     const t = useTranslations('auth');
-    const { user, logout } = useAuth();
+    const { user, walletBalance, logout } = useAuth();
 
     return (
         <ProtectedRoute>
@@ -34,11 +34,12 @@ export default function DashboardPage() {
 
                     <div className={styles.statsGrid}>
                         <div className={styles.statCard}>
-                            <h3>Wallet Balance</h3>
-                            <p className={styles.statValue}>₹ 0.00</p>
+                            <h3>Astro Coins</h3>
+                            <p className={styles.statValue}>🪙 {walletBalance}</p>
+                            <button className={styles.rechargeBtn} onClick={() => alert('Payment integration coming soon')}>{t('rechargeLabel') || 'Recharge'}</button>
                         </div>
                         <div className={styles.statCard}>
-                            <h3>Predictions</h3>
+                            <h3>Analysis Unlocked</h3>
                             <p className={styles.statValue}>0</p>
                         </div>
                         <div className={styles.statCard}>

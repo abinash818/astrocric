@@ -46,19 +46,29 @@ class AuthService {
     await _auth.sendPasswordResetEmail(email: email);
   }
 
-  // Profile Fetch (keeps compatibility with existing model)
+  // Sync Firebase User with Backend
+  Future<void> syncWithBackend(firebase.User firebaseUser) async {
+    try {
+      final response = await _apiService.post('/auth/sync', {
+        'email': firebaseUser.email,
+        'name': firebaseUser.displayName,
+        'uid': firebaseUser.uid,
+        'photoURL': firebaseUser.photoURL,
+        'phone': firebaseUser.phoneNumber,
+      }, requiresAuth: false);
+
+      if (response['token'] != null) {
+        await _apiService.setToken(response['token']);
+      }
+    } catch (e) {
+      print('Backend Sync Error: $e');
+    }
+  }
+
+  // Profile Fetch from Backend
   Future<User> getProfile() async {
-    final firebaseUser = _auth.currentUser;
-    if (firebaseUser == null) throw Exception('No user logged in');
-    
-    // In a real app, we might also fetch extra data from our backend
-    // For now, mapping Firebase user to our local User model
-    return User(
-      id: firebaseUser.uid,
-      email: firebaseUser.email ?? '',
-      name: firebaseUser.displayName ?? '',
-      phone: firebaseUser.phoneNumber ?? '',
-    );
+    final response = await _apiService.get('/auth/profile');
+    return User.fromJson(response);
   }
 
   Future<void> logout() async {

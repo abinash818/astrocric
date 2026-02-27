@@ -109,6 +109,19 @@
     color: var(--accent-gold);
 }
 
+.rechargeBtn {
+    margin-top: 1rem;
+    width: 100%;
+    padding: 0.5rem;
+    background: var(--accent-gradient);
+    border: none;
+    border-radius: 10px;
+    color: var(--btn-primary-text);
+    font-weight: 600;
+    font-size: 0.8125rem;
+    cursor: pointer;
+}
+
 @media (max-width: 640px) {
     .statsGrid {
         grid-template-columns: 1fr;

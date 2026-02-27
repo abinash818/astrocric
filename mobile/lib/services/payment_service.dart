@@ -82,7 +82,7 @@ class PaymentService {
     }
   }
 
-  static const MethodChannel _channel = MethodChannel('com.example.astrocric/upi');
+  static const MethodChannel _channel = MethodChannel('com.astrocric/upi');
 
   // Launch Native Android UPI Module (Using Backend Intent)
   Future<Map<String, dynamic>> startNativeUpiTransaction({
@@ -146,5 +146,19 @@ class PaymentService {
   Future<List<dynamic>> getPaymentHistory() async {
     final response = await _apiService.get('/payment/history');
     return response['payments'] ?? [];
+  }
+
+  // Unlock analysis using wallet coins
+  Future<Map<String, dynamic>> unlockAnalysisWithWallet(int matchId) async {
+    try {
+      final response = await _apiService.post(
+        '/payment/unlock-analysis',
+        {'matchId': matchId},
+      );
+      return response;
+    } catch (e) {
+      print('Wallet Unlock Error: $e');
+      return {'success': false, 'error': e.toString()};
+    }
   }
 }

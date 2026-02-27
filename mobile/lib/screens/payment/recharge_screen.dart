@@ -48,7 +48,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
       if (nativeUpi) {
          final result = await _paymentService.startNativeUpiTransaction(
              amount: amount, 
-             note: "Wallet Recharge"
+             note: "Astro Coins Recharge"
          );
          
          if (result['status'] == 'success' || result['status'] == 'submitted') {
@@ -146,7 +146,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Recharge Wallet'),
+        title: const Text('Recharge Astro Coins'),
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
       ),
@@ -164,7 +164,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
               controller: _amountController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                prefixText: '₹ ',
+                prefixText: '🪙 ',
                 border: OutlineInputBorder(),
                 hintText: 'Enter amount to add',
               ),
@@ -179,7 +179,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
               spacing: 8,
               children: _presetAmounts.map((amount) {
                 return ActionChip(
-                  label: Text('₹${amount.toInt()}'),
+                  label: Text('🪙 ${amount.toInt()}'),
                   onPressed: () {
                     _amountController.text = amount.toStringAsFixed(0);
                   },
@@ -205,7 +205,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                          'Proceed to Pay (Web Checkout)',
+                          'Buy Coins (Web Checkout)',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                 ),

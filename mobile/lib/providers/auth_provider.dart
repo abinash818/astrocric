@@ -20,9 +20,14 @@ class AuthProvider with ChangeNotifier {
 
       if (firebaseUser != null) {
         try {
+          // 1. Sync with backend to get/update user and get JWT
+          await _authService.syncWithBackend(firebaseUser);
+          
+          // 2. Fetch full profile from backend (including wallet)
           _user = await _authService.getProfile();
           _isAuthenticated = true;
         } catch (e) {
+          print('Auth Init Error: $e');
           _user = null;
           _isAuthenticated = false;
         }
@@ -34,6 +39,17 @@ class AuthProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     });
+  }
+
+  Future<void> refreshProfile() async {
+    if (_isAuthenticated) {
+      try {
+        _user = await _authService.getProfile();
+        notifyListeners();
+      } catch (e) {
+        print('Profile Refresh Error: $e');
+      }
+    }
   }
 
   Future<String?> loginWithEmail(String email, String password) async {

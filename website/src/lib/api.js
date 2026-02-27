@@ -59,7 +59,22 @@ export async function getPurchasedPredictions(token) {
     });
 }
 
-// Auth
+// Auth & Profiles
+export async function syncAuth(userData) {
+    return fetchAPI('/api/auth/sync', {
+        method: 'POST',
+        body: JSON.stringify(userData),
+    });
+}
+
+export async function getUserProfile(token) {
+    return fetchAPI('/api/auth/profile', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+}
+
 export async function sendOTP(phone) {
     return fetchAPI('/api/auth/send-otp', {
         method: 'POST',
@@ -87,5 +102,15 @@ export async function purchasePrediction(matchId, token) {
     return fetchAPI(`/api/payment/purchase/${matchId}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export async function unlockAnalysis(matchId, token) {
+    return fetchAPI('/api/payment/unlock-analysis', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ matchId }),
     });
 }

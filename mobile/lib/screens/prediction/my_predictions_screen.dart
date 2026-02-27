@@ -28,7 +28,7 @@ class _MyPredictionsScreenState extends State<MyPredictionsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Predictions'),
+        title: const Text('My Analysis'),
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
       ),
@@ -67,7 +67,7 @@ class _MyPredictionsScreenState extends State<MyPredictionsScreen> {
                   Icon(Icons.inbox, size: 64, color: Colors.grey.shade400),
                   const SizedBox(height: 16),
                   Text(
-                    'No purchased predictions yet',
+                    'No purchased analysis yet',
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.grey.shade600,
@@ -75,7 +75,7 @@ class _MyPredictionsScreenState extends State<MyPredictionsScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Purchase predictions to see them here',
+                    'Unlock analysis to see them here',
                     style: TextStyle(color: Colors.grey.shade500),
                   ),
                 ],
@@ -151,7 +151,7 @@ class _PredictionCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              '₹${prediction.price.toStringAsFixed(0)}',
+              '🪙 ${prediction.price.toStringAsFixed(0)}',
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
@@ -209,7 +209,7 @@ class _PredictionCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  prediction.fullPrediction ?? 'No detailed prediction available',
+                  prediction.fullPrediction ?? 'No detailed analysis available',
                   style: const TextStyle(fontSize: 14, height: 1.5),
                 ),
               ],
