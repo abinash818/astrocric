@@ -12,7 +12,7 @@ import styles from './Header.module.css';
 export default function Header({ locale }) {
     const t = useTranslations('nav');
     const pathname = usePathname();
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const [mobileOpen, setMobileOpen] = useState(false);
 
     const navLinks = [
@@ -70,62 +70,72 @@ export default function Header({ locale }) {
                             )}
                             <span>{user.displayName || (user.email?.split('@')[0])}</span>
                         </Link>
-                    ) : (
-                        <Link href={`/${locale}/login`} className={styles.navLink}>
-                            {t('login')}
-                        </Link>
+                        <button onClick={logout} className={styles.logoutBtn}>
+                             {t('logout') || 'Logout'}
+                        </button>
+                    </>
+                ) : (
+                <Link href={`/${locale}/login`} className={styles.navLink}>
+                    {t('login')}
+                </Link>
                     )}
 
-                    <Link href={`/${locale}/download`} className={styles.downloadBtn}>
-                        {t('download')}
-                    </Link>
-                </div>
-
-                {/* Mobile Hamburger */}
-                <button
-                    className={`${styles.hamburger} ${mobileOpen ? styles.hamburgerOpen : ''}`}
-                    onClick={() => setMobileOpen(!mobileOpen)}
-                    aria-label="Toggle menu"
-                >
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
+                <Link href={`/${locale}/download`} className={styles.downloadBtn}>
+                    {t('download')}
+                </Link>
             </div>
 
-            {/* Mobile Menu */}
-            {mobileOpen && (
-                <div className={styles.mobileMenu}>
-                    <nav className={styles.mobileNav}>
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                className={`${styles.mobileLink} ${isActive(link.href) ? styles.active : ''}`}
-                                onClick={() => setMobileOpen(false)}
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
-                        <div className={styles.mobileDivider}></div>
+            {/* Mobile Hamburger */}
+            <button
+                className={`${styles.hamburger} ${mobileOpen ? styles.hamburgerOpen : ''}`}
+                onClick={() => setMobileOpen(!mobileOpen)}
+                aria-label="Toggle menu"
+            >
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
 
-                        {user ? (
-                            <Link
-                                href={`/${locale}/dashboard`}
-                                className={styles.mobileLink}
-                                onClick={() => setMobileOpen(false)}
-                            >
-                                {user.displayName || user.email}
-                            </Link>
-                        ) : (
-                            <Link
-                                href={`/${locale}/login`}
-                                className={styles.mobileLink}
-                                onClick={() => setMobileOpen(false)}
-                            >
-                                {t('login')}
-                            </Link>
-                        )}
+            {/* Mobile Menu */ }
+    {
+        mobileOpen && (
+            <div className={styles.mobileMenu}>
+                <nav className={styles.mobileNav}>
+                    {navLinks.map((link) => (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className={`${styles.mobileLink} ${isActive(link.href) ? styles.active : ''}`}
+                            onClick={() => setMobileOpen(false)}
+                        >
+                            {link.label}
+                        </Link>
+                    ))}
+                    <div className={styles.mobileDivider}></div>
+
+                    {user.displayName || user.email}
+                </Link>
+                <button
+                    onClick={() => {
+                        logout();
+                        setMobileOpen(false);
+                    }}
+                    className={styles.mobileLogout}
+                >
+                    {t('logout') || 'Logout'}
+                </button>
+            </>
+        ) : (
+            <Link
+                href={`/${locale}/login`}
+                className={styles.mobileLink}
+                onClick={() => setMobileOpen(false)}
+            >
+                {t('login')}
+            </Link>
+        )
+    }
 
                         <Link
                             href={`/${locale}/download`}
@@ -136,9 +146,10 @@ export default function Header({ locale }) {
                         </Link>
                         <LanguageToggle locale={locale} />
                         <ThemeToggle />
-                    </nav>
-                </div>
-            )}
-        </header>
+                    </nav >
+                </div >
+            )
+}
+        </header >
     );
 }

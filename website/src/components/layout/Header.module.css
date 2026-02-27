@@ -275,3 +275,38 @@
         display: none !important;
     }
 }
+
+.logoutBtn {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444 !important;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    margin-left: 0.5rem;
+}
+
+.logoutBtn:hover {
+    background: #ef4444;
+    color: white !important;
+}
+
+.mobileLogout {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.875rem;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+}
