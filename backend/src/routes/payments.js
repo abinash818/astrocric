@@ -6,6 +6,9 @@ const paymentController = require('../controllers/paymentController');
 // Create payment order (requires auth)
 router.post('/create-order', auth, paymentController.createOrder);
 
+// Unlock analysis using wallet coins (requires auth)
+router.post('/unlock-analysis', auth, paymentController.unlockAnalysisWithWallet);
+
 // Recharge wallet (requires auth)
 router.post('/recharge', auth, paymentController.rechargeWallet);
 

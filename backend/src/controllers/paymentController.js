@@ -843,6 +843,120 @@ const submitDispute = async (req, res) => {
     }
 };
 
+// Unlock Analysis with Wallet Coins
+const unlockAnalysisWithWallet = async (req, res) => {
+    let client;
+    try {
+        const { matchId } = req.body;
+        const userId = req.user.id;
+
+        if (!matchId) {
+            return res.status(400).json({ error: 'Match ID is required' });
+        }
+
+        // 1. Fetch the Prediction details and cost
+        const predictionRes = await db.query(
+            'SELECT * FROM predictions WHERE match_id = $1 AND is_published = true',
+            [matchId]
+        );
+
+        if (predictionRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Analysis not found' });
+        }
+
+        const prediction = predictionRes.rows[0];
+        const cost = parseFloat(prediction.price);
+
+        // 2. Check if already purchased
+        const existingPurchase = await db.query(
+            `SELECT * FROM purchases 
+             WHERE user_id = $1 AND prediction_id = $2 AND payment_status = 'success'`,
+            [userId, prediction.id]
+        );
+
+        if (existingPurchase.rows.length > 0) {
+            return res.json({
+                success: true,
+                message: 'Already unlocked',
+                prediction: {
+                    id: prediction.id,
+                    title: prediction.title,
+                    fullPrediction: prediction.full_prediction,
+                    predictedWinner: prediction.predicted_winner,
+                    confidencePercentage: prediction.confidence_percentage
+                }
+            });
+        }
+
+        // 3. Start Transaction
+        client = await db.pool.connect();
+        await client.query('BEGIN');
+
+        // 4. Fetch User Wallet Balance
+        const userRes = await client.query(
+            'SELECT wallet_balance FROM users WHERE id = $1 FOR UPDATE',
+            [userId]
+        );
+        const currentBalance = parseFloat(userRes.rows[0].wallet_balance || 0);
+
+        if (currentBalance < cost) {
+            await client.query('ROLLBACK');
+            return res.status(402).json({
+                error: 'Insufficient Astro Coins',
+                currentBalance,
+                requiredCost: cost
+            });
+        }
+
+        const newBalance = currentBalance - cost;
+
+        // 5. Update Wallet
+        await client.query(
+            'UPDATE users SET wallet_balance = $1 WHERE id = $2',
+            [newBalance, userId]
+        );
+
+        // 6. Record Purchase
+        const purchaseRes = await client.query(
+            `INSERT INTO purchases 
+             (user_id, prediction_id, phonepe_merchant_transaction_id, amount, payment_status)
+             VALUES ($1, $2, $3, $4, 'success') RETURNING id`,
+            [userId, prediction.id, `WALLET_${Date.now()}_${userId}`, cost]
+        );
+        const purchaseId = purchaseRes.rows[0].id;
+
+        // 7. Ledger Entry
+        await client.query(
+            `INSERT INTO wallet_ledger 
+             (user_id, purchase_id, type, amount, opening_balance, closing_balance, description)
+             VALUES ($1, $2, 'DEBIT', $3, $4, $5, 'Unlocked Match Analysis')`,
+            [userId, purchaseId, cost, currentBalance, newBalance]
+        );
+
+        await client.query('COMMIT');
+
+        // 8. Return the uncovered analysis
+        res.json({
+            success: true,
+            message: 'Analysis unlocked successfully',
+            newBalance,
+            prediction: {
+                id: prediction.id,
+                title: prediction.title,
+                fullPrediction: prediction.full_prediction,
+                predictedWinner: prediction.predicted_winner,
+                confidencePercentage: prediction.confidence_percentage
+            }
+        });
+    } catch (error) {
+        if (client) await client.query('ROLLBACK');
+        console.error('Wallet Unlock error:', error);
+        res.status(500).json({ error: 'Failed to unlock analysis using wallet' });
+    } finally {
+        if (client) client.release();
+    }
+};
+
 module.exports = {
     createOrder,
     rechargeWallet,
@@ -853,5 +967,6 @@ module.exports = {
     getPaymentHistory,
     rechargeTest,
     callback,
-    submitDispute
+    submitDispute,
+    unlockAnalysisWithWallet
 };
