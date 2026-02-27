@@ -9,7 +9,7 @@ import styles from './Dashboard.module.css';
 
 export default function DashboardPage() {
     const t = useTranslations('auth');
-    const { user, walletBalance, logout, token } = useAuth();
+    const { user, walletBalance, logout, backendToken } = useAuth();
     const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false);
 
     return (
@@ -61,7 +61,7 @@ export default function DashboardPage() {
             <RechargeModal
                 isOpen={isRechargeModalOpen}
                 onClose={() => setIsRechargeModalOpen(false)}
-                token={token}
+                token={backendToken}
             />
         </ProtectedRoute>
     );
