@@ -25,15 +25,18 @@ export default function RechargeModal({ isOpen, onClose, token, onBalanceUpdate 
 
         try {
             const response = await rechargeWallet(amount, token);
+            console.log('[Recharge] API Response:', response);
             if (response && response.success && response.redirectUrl) {
                 // Redirect to PhonePe
                 window.location.href = response.redirectUrl;
             } else {
-                setError('Failed to initiate payment. Please try again.');
+                console.error('[Recharge] Payment initiation failed:', response);
+                setError(`Failed to initiate payment: ${response?.message || response?.error || 'Unknown error'}`);
                 setLoading(false);
             }
         } catch (err) {
-            setError('An error occurred. Please try again later.');
+            console.error('[Recharge] Network/Server Error:', err);
+            setError(`An error occurred: ${err.message || 'Please try again later'}`);
             setLoading(false);
         }
     };

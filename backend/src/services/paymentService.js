@@ -8,12 +8,12 @@ const crypto = require('crypto');
 const isSandbox = config.apiUrl && (config.apiUrl.includes('sandbox') || config.apiUrl.includes('preprod'));
 const env = isSandbox ? Env.SANDBOX : Env.PRODUCTION;
 
-// Production Checklist: Disable logging for live
-const enableLogging = isSandbox;
+// Production Checklist: Disable logging for live (Force enabled for debugging)
+const enableLogging = true;
 
 console.log(`[PhonePe] Initializing in ${isSandbox ? 'SANDBOX' : 'PRODUCTION'} mode`);
 console.log(`[PhonePe] API URL: ${config.apiUrl}`);
-console.log(`[PhonePe] Logging Enabled: ${enableLogging}`);
+console.log(`[PhonePe] Logging: ${enableLogging}`);
 
 const client = StandardCheckoutClient.getInstance(
     config.clientId,
@@ -52,9 +52,15 @@ class PhonePeService {
                 console.log('--- Initiating PhonePe Pay ---');
                 console.log('MID:', config.merchantId);
                 console.log('Transaction:', txnId);
+                console.log('Amount (paise):', Math.round(amount * 100));
+                console.log('Env:', env);
             }
 
             const response = await client.pay(request);
+
+            if (enableLogging) {
+                console.log('[PhonePe] Pay Response Success:', response.redirectUrl);
+            }
 
             return {
                 merchantTransactionId: txnId,

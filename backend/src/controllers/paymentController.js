@@ -157,6 +157,7 @@ const rechargeWallet = async (req, res) => {
         // Initiate PhonePe payment
         // We use a dummy predictionId of '0' or distinct prefix for merchantTransactionId
         const merchantTransactionId = `WT_${Date.now()}_${userId}`;
+        console.log(`[Recharge] Starting for user ${userId}, amount ${amount}, txn ${merchantTransactionId}`);
 
         const paymentData = await phonePeService.initiatePayment({
             amount: parseFloat(amount),
@@ -165,6 +166,8 @@ const rechargeWallet = async (req, res) => {
             phone: userResult.rows[0].phone,
             merchantTransactionId: merchantTransactionId // Pass explicit ID
         });
+
+        console.log(`[Recharge] Payment initiated successfully for txn ${merchantTransactionId}`);
 
         // Save pending purchase (using NULL for prediction_id)
         await db.query(
