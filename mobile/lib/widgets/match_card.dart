@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/match.dart';
-import '../screens/prediction/prediction_detail_screen.dart';
+import '../screens/analysis/analysis_detail_screen.dart';
 
 import '../screens/home/match_detail_screen.dart';
 
@@ -18,13 +18,13 @@ class MatchCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          print('MatchCard clicked: ${match.id} (Prediction: ${match.hasPrediction})');
+          print('MatchCard clicked: ${match.id} (Analysis: ${match.hasAnalysis})');
           // Navigate to match details / prediction screen
-          if (match.hasPrediction) {
+          if (match.hasAnalysis) {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => PredictionDetailScreen(matchId: match.id),
+                builder: (context) => AnalysisDetailScreen(matchId: match.id),
               ),
             );
           } else {
@@ -121,8 +121,8 @@ class MatchCard extends StatelessWidget {
                 ],
               ),
               
-              // Prediction available badge
-              if (match.hasPrediction) ...[
+              // Analysis available badge
+              if (match.hasAnalysis) ...[
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

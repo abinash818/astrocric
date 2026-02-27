@@ -17,7 +17,7 @@ export default function CTASection() {
                 <h2 className={styles.title}>{t('ctaTitle')}</h2>
                 <p className={styles.desc}>{t('ctaDesc')}</p>
                 <div className={styles.actions}>
-                    <Link href={`/${locale}/predictions`} className="btn btn-primary btn-lg">
+                    <Link href={`/${locale}/analysis`} className="btn btn-primary btn-lg">
                         {t('ctaButton')}
                     </Link>
                     <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-lg">

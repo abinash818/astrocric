@@ -42,6 +42,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '491926924357',
     projectId: 'astrocricket-826c2',
     storageBucket: 'astrocricket-826c2.firebasestorage.app',
-    iosBundleId: 'com.example.astrocric',
+    iosBundleId: 'com.astrocric',
   );
 }

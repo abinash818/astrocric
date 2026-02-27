@@ -2,9 +2,16 @@ node_modules
 .env
 .DS_Store
 dist
-build
+build/
+.next/
 coverage
 .vscode
 .idea
 *.log
 deploy.tar.gz
+*.hprof
+*.apk
+*.ipa
+.dart_tool/
+.packages
+.flutter-plugins*

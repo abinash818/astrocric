@@ -4,11 +4,12 @@ import styles from './page.module.css';
 
 export async function generateMetadata({ params }) {
     const { locale } = await params;
+    const isTA = locale === 'ta';
     return {
-        title: locale === 'ta' ? 'எங்களைப் பற்றி' : 'About Us',
-        description: locale === 'ta'
-            ? 'S&B ஆஸ்ட்ரோ — 10+ ஆண்டுகள் வேத ஜோதிட அனுபவத்துடன் கிரிக்கெட் கணிப்புகள்'
-            : 'S&B Astro — 10+ years of Vedic astrology experience in cricket match predictions.',
+        title: isTA ? 'எங்களைப் பற்றி | S&B ஆஸ்ட்ரோ' : 'About Us | S&B Astro',
+        description: isTA
+            ? 'S&B ஆஸ்ட்ரோ — 10+ ஆண்டுகள் வேத ஜோதிட அனுபவத்துடன் கிரிக்கெட் போட்டி ஆய்வுகள்.'
+            : 'S&B Astro — 10+ years of Vedic astrology experience in expert cricket match analysis.',
     };
 }
 

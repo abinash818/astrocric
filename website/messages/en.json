@@ -1,7 +1,7 @@
 {
     "common": {
         "siteName": "S&B Astro",
-        "tagline": "Vedic Sports Astrology Predictions",
+        "tagline": "Vedic Sports Astrology Analysis",
         "lang": "English",
         "langCode": "en"
     },
@@ -16,7 +16,7 @@
         "contact": "Contact",
         "blog": "Blog",
         "login": "Login",
-        "myPredictions": "My Predictions",
+        "myPredictions": "My Analysis",
         "wallet": "Wallet"
     },
     "home": {
@@ -29,11 +29,11 @@
         "whyExperience": "10+ Years Experience",
         "whyExperienceDesc": "Over a decade of rigorous Vedic research into planetary transits and sports outcomes.",
         "whyAccuracy": "90% Accuracy",
-        "whyAccuracyDesc": "Verified prediction results with transparent tracking history you can audit yourself.",
+        "whyAccuracyDesc": "Verified analysis results with transparent tracking history you can audit yourself.",
         "whyMethod": "Proprietary Vedic Method",
-        "whyMethodDesc": "Our unique planetary alignment analysis goes beyond basic astrology for sports prediction.",
+        "whyMethodDesc": "Our unique planetary alignment analysis goes beyond basic astrology for sports insights.",
         "howLabel": "How It Works",
-        "howTitle": "Our Prediction Process",
+        "howTitle": "Our Analysis Process",
         "howStep1": "Birth Chart Analysis",
         "howStep1Desc": "We analyze planetary positions at the exact match start time to create a celestial blueprint.",
         "howStep2": "Transit Calculation",
@@ -75,9 +75,9 @@
         "yearsExp": "Years Experience",
         "accuracy": "Accuracy",
         "users": "Users",
-        "predictions": "Predictions",
+        "predictions": "Analyses",
         "missionTitle": "Our Mission",
-        "missionDesc": "To make Vedic sports astrology accessible, transparent, and trustworthy — bringing ancient Indian wisdom to the modern world of sports. We believe that the celestial science developed by our ancestors holds remarkable predictive power, and we aim to present it in a modern, verifiable format.",
+        "missionDesc": "To make Vedic sports astrology accessible, transparent, and trustworthy — bringing ancient Indian wisdom to the modern world of sports. We believe that the celestial science developed by our ancestors holds remarkable analytical power, and we aim to present it in a modern, verifiable format.",
         "valuesTitle": "Our Values",
         "value1Title": "Scientific Approach",
         "value1Desc": "We apply rigorous methodology to every prediction, combining centuries-old Vedic calculations with modern computational tools.",
@@ -89,15 +89,15 @@
     "method": {
         "label": "Our Method",
         "title": "KP Astrology Method",
-        "intro": "Understanding how Vedic planetary science predicts match outcomes with remarkable accuracy.",
+        "intro": "Understanding how Vedic planetary science analyzes match outcomes with remarkable accuracy.",
         "step1Title": "Birth Chart Casting",
         "step1Desc": "For every match, we cast a horoscope chart at the exact scheduled start time. This 'Prashna Kundli' (query chart) captures the planetary positions at the moment the match begins.",
         "step2Title": "Planetary Transit Analysis",
         "step2Desc": "Using the KP system, we analyze the sub-lords, significators, and ruling planets relevant to sports outcomes — specifically the 1st house (home team), 6th house (victory), and 11th house (gains).",
         "step3Title": "Team Strength Mapping",
         "step3Desc": "Both teams are mapped to specific houses and their planetary strengths are compared. We analyze Dasha periods, transit impacts, and sublordic promises for each team.",
-        "step4Title": "Winner Prediction",
-        "step4Desc": "The final prediction combines chart analysis with planetary patterns and historical accuracy data to determine the most likely winner with a confidence percentage.",
+        "step4Title": "Winner Insight",
+        "step4Desc": "The final result combines chart analysis with planetary patterns and historical accuracy data to determine the most likely winner with a confidence percentage.",
         "kpTitle": "What is KP Astrology?",
         "kpDesc": "KP (Krishnamurti Paddhati) is a scientifically structured branch of Vedic astrology developed by Prof. K.S. Krishnamurti. It is known for its precision and is widely used for event prediction.",
         "kpPoint1": "Uses a sub-lord system for pinpoint accuracy — far more precise than traditional Parashari methods.",
@@ -113,7 +113,7 @@
         "tabResults": "Results",
         "disclaimerBanner": "Analysis is for educational and entertainment purposes based on Vedic astrology. Not betting or gambling advice.",
         "selectMatch": "Select a Match",
-        "buyPrediction": "Unlock Analysis",
+        "buyAnalysis": "Unlock Analysis",
         "alreadyPurchased": "Already Unlocked",
         "viewPrediction": "View Analysis",
         "loginRequired": "Login to Unlock",
@@ -178,17 +178,17 @@
         "send": "Send Message"
     },
     "footer": {
-        "description": "India's most trusted Vedic sports astrology prediction platform. 10+ years of experience, 90% accuracy.",
+        "description": "India's most trusted Vedic sports astrology analysis platform. 10+ years of experience, 90% accuracy.",
         "quickLinks": "Quick Links",
         "legal": "Legal",
         "privacy": "Privacy Policy",
         "terms": "Terms & Conditions",
         "refund": "Refund Policy",
-        "predictionDisclaimer": "Prediction Disclaimer",
+        "predictionDisclaimer": "Service Disclaimer",
         "earningsDisclaimer": "Earnings Disclaimer",
         "followUs": "Follow Us",
         "copyright": "© 2026 S&B Astro — Dharma Sastha Jothida Nilayam. All rights reserved.",
-        "disclaimer": "Predictions are for entertainment purposes only. Not betting/gambling advice. 18+ only."
+        "disclaimer": "Analysis is for entertainment purposes only. Not betting/gambling advice. 18+ only."
     },
     "auth": {
         "loginTitle": "Login to S&B Astro",
@@ -273,7 +273,7 @@
             "content": "At S&B Astro, we provide digital informational products (Vedic astrology predictions). Due to the nature of digital content delivery, we follow a strict no-refund policy.\n\n1. Final Sale: All purchases made on SBASTRO.COM or the mobile app are final.\n2. No Refunds: Once a prediction is unlocked or delivered, no refunds will be issued under any circumstances.\n3. Technical Issues: If you experience a technical failure preventing access to a purchased product, contact our support team for assistance in restoring access."
         },
         "prediction": {
-            "title": "Prediction Disclaimer — S&B Astro",
+            "title": "Service Disclaimer — S&B Astro",
             "sections": [
                 {
                     "title": "1. Educational Purpose Only",

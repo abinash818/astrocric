@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', require('./src/routes/auth'));
 app.use('/api/matches', require('./src/routes/matches'));
-app.use('/api/predictions', require('./src/routes/predictions'));
+app.use('/api/analysis', require('./src/routes/analysis'));
 app.use('/api/payment', require('./src/routes/payments'));
 app.use('/api/admin', require('./src/routes/admin'));
 

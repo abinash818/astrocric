@@ -16,14 +16,14 @@ export async function generateMetadata({ params }) {
 
     return {
         title: isTA
-            ? 'S&B ஆஸ்ட்ரோ — வேத விளையாட்டு ஜோதிட கணிப்புகள்'
-            : 'S&B Astro — Vedic Sports Astrology Predictions',
+            ? 'S&B ஆஸ்ட்ரோ — நிபுணர் கிரிக்கெட் போட்டி ஆய்வு மற்றும் ஜோதிட நுண்ணறிவு'
+            : 'S&B Astro — Expert Cricket Match Analysis & Vedic Insights',
         description: isTA
-            ? 'இந்தியாவின் நம்பகமான கிரிக்கெட் ஜோதிட கணிப்பு தளம். 10+ ஆண்டுகள் அனுபவம், 90% துல்லியம்.'
-            : 'India\'s most trusted cricket astrology prediction platform. 10+ years of experience, 90% accuracy. Vedic match winner predictions.',
+            ? 'இந்தியாவின் முதன்மையான விளையாட்டு ஜோதிட ஆய்வு தளம். துல்லியமான போட்டி நுண்ணறிவு, வீரர் ஆய்வு மற்றும் நேரடி கிரிக்கெட் செய்திகள்.'
+            : 'India\'s premier sports astrology analysis platform. Get expert match insights, player analysis, and live cricket updates powered by Vedic science.',
         keywords: isTA
-            ? ['கிரிக்கெட் ஜோதிடம்', 'போட்டி ஜோதிட கணிப்பு', 'விளையாட்டு ஜோதிடம்']
-            : ['sports astrology prediction', 'cricket astrology prediction', 'vedic sports astrology', 'match winner prediction'],
+            ? ['கிரிக்கெட் ஆய்வு', 'போட்டி நுண்ணறிவு', 'விளையாட்டு ஜோதிடம்', 'நிபுணர் கிரிக்கெட் ஆய்வு', 'நேரடி ஸ்கோர் ஆய்வு']
+            : ['cricket match analysis', 'expert match insights', 'vedic sports analysis', 'cricket expert report', 'live score analysis', 'IPL match analysis'],
     };
 }
 

@@ -119,25 +119,25 @@ const syncMatches = async (req, res) => {
     }
 };
 
-// Create prediction
-const createPrediction = async (req, res) => {
+// Create analysis
+const createAnalysis = async (req, res) => {
     try {
         const {
             matchId,
             title,
             previewText,
-            fullPrediction,
-            predictedWinner,
+            fullAnalysis,
+            analysisResult: predictedWinner,
             confidencePercentage,
             price,
-            player_prediction_price,
+            player_analysis_price,
             combo_price,
             key_players,
             isPublished
         } = req.body;
 
         // Validate required fields
-        if (!matchId || !title || !fullPrediction || !price) {
+        if (!matchId || !title || !fullAnalysis || !price) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
@@ -151,7 +151,7 @@ const createPrediction = async (req, res) => {
             return res.status(404).json({ error: 'Match not found' });
         }
 
-        // Create prediction
+        // Create analysis
         const result = await db.query(
             `INSERT INTO predictions 
        (match_id, title, preview_text, full_prediction, predicted_winner,
@@ -159,8 +159,8 @@ const createPrediction = async (req, res) => {
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
             [
-                matchId, title, previewText, fullPrediction, predictedWinner,
-                confidencePercentage, price, player_prediction_price, combo_price,
+                matchId, title, previewText, fullAnalysis, predictedWinner,
+                confidencePercentage, price, player_analysis_price, combo_price,
                 key_players ? JSON.stringify(key_players) : null,
                 isPublished || false, req.user.id
             ]
@@ -168,7 +168,7 @@ const createPrediction = async (req, res) => {
 
         res.json({
             success: true,
-            prediction: result.rows[0]
+            analysis: result.rows[0]
         });
     } catch (error) {
         console.error('Create prediction error:', error);
@@ -181,18 +181,18 @@ const createPrediction = async (req, res) => {
     }
 };
 
-// Update prediction
-const updatePrediction = async (req, res) => {
+// Update analysis
+const updateAnalysis = async (req, res) => {
     try {
         const { id } = req.params;
         const {
             title,
             previewText,
-            fullPrediction,
-            predictedWinner,
+            fullAnalysis,
+            analysisResult: predictedWinner,
             confidencePercentage,
             price,
-            player_prediction_price,
+            player_analysis_price,
             combo_price,
             key_players,
             isPublished
@@ -222,12 +222,12 @@ const updatePrediction = async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Prediction not found' });
+            return res.status(404).json({ error: 'Analysis not found' });
         }
 
         res.json({
             success: true,
-            prediction: result.rows[0]
+            analysis: result.rows[0]
         });
     } catch (error) {
         console.error('Update prediction error:', error);
@@ -235,8 +235,8 @@ const updatePrediction = async (req, res) => {
     }
 };
 
-// Delete prediction
-const deletePrediction = async (req, res) => {
+// Delete analysis
+const deleteAnalysis = async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -246,12 +246,12 @@ const deletePrediction = async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Prediction not found' });
+            return res.status(404).json({ error: 'Analysis not found' });
         }
 
         res.json({
             success: true,
-            message: 'Prediction deleted successfully'
+            message: 'Analysis deleted successfully'
         });
     } catch (error) {
         console.error('Delete prediction error:', error);
@@ -264,7 +264,7 @@ const getDashboardStats = async (req, res) => {
     try {
         const stats = await db.query(`
       SELECT 
-        (SELECT COUNT(*) FROM predictions WHERE is_published = true) as total_predictions,
+        (SELECT COUNT(*) FROM predictions WHERE is_published = true) as total_analyses,
         (SELECT COUNT(*) FROM users) as total_users,
         (SELECT COUNT(*) FROM purchases WHERE payment_status = 'success') as total_purchases,
         (SELECT COALESCE(SUM(amount), 0) FROM purchases WHERE payment_status = 'success') as total_revenue,
@@ -546,9 +546,9 @@ module.exports = {
     syncSeriesMatches,
     getAvailableMatches,
     syncSingleMatch,
-    createPrediction,
-    updatePrediction,
-    deletePrediction,
+    createAnalysis,
+    updateAnalysis,
+    deleteAnalysis,
     getDashboardStats,
     getMatchSquad,
     cleanupMatches,

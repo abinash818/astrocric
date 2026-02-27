@@ -25,7 +25,7 @@ export default function HeroSection() {
                     </h1>
                     <p className={styles.subtitle}>{t('heroSubtitle')}</p>
                     <div className={styles.actions}>
-                        <Link href={`/${locale}/predictions`} className="btn btn-primary btn-lg">
+                        <Link href={`/${locale}/analysis`} className="btn btn-primary btn-lg">
                             {t('heroCTA')}
                         </Link>
                         <Link href={`/${locale}/download`} className="btn btn-secondary btn-lg">

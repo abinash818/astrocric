@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "491926924357",
+    "project_id": "astrocricket-826c2",
+    "storage_bucket": "astrocricket-826c2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:491926924357:android:f322c3ed8a465140d0072c",
+        "android_client_info": {
+          "package_name": "com.astrocric"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "491926924357-fivb66amvfcjd1vggi8tchq7gins18nf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.astrocric",
+            "certificate_hash": "fd22cd16b9a9b1354202381cb4ed9b0a5f860fe4"
+          }
+        },
+        {
+          "client_id": "491926924357-mppf1ucn9cga82hjv0t4nbgo83r8q3c4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9ebuhOlA6_3Bs27KUnFawspHHsRlyzAU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "491926924357-mppf1ucn9cga82hjv0t4nbgo83r8q3c4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -13,7 +13,7 @@ export default function Footer({ locale }) {
         { href: `/${locale}`, label: nav('home') },
         { href: `/${locale}/about`, label: nav('about') },
         { href: `/${locale}/method`, label: nav('method') },
-        { href: `/${locale}/predictions`, label: nav('predictions') },
+        { href: `/${locale}/analysis`, label: nav('predictions') },
         { href: `/${locale}/live-scores`, label: nav('liveScores') },
         { href: `/${locale}/testimonials`, label: nav('testimonials') },
         { href: `/${locale}/download`, label: nav('download') },
@@ -24,7 +24,7 @@ export default function Footer({ locale }) {
         { href: `/${locale}/privacy-policy`, label: t('privacy') },
         { href: `/${locale}/terms`, label: t('terms') },
         { href: `/${locale}/refund-policy`, label: t('refund') },
-        { href: `/${locale}/prediction-disclaimer`, label: t('predictionDisclaimer') },
+        { href: `/${locale}/analysis-disclaimer`, label: t('predictionDisclaimer') },
         { href: `/${locale}/earnings-disclaimer`, label: t('earningsDisclaimer') },
     ];
 

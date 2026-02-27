@@ -46,15 +46,15 @@ export async function getMatchScorecard(matchId) {
     return fetchAPI(`/api/matches/${matchId}/scorecard`, { cache: 'no-store' });
 }
 
-// Predictions (auth required)
-export async function getPredictionForMatch(matchId, token) {
-    return fetchAPI(`/api/predictions/match/${matchId}`, {
+// Analysis (auth required)
+export async function getAnalysisForMatch(matchId, token) {
+    return fetchAPI(`/api/analysis/match/${matchId}`, {
         headers: { Authorization: `Bearer ${token}` },
     });
 }
 
-export async function getPurchasedPredictions(token) {
-    return fetchAPI('/api/predictions/purchased', {
+export async function getPurchasedAnalyses(token) {
+    return fetchAPI('/api/analysis/purchased', {
         headers: { Authorization: `Bearer ${token}` },
     });
 }
@@ -98,7 +98,7 @@ export async function rechargeWallet(amount, token) {
     });
 }
 
-export async function purchasePrediction(matchId, token) {
+export async function purchaseAnalysis(matchId, token) {
     return fetchAPI(`/api/payment/purchase/${matchId}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },

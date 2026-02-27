@@ -71,29 +71,29 @@ const settleLedgerTransaction = async (merchantTransactionId, amount) => {
 // Create payment order
 const createOrder = async (req, res) => {
     try {
-        const { predictionId } = req.body;
+        const { analysisId: predictionId } = req.body;
         const userId = req.user.id;
 
-        // Get prediction details
-        const predResult = await db.query(
+        // Get analysis details
+        const anaResult = await db.query(
             'SELECT * FROM predictions WHERE id = $1 AND is_published = true',
-            [predictionId]
+            [analysisId]
         );
 
-        if (predResult.rows.length === 0) {
-            return res.status(404).json({ error: 'Prediction not found' });
+        if (anaResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Analysis not found' });
         }
 
-        const prediction = predResult.rows[0];
+        const analysis = anaResult.rows[0];
 
         // Check if already purchased
         const existingPurchase = await db.query(
             'SELECT * FROM purchases WHERE user_id = $1 AND prediction_id = $2',
-            [userId, predictionId]
+            [userId, analysisId]
         );
 
         if (existingPurchase.rows.length > 0 && existingPurchase.rows[0].payment_status === 'success') {
-            return res.status(400).json({ error: 'Prediction already purchased' });
+            return res.status(400).json({ error: 'Analysis already purchased' });
         }
 
         // Get user phone
@@ -301,12 +301,12 @@ const verifyPayment = async (req, res) => {
             res.json({
                 success: true,
                 message: 'Payment verified successfully',
-                type: 'PREDICTION_PURCHASE',
-                prediction: {
+                type: 'ANALYSIS_PURCHASE',
+                analysis: {
                     id: prediction.rows[0].id,
                     title: prediction.rows[0].title,
-                    fullPrediction: prediction.rows[0].full_prediction,
-                    predictedWinner: prediction.rows[0].predicted_winner,
+                    fullAnalysis: prediction.rows[0].full_prediction,
+                    analysisResult: prediction.rows[0].predicted_winner,
                     confidencePercentage: prediction.rows[0].confidence_percentage
                 }
             });
@@ -481,15 +481,15 @@ const getPaymentHistory = async (req, res) => {
             [userId]
         );
 
-        const payments = result.rows.map(row => ({
+        const analyses = result.rows.map(row => ({
             id: row.id,
             amount: parseFloat(row.amount),
             status: row.payment_status,
-            predictionTitle: `${row.team1} vs ${row.team2} - ${row.prediction_title}`,
+            analysisTitle: `${row.team1} vs ${row.team2} - ${row.prediction_title}`,
             createdAt: row.created_at
         }));
 
-        res.json({ payments });
+        res.json({ analyses });
     } catch (error) {
         console.error('Get payment history error:', error);
         res.status(500).json({ error: 'Failed to fetch payment history' });
@@ -499,7 +499,7 @@ const getPaymentHistory = async (req, res) => {
 // Get SDK Token for Mobile App
 const getSdkToken = async (req, res) => {
     try {
-        const { amount, predictionId, restrictToUpi } = req.body;
+        const { amount, analysisId: predictionId, restrictToUpi } = req.body;
         const userId = req.user.id;
 
         if (!amount || amount <= 0) {

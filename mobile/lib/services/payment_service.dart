@@ -6,12 +6,12 @@ class PaymentService {
   final ApiService _apiService = ApiService();
 
   // Create SDK Token (from Backend) - used for both SDK and Web Flow
-  Future<Map<String, dynamic>> getSdkToken(double amount, {int? predictionId, bool restrictToUpi = false, bool nativeUpi = false}) async {
+  Future<Map<String, dynamic>> getSdkToken(double amount, {int? analysisId, bool restrictToUpi = false, bool nativeUpi = false}) async {
     return await _apiService.post(
       '/payment/sdk-token',
       {
         'amount': amount,
-        if (predictionId != null) 'predictionId': predictionId,
+        if (analysisId != null) 'analysisId': analysisId,
         'restrictToUpi': restrictToUpi,
         'nativeUpi': nativeUpi
       },
@@ -19,11 +19,11 @@ class PaymentService {
   }
 
   // Start PhonePe Web Checkout
-  Future<Map<String, dynamic>> startPhonePeTransaction(double amount, {int? predictionId, bool restrictToUpi = false}) async {
+  Future<Map<String, dynamic>> startPhonePeTransaction(double amount, {int? analysisId, bool restrictToUpi = false}) async {
     try {
       // 1. Get Redirect URL from backend
       print('Requesting Web Checkout URL from backend for amount: $amount upiOnly: $restrictToUpi');
-      final tokenResponse = await getSdkToken(amount, predictionId: predictionId, restrictToUpi: restrictToUpi);
+      final tokenResponse = await getSdkToken(amount, analysisId: analysisId, restrictToUpi: restrictToUpi);
       
       String redirectUrl = tokenResponse['redirectUrl'] ?? '';
       String mTxnId = tokenResponse['merchantTransactionId'] ?? '';
@@ -136,10 +136,10 @@ class PaymentService {
     }
   }
 
-  Future<Map<String, dynamic>> createOrder(int predictionId) async {
+  Future<Map<String, dynamic>> createOrder(int analysisId) async {
     return await _apiService.post(
       '/payment/create-order',
-      {'predictionId': predictionId},
+      {'analysisId': analysisId},
     );
   }
   

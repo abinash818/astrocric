@@ -243,8 +243,8 @@ export default function LiveScoresClient() {
                                 )}
 
                                 {match.has_prediction && (
-                                    <Link href={`/${locale}/predictions`} className={styles.predictionLink}>
-                                        ✦ {locale === 'ta' ? 'கணிப்பு கிடைக்கும்' : 'Prediction Available'} →
+                                    <Link href={`/${locale}/analysis`} className={styles.predictionLink}>
+                                        ✦ {locale === 'ta' ? 'ஆய்வு கிடைக்கும்' : 'Analysis Available'} →
                                     </Link>
                                 )}
                             </div>

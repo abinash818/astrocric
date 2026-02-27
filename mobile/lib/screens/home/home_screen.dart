@@ -5,7 +5,7 @@ import '../../models/match.dart';
 import '../../services/match_service.dart';
 import '../../widgets/match_card.dart';
 import '../auth/login_screen.dart';
-import '../prediction/my_predictions_screen.dart';
+import '../analysis/my_analysis_screen.dart';
 import '../payment/recharge_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -114,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const MyPredictionsScreen(),
+                    builder: (context) => const MyAnalysisScreen(),
                   ),
                 );
               },

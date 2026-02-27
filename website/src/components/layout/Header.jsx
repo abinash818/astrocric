@@ -20,7 +20,7 @@ export default function Header({ locale }) {
         { href: `/${locale}/about`, label: t('about') },
         { href: `/${locale}/method`, label: t('method') },
         { href: `/${locale}/live-scores`, label: t('liveScores') },
-        { href: `/${locale}/predictions`, label: t('predictions') },
+        { href: `/${locale}/analysis`, label: t('predictions') },
         { href: `/${locale}/testimonials`, label: t('testimonials') },
         { href: `/${locale}/contact`, label: t('contact') },
     ];

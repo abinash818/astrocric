@@ -1,0 +1,500 @@
+﻿[        ] > Task :webview_flutter_android:copyReleaseJniLibsProjectAndLocalJars UP-TO-DATE
+[        ] Caching disabled for task ':webview_flutter_android:copyReleaseJniLibsProjectAndLocalJars' because:
+[        ]   Build cache is disabled
+[        ]   Caching has been disabled for the task
+[        ] Skipping task ':webview_flutter_android:copyReleaseJniLibsProjectAndLocalJars' as it is up-to-date.
+[        ] Resolve mutations for :webview_flutter_android:extractDeepLinksForAarRelease (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] :webview_flutter_android:extractDeepLinksForAarRelease (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] > Task :webview_flutter_android:extractDeepLinksForAarRelease UP-TO-DATE
+[        ] Caching disabled for task ':webview_flutter_android:extractDeepLinksForAarRelease' because:
+[        ]   Build cache is disabled
+[        ] Skipping task ':webview_flutter_android:extractDeepLinksForAarRelease' as it is up-to-date.
+[        ] Resolve mutations for :webview_flutter_android:extractReleaseAnnotations (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] :webview_flutter_android:extractReleaseAnnotations (Thread[#70,Execution worker Thread 2,5,main]) started.
+[  +87 ms] > Task :webview_flutter_android:extractReleaseAnnotations UP-TO-DATE
+[        ] Caching disabled for task ':webview_flutter_android:extractReleaseAnnotations' because:
+[        ]   Build cache is disabled
+[        ] Skipping task ':webview_flutter_android:extractReleaseAnnotations' as it is up-to-date.
+[        ] Resolve mutations for :webview_flutter_android:mergeReleaseConsumerProguardFiles (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] :webview_flutter_android:mergeReleaseConsumerProguardFiles (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] > Task :webview_flutter_android:mergeReleaseConsumerProguardFiles UP-TO-DATE
+[        ] Caching disabled for task ':webview_flutter_android:mergeReleaseConsumerProguardFiles' because:
+[        ]   Build cache is disabled
+[        ]   Simple merging task
+[        ] Skipping task ':webview_flutter_android:mergeReleaseConsumerProguardFiles' as it is up-to-date.
+[        ] Resolve mutations for :webview_flutter_android:mergeReleaseJavaResource (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] :webview_flutter_android:mergeReleaseJavaResource (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] > Task :webview_flutter_android:mergeReleaseJavaResource UP-TO-DATE
+[        ] Caching disabled for task ':webview_flutter_android:mergeReleaseJavaResource' because:
+[        ]   Build cache is disabled
+[        ]   Caching has been disabled for the task
+[        ] Skipping task ':webview_flutter_android:mergeReleaseJavaResource' as it is up-to-date.
+[        ] Resolve mutations for :webview_flutter_android:syncReleaseLibJars (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] :webview_flutter_android:syncReleaseLibJars (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] > Task :webview_flutter_android:syncReleaseLibJars UP-TO-DATE
+[        ] Caching disabled for task ':webview_flutter_android:syncReleaseLibJars' because:
+[        ]   Build cache is disabled
+[        ] Skipping task ':webview_flutter_android:syncReleaseLibJars' as it is up-to-date.
+[        ] Resolve mutations for :webview_flutter_android:bundleReleaseLocalLintAar (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] :webview_flutter_android:bundleReleaseLocalLintAar (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] > Task :webview_flutter_android:bundleReleaseLocalLintAar UP-TO-DATE
+[        ] Caching disabled for task ':webview_flutter_android:bundleReleaseLocalLintAar' because:
+[        ]   Build cache is disabled
+[        ]   Caching has been disabled for the task
+[        ] Skipping task ':webview_flutter_android:bundleReleaseLocalLintAar' as it is up-to-date.
+[        ] work action resolve out.aar (project :webview_flutter_android) (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] work action resolve out.aar (project :webview_flutter_android) (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] ExtractAarTransform (Thread[#68,included builds,5,main]) started.
+[        ] ExtractAarTransform (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] Resolve mutations for :firebase_core:writeReleaseLintModelMetadata (Thread[#69,Execution worker,5,main]) started.
+[        ] :firebase_core:writeReleaseLintModelMetadata (Thread[#69,Execution worker,5,main]) started.
+[        ] > Task :firebase_core:writeReleaseLintModelMetadata UP-TO-DATE
+[        ] Caching disabled for task ':firebase_core:writeReleaseLintModelMetadata' because:
+[        ]   Build cache is disabled
+[        ]   Caching has been disabled for the task
+[        ] Skipping task ':firebase_core:writeReleaseLintModelMetadata' as it is up-to-date.
+[        ] work action resolve lint-model-metadata.properties (project :firebase_core) (Thread[#69,Execution worker,5,main]) started.
+[        ] work action resolve lint-model-metadata.properties (project :firebase_core) (Thread[#69,Execution worker,5,main]) started.
+[        ] Resolve mutations for :firebase_auth:lintVitalAnalyzeRelease (Thread[#69,Execution worker,5,main]) started.
+[        ] :firebase_auth:lintVitalAnalyzeRelease (Thread[#69,Execution worker,5,main]) started.
+[  +84 ms] Resolve mutations for :firebase_auth:writeReleaseLintModelMetadata (Thread[#68,included builds,5,main]) started.
+[        ] :firebase_auth:writeReleaseLintModelMetadata (Thread[#68,included builds,5,main]) started.
+[        ] > Task :firebase_auth:writeReleaseLintModelMetadata UP-TO-DATE
+[        ] Caching disabled for task ':firebase_auth:writeReleaseLintModelMetadata' because:
+[        ]   Build cache is disabled
+[        ]   Caching has been disabled for the task
+[        ] Skipping task ':firebase_auth:writeReleaseLintModelMetadata' as it is up-to-date.
+[        ] work action resolve lint-model-metadata.properties (project :firebase_auth) (Thread[#68,included builds,5,main]) started.
+[        ] work action resolve lint-model-metadata.properties (project :firebase_auth) (Thread[#68,included builds,5,main]) started.
+[        ] Resolve mutations for :firebase_core:lintVitalAnalyzeRelease (Thread[#68,included builds,5,main]) started.
+[        ] :firebase_core:lintVitalAnalyzeRelease (Thread[#68,included builds,5,main]) started.
+[        ] Resolve mutations for :firebase_messaging:lintVitalAnalyzeRelease (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] :firebase_messaging:lintVitalAnalyzeRelease (Thread[#70,Execution worker Thread 2,5,main]) started.
+[+1311 ms] > Task :app:minifyReleaseWithR8
+[        ] Caching disabled for ExtractProGuardRulesTransform: C:\Users\abina\.gradle\caches\8.14\transforms\092081a488a0856a67165026a45b7ffe\transformed\jetified-libs.jar because:
+[        ]   Build cache is disabled
+[        ] Caching disabled for task ':app:minifyReleaseWithR8' because:
+[        ]   Build cache is disabled
+[   +1 ms] Task ':app:minifyReleaseWithR8' is not up-to-date because:
+[        ]   Input property 'classes' file C:\Users\abina\.gradle\caches\8.14\transforms\619151d965f40b2fc06dc0bd20565032\transformed\jetified-libs.jar has been removed.
+[        ]   Input property 'classes' file C:\Users\abina\.gradle\caches\8.14\transforms\092081a488a0856a67165026a45b7ffe\transformed\jetified-libs.jar has been added.
+[        ] R8 is a new Android code shrinker. If you experience any issues, please file a bug at
+[        ] https://issuetracker.google.com, using 'Shrinker (R8)' as component name.
+[        ] Current version is: 8.11.18.
+[        ] file or directory 'C:\Users\abina\astrocric\mobile\build\app\intermediates\generated_proguard_file\release\mergeReleaseGeneratedProguardFiles\proguard.txt', not found
+[        ] Supplied proguard configuration does not exist: C:\Users\abina\astrocric\mobile\android\app\proguard-rules.pro
+[+9994 ms] > Task :firebase_messaging:lintVitalAnalyzeRelease
+[        ] Caching disabled for task ':firebase_messaging:lintVitalAnalyzeRelease' because:
+[   +1 ms]   Build cache is disabled
+[        ] Task ':firebase_messaging:lintVitalAnalyzeRelease' is not up-to-date because:
+[        ]   Value of input property 'printStackTrace' has changed for task ':firebase_messaging:lintVitalAnalyzeRelease'
+[   +4 ms] Android Lint: Reusing lint classloader 31.11.1_false
+[   +3 ms] work action resolve out (project :firebase_messaging) (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] work action resolve out (project :firebase_messaging) (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] Resolve mutations for :firebase_messaging:writeReleaseLintModelMetadata (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] :firebase_messaging:writeReleaseLintModelMetadata (Thread[#70,Execution worker Thread 2,5,main]) started.
+[   +1 ms] > Task :firebase_messaging:writeReleaseLintModelMetadata UP-TO-DATE
+[        ] Caching disabled for task ':firebase_messaging:writeReleaseLintModelMetadata' because:
+[        ]   Build cache is disabled
+[        ]   Caching has been disabled for the task
+[        ] Skipping task ':firebase_messaging:writeReleaseLintModelMetadata' as it is up-to-date.
+[        ] work action resolve lint-model-metadata.properties (project :firebase_messaging) (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] work action resolve lint-model-metadata.properties (project :firebase_messaging) (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] Resolve mutations for :flutter_local_notifications:lintVitalAnalyzeRelease (Thread[#70,Execution worker Thread 2,5,main]) started.
+[        ] :flutter_local_notifications:lintVitalAnalyzeRelease (Thread[#70,Execution worker Thread 2,5,main]) started.
+[   +5 ms] > Task :firebase_auth:lintVitalAnalyzeRelease
+[        ] Caching disabled for task ':firebase_auth:lintVitalAnalyzeRelease' because:
+[        ]   Build cache is disabled
+[        ] Task ':firebase_auth:lintVitalAnalyzeRelease' is not up-to-date because:
+[        ]   Value of input property 'printStackTrace' has changed for task ':firebase_auth:lintVitalAnalyzeRelease'
+[        ] Android Lint: Creating lint class loader 31.11.1_false
+[ +274 ms] > Task :firebase_core:lintVitalAnalyzeRelease
+[        ] Caching disabled for task ':firebase_core:lintVitalAnalyzeRelease' because:
+[        ]   Build cache is disabled
+[        ] Task ':firebase_core:lintVitalAnalyzeRelease' is not up-to-date because:
+[        ]   Value of input property 'printStackTrace' has changed for task ':firebase_core:lintVitalAnalyzeRelease'
+[        ] Android Lint: Reusing lint classloader 31.11.1_false
+[        ] work action resolve out (project :firebase_core) (Thread[#68,included builds,5,main]) started.
+[        ] work action resolve out (project :firebase_core) (Thread[#68,included builds,5,main]) started.
+[        ] Resolve mutations for :flutter_local_notifications:writeReleaseLintModelMetadata (Thread[#68,included builds,5,main]) started.
+[        ] :flutter_local_notifications:writeReleaseLintModelMetadata (Thread[#68,included builds,5,main]) started.
+[        ] > Task :flutter_local_notifications:writeReleaseLintModelMetadata UP-TO-DATE
+[        ] Caching disabled for task ':flutter_local_notifications:writeReleaseLintModelMetadata' because:
+[        ]   Build cache is disabled
+[        ]   Caching has been disabled for the task
+[        ] Skipping task ':flutter_local_notifications:writeReleaseLintModelMetadata' as it is up-to-date.
+[        ] work action resolve lint-model-metadata.properties (project :flutter_local_notifications) (Thread[#68,included builds,5,main]) started.
+[        ] work action resolve lint-model-metadata.properties (project :flutter_local_notifications) (Thread[#68,included builds,5,main]) started.
+[        ] Resolve mutations for :google_sign_in_android:lintVitalAnalyzeRelease (Thread[#68,included builds,5,main]) started.
+[        ] :google_sign_in_android:lintVitalAnalyzeRelease (Thread[#68,included builds,5,main]) started.
+[ +358 ms] work action resolve out (project :firebase_auth) (Thread[#69,Execution worker,5,main]) started.
+[        ] work action resolve out (project :firebase_auth) (Thread[#69,Execution worker,5,main]) started.
+[        ] Resolve mutations for :google_sign_in_android:writeReleaseLintModelMetadata (Thread[#69,Execution worker,5,main]) started.
+[        ] :google_sign_in_android:writeReleaseLintModelMetadata (Thread[#69,Execution worker,5,main]) started.
+[        ] > Task :google_sign_in_android:writeReleaseLintModelMetadata UP-TO-DATE
+[        ] Caching disabled for task ':google_sign_in_android:writeReleaseLintModelMetadata' because:
+[        ]   Build cache is disabled
+[        ]   Caching has been disabled for the task
+[        ] Skipping task ':google_sign_in_android:writeReleaseLintModelMetadata' as it is up-to-date.
+[        ] work action resolve lint-model-metadata.properties (project :google_sign_in_android) (Thread[#69,Execution worker,5,main]) started.
+[        ] work action resolve lint-model-metadata.properties (project :google_sign_in_android) (Thread[#69,Execution worker,5,main]) started.
+[        ] Resolve mutations for :shared_preferences_android:lintVitalAnalyzeRelease (Thread[#69,Execution worker,5,main]) started.
+[        ] :shared_preferences_android:lintVitalAnalyzeRelease (Thread[#69,Execution worker,5,main]) started.
+[+1328 ms] > Task :flutter_local_notifications:lintVitalAnalyzeRelease
+[        ] Caching disabled for task ':flutter_local_notifications:lintVitalAnalyzeRelease' because:
+[        ]   Build cache is disabled
+[        ] Task ':flutter_local_notifications:lintVitalAnalyzeRelease' is not up-to-date because:
+[        ]   Value of input property 'printStackTrace' has changed for task ':flutter_local_notifications:lintVitalAnalyzeRelease'
+[        ] Android Lint: Reusing lint classloader 31.11.1_false
+[+1980 ms] The message 
+received from the daemon 
+indicates that the daemon 
+has disappeared.
+[        ] Build request 
+sent: Build{id=a503fc81-199d-
+4557-956b-60992b4023e9, curre
+ntDir=C:\Users\abina\astrocri
+c\mobile\android}
+[        ] Attempting to 
+read last messages from the 
+daemon log...
+[        ] Daemon pid: 20960
+[        ]   log file: C:\Use
+rs\abina\.gradle\daemon\8.14\
+daemon-20960.out.log
+[        ] ----- Last 20 
+lines from daemon log file - 
+daemon-20960.out.log -----
+[        ] Task ':google_sign
+_in_android:lintVitalAnalyzeR
+elease' is not up-to-date 
+because:
+[        ]   Value of input 
+property 'printStackTrace' 
+has changed for task ':google
+_sign_in_android:lintVitalAna
+lyzeRelease'
+[        ] work action 
+resolve out (project 
+:firebase_auth) 
+(Thread[#69,Execution 
+worker,5,main]) started.
+[        ] work action 
+resolve out (project 
+:firebase_auth) 
+(Thread[#69,Execution 
+worker,5,main]) started.
+[        ] Resolve mutations 
+for :google_sign_in_android:w
+riteReleaseLintModelMetadata 
+(Thread[#69,Execution 
+worker,5,main]) started.
+[        ] Android Lint: 
+Reusing lint classloader 
+31.11.1_false
+[        ] :google_sign_in_an
+droid:writeReleaseLintModelMe
+tadata (Thread[#69,Execution 
+worker,5,main]) started.
+[        ] Caching disabled 
+for task ':google_sign_in_and
+roid:writeReleaseLintModelMet
+adata' because:
+[        ]   Build cache is 
+disabled
+[        ]   Caching has 
+been disabled for the task
+[        ] Skipping task ':go
+ogle_sign_in_android:writeRel
+easeLintModelMetadata' as it 
+is up-to-date.
+[        ] work action 
+resolve lint-model-metadata.p
+roperties (project 
+:google_sign_in_android) 
+(Thread[#69,Execution 
+worker,5,main]) started.
+[        ] work action 
+resolve lint-model-metadata.p
+roperties (project 
+:google_sign_in_android) 
+(Thread[#69,Execution 
+worker,5,main]) started.
+[        ] Resolve mutations 
+for :shared_preferences_andro
+id:lintVitalAnalyzeRelease 
+(Thread[#69,Execution 
+worker,5,main]) started.
+[        ] :shared_preference
+s_android:lintVitalAnalyzeRel
+ease (Thread[#69,Execution 
+worker,5,main]) started.
+[        ] Caching disabled 
+for task ':shared_preferences
+_android:lintVitalAnalyzeRele
+ase' because:
+[        ]   Build cache is 
+disabled
+[        ] Task ':shared_pref
+erences_android:lintVitalAnal
+yzeRelease' is not 
+up-to-date because:
+[        ]   Value of input 
+property 'printStackTrace' 
+has changed for task ':shared
+_preferences_android:lintVita
+lAnalyzeRelease'
+[        ] Android Lint: 
+Creating lint class loader 
+31.11.1_true----- End of the 
+daemon log -----
+[        ] JVM crash log 
+found: file:///C:/Users/abina
+/astrocric/mobile/android/hs_
+err_pid20960.log
+[  +19 ms] FAILURE: Build 
+failed with an exception.
+[        ] * What went wrong:
+[        ] Gradle build 
+daemon disappeared 
+unexpectedly (it may have 
+been killed or may have 
+crashed)
+[        ] * Try:
+[        ] > Run with 
+--debug option to get more 
+log output.
+[        ] > Run with --scan 
+to get full insights.
+[        ] > Get more help 
+at https://help.gradle.org.
+[        ] * Exception is:
+[        ] org.gradle.launche
+r.daemon.client.DaemonDisappe
+aredException: Gradle build 
+daemon disappeared 
+unexpectedly (it may have 
+been killed or may have 
+crashed)
+[        ] 	at org.gradle.lau
+ncher.daemon.client.DaemonCli
+ent.handleDaemonDisappearance
+(DaemonClient.java:283)
+[        ] 	at org.gradle.lau
+ncher.daemon.client.DaemonCli
+ent.monitorBuild(DaemonClient
+.java:256)
+[        ] 	at org.gradle.lau
+ncher.daemon.client.DaemonCli
+ent.executeBuild(DaemonClient
+.java:209)
+[        ] 	at org.gradle.lau
+ncher.daemon.client.SingleUse
+DaemonClient.execute(SingleUs
+eDaemonClient.java:63)
+[        ] 	at org.gradle.lau
+ncher.daemon.client.SingleUse
+DaemonClient.execute(SingleUs
+eDaemonClient.java:37)
+[        ] 	at org.gradle.lau
+ncher.cli.RunBuildAction.run(
+RunBuildAction.java:56)
+[        ] 	at org.gradle.int
+ernal.Actions$RunnableActionA
+dapter.execute(Actions.java:1
+67)
+[        ] 	at org.gradle.lau
+ncher.cli.DefaultCommandLineA
+ctionFactory$ParseAndBuildAct
+ion.execute(DefaultCommandLin
+eActionFactory.java:371)
+[        ] 	at org.gradle.lau
+ncher.cli.DefaultCommandLineA
+ctionFactory$ParseAndBuildAct
+ion.execute(DefaultCommandLin
+eActionFactory.java:335)
+[        ] 	at org.gradle.lau
+ncher.cli.DebugLoggerWarningA
+ction.execute(DebugLoggerWarn
+ingAction.java:74)
+[        ] 	at org.gradle.lau
+ncher.cli.DebugLoggerWarningA
+ction.execute(DebugLoggerWarn
+ingAction.java:30)
+[        ] 	at org.gradle.lau
+ncher.cli.WelcomeMessageActio
+n.execute(WelcomeMessageActio
+n.java:97)
+[        ] 	at org.gradle.lau
+ncher.cli.WelcomeMessageActio
+n.execute(WelcomeMessageActio
+n.java:40)
+[        ] 	at org.gradle.lau
+ncher.cli.NativeServicesIniti
+alizingAction.execute(NativeS
+ervicesInitializingAction.jav
+a:50)
+[        ] 	at org.gradle.lau
+ncher.cli.NativeServicesIniti
+alizingAction.execute(NativeS
+ervicesInitializingAction.jav
+a:27)
+[        ] 	at org.gradle.lau
+ncher.cli.ExceptionReportingA
+ction.execute(ExceptionReport
+ingAction.java:41)
+[        ] 	at org.gradle.lau
+ncher.cli.ExceptionReportingA
+ction.execute(ExceptionReport
+ingAction.java:26)
+[        ] 	at org.gradle.lau
+ncher.cli.DefaultCommandLineA
+ctionFactory$WithLogging.exec
+ute(DefaultCommandLineActionF
+actory.java:483)
+[        ] 	at org.gradle.lau
+ncher.Main.doAction(Main.java
+:35)
+[        ] 	at org.gradle.lau
+ncher.bootstrap.EntryPoint.ru
+n(EntryPoint.java:52)
+[        ] 	at java.base/jdk.
+internal.reflect.DirectMethod
+HandleAccessor.invoke(Unknown
+ Source)
+[        ] 	at java.base/java
+.lang.reflect.Method.invoke(U
+nknown Source)
+[        ] 	at org.gradle.lau
+ncher.bootstrap.ProcessBootst
+rap.runNoExit(ProcessBootstra
+p.java:72)
+[        ] 	at org.gradle.lau
+ncher.bootstrap.ProcessBootst
+rap.run(ProcessBootstrap.java
+:39)
+[        ] 	at org.gradle.lau
+ncher.GradleMain.main(GradleM
+ain.java:31)
+[        ] 	at java.base/jdk.
+internal.reflect.DirectMethod
+HandleAccessor.invoke(Unknown
+ Source)
+[        ] 	at java.base/java
+.lang.reflect.Method.invoke(U
+nknown Source)
+[        ] 	at org.gradle.wra
+pper.BootstrapMainStarter.sta
+rt(BootstrapMainStarter.java:
+30)
+[        ] 	at org.gradle.wra
+pper.WrapperExecutor.execute(
+WrapperExecutor.java:129)
+[        ] 	at org.gradle.wra
+pper.GradleWrapperMain.main(G
+radleWrapperMain.java:61)
+[        ] > Task :google_sign_in_android:lintVitalAnalyzeRelease
+[        ] Caching disabled for task ':google_sign_in_android:lintVitalAnalyzeRelease' because:
+[        ]   Build cache is disabled
+[        ] Task ':google_sign_in_android:lintVitalAnalyzeRelease' is not up-to-date because:
+[        ]   Value of input property 'printStackTrace' has changed for task ':google_sign_in_android:lintVitalAnalyzeRelease'
+[        ] Android Lint: Reusing lint classloader 31.11.1_false
+[        ] > Task :shared_preferences_android:lintVitalAnalyzeRelease
+[        ] Caching disabled for task ':shared_preferences_android:lintVitalAnalyzeRelease' because:
+[        ]   Build cache is disabled
+[        ] Task ':shared_preferences_android:lintVitalAnalyzeRelease' is not up-to-date because:
+[        ]   Value of input property 'printStackTrace' has changed for task ':shared_preferences_android:lintVitalAnalyzeRelease'
+[        ] Android Lint: Creating lint class loader 31.11.1_true
+[  +70 ms] Running Gradle task 'assembleRelease'... (completed in 141.1s)
+[  +53 ms] "flutter apk" took 146,148ms.
+[ +107 ms] Gradle task 
+assembleRelease failed with 
+exit code 1
+[   +1 ms] 
+           #0      
+throwToolExit (package:flutte
+r_tools/src/base/common.dart:
+34:3)
+           #1      AndroidGra
+dleBuilder.buildGradleApp (pa
+ckage:flutter_tools/src/andro
+id/gradle.dart:592:7)
+           <asynchronous 
+suspension>
+           #2      AndroidGra
+dleBuilder.buildApk (package:
+flutter_tools/src/android/gra
+dle.dart:234:5)
+           <asynchronous 
+suspension>
+           #3      
+BuildApkCommand.runCommand (p
+ackage:flutter_tools/src/comm
+ands/build_apk.dart:131:5)
+           <asynchronous 
+suspension>
+           #4      FlutterCom
+mand.run.<anonymous closure> 
+(package:flutter_tools/src/ru
+nner/flutter_command.dart:155
+9:27)
+           <asynchronous 
+suspension>
+           #5      
+AppContext.run.<anonymous 
+closure> (package:flutter_too
+ls/src/base/context.dart:154:
+19)
+           <asynchronous 
+suspension>
+           #6      
+CommandRunner.runCommand (pac
+kage:args/command_runner.dart
+:212:13)
+           <asynchronous 
+suspension>
+           #7      FlutterCom
+mandRunner.runCommand.<anonym
+ous closure> (package:flutter
+_tools/src/runner/flutter_com
+mand_runner.dart:487:9)
+           <asynchronous 
+suspension>
+           #8      
+AppContext.run.<anonymous 
+closure> (package:flutter_too
+ls/src/base/context.dart:154:
+19)
+           <asynchronous 
+suspension>
+           #9      FlutterCom
+mandRunner.runCommand (packag
+e:flutter_tools/src/runner/fl
+utter_command_runner.dart:422
+:5)
+           <asynchronous 
+suspension>
+[        ] Running 1 shutdown hook
+           #10     
+run.<anonymous 
+closure>.<anonymous closure> 
+(package:flutter_tools/runner
+.dart:104:11)
+           <asynchronous 
+suspension>
+           #11     
+AppContext.run.<anonymous 
+closure> (package:flutter_too
+ls/src/base/context.dart:154:
+19)
+           <asynchronous 
+suspension>
+           #12     main (pack
+age:flutter_tools/executable.
+dart:103:3)
+           <asynchronous 
+suspension>
+
+
+[   +1 ms] Shutdown hooks complete
+[ +269 ms] exiting with code 1

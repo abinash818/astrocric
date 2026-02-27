@@ -24,6 +24,30 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/en/predictions',
+        destination: '/en/analysis',
+        permanent: true,
+      },
+      {
+        source: '/ta/predictions',
+        destination: '/ta/analysis',
+        permanent: true,
+      },
+      {
+        source: '/en/prediction-disclaimer',
+        destination: '/en/analysis-disclaimer',
+        permanent: true,
+      },
+      {
+        source: '/ta/prediction-disclaimer',
+        destination: '/ta/analysis-disclaimer',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default withNextIntl(nextConfig);

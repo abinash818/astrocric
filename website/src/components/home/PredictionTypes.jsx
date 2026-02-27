@@ -56,7 +56,7 @@ export default function PredictionTypes() {
                                 <span className={styles.priceAmount}>{type.price}</span>
                                 <span className={styles.pricePer}>/ {locale === 'ta' ? 'போட்டி' : 'match'}</span>
                             </div>
-                            <Link href={`/${locale}/predictions`} className={styles.cardBtn}>
+                            <Link href={`/${locale}/analysis`} className={styles.cardBtn}>
                                 {t('heroCTA')}
                             </Link>
                         </div>

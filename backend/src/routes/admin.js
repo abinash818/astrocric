@@ -13,10 +13,10 @@ router.get('/available-matches', adminController.getAvailableMatches);
 router.post('/matches/sync/:apiMatchId', adminController.syncSingleMatch);
 router.post('/matches/cleanup', adminController.cleanupMatches);
 
-// Prediction management
-router.post('/predictions', adminController.createPrediction);
-router.put('/predictions/:id', adminController.updatePrediction);
-router.delete('/predictions/:id', adminController.deletePrediction);
+// Analysis management
+router.post('/analysis', adminController.createAnalysis);
+router.put('/analysis/:id', adminController.updateAnalysis);
+router.delete('/analysis/:id', adminController.deleteAnalysis);
 
 // Squad management
 router.get('/matches/:id/squad', adminController.getMatchSquad);

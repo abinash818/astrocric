@@ -12,7 +12,7 @@ class Match {
   final String? result;
   final String? team1Score;
   final String? team2Score;
-  final bool hasPrediction;
+  final bool hasAnalysis;
 
   Match({
     required this.id,
@@ -28,7 +28,7 @@ class Match {
     this.result,
     this.team1Score,
     this.team2Score,
-    this.hasPrediction = false,
+    this.hasAnalysis = false,
   });
 
   factory Match.fromJson(Map<String, dynamic> json) {
@@ -46,7 +46,7 @@ class Match {
       result: json['result'],
       team1Score: json['team1_score'],
       team2Score: json['team2_score'],
-      hasPrediction: json['has_prediction'] ?? false,
+      hasAnalysis: json['has_analysis'] ?? false,
     );
   }
 }
