@@ -786,9 +786,19 @@ const callback = async (req, res) => {
                     <h1>Payment Successful!</h1>
                     <p>Your transaction has been processed. Your wallet balance will be updated shortly.</p>
                     <p style="font-size: 0.8rem; margin-top: 1rem;">ID: ${merchantTransactionId}</p>
-                    <a href="astrocric://payment-success" class="btn">Back to App</a>
-                    <p style="margin-top: 1rem;"><a href="/" style="color: #6b7280; text-decoration: none; font-size: 0.8rem;">Back to Home</a></p>
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 2rem;">
+                        <a href="astrocric://payment-success" class="btn">Back to App</a>
+                        <a href="/en/dashboard" class="btn" style="background: var(--accent-gold, #e5b80b);">Go to Dashboard</a>
+                    </div>
                 </div>
+                <script>
+                    // Auto redirect for web users after 5 seconds
+                    setTimeout(() => {
+                        if (!navigator.userAgent.includes('AstrocricApp')) {
+                            window.location.href = '/en/dashboard';
+                        }
+                    }, 5000);
+                </script>
             </body>
             </html>
         `);
