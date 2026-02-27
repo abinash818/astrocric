@@ -21,36 +21,35 @@
 }
 
 .container {
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 0 2rem;
     position: relative;
-}
-
-.content {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.2fr 0.8fr;
     gap: 4rem;
     align-items: center;
 }
 
-.text {
+.content {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
 }
 
-.text h2 {
+.title {
     font-family: var(--font-display);
-    font-size: clamp(2rem, 3.5vw, 2.75rem);
+    font-size: clamp(2.25rem, 4vw, 3.25rem);
     font-weight: 600;
     letter-spacing: -0.03em;
+    line-height: 1.1;
 }
 
-.text p {
+.desc {
     color: var(--text-secondary);
-    font-size: 1.0625rem;
+    font-size: 1.125rem;
     line-height: 1.7;
+    max-width: 480px;
 }
 
 .buttons {
@@ -108,18 +107,14 @@
 }
 
 .phone {
-    width: 220px;
-    height: 440px;
+    width: 240px;
+    height: 480px;
     background: var(--bg-card);
     border: 1px solid var(--border-gold);
-    border-radius: 32px;
+    border-radius: 36px;
     box-shadow: var(--shadow-lg), var(--shadow-gold);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    animation: float 8s ease-in-out infinite;
     position: relative;
     overflow: hidden;
 }
@@ -137,50 +132,79 @@
     border-bottom-right-radius: 12px;
 }
 
-@keyframes float {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-8px);
-    }
+.appPreview {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 2.5rem 1.5rem 1.5rem;
+    background: var(--bg-primary);
+    gap: 1.25rem;
 }
 
-.phoneIcon {
-    font-size: 1.5rem;
-    color: var(--accent-gold);
-    opacity: 0.8;
+.appHeader {
+    margin-bottom: 0.5rem;
 }
 
-.phoneBrand {
+.appLogo {
     font-family: var(--font-display);
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text-heading);
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--accent-gold);
 }
 
-.phoneTagline {
+.appCard {
+    background: var(--bg-card);
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.appMatch {
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: var(--text-primary);
+}
+
+.appAnalysis {
+    font-size: 0.8125rem;
+    color: var(--success);
+    font-weight: 600;
+}
+
+.appConfidence {
     font-size: 0.6875rem;
     color: var(--text-muted);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
 }
 
-@media (max-width: 768px) {
-    .content {
+.appStatus {
+    font-size: 0.6875rem;
+    padding: 0.25rem 0.5rem;
+    background: var(--overlay-gold);
+    color: var(--accent-gold);
+    border-radius: 4px;
+    width: fit-content;
+}
+
+@media (max-width: 900px) {
+    .container {
         grid-template-columns: 1fr;
         text-align: center;
+        gap: 3rem;
     }
 
-    .buttons {
+    .content {
         align-items: center;
     }
 
+    .desc {
+        margin: 0 auto;
+    }
+
     .phone {
-        width: 180px;
-        height: 360px;
+        width: 200px;
+        height: 400px;
     }
 }
