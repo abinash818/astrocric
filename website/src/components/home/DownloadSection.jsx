@@ -36,7 +36,7 @@ export default function DownloadSection() {
                                 </div>
                                 <div className={styles.appCard}>
                                     <div className={styles.appMatch}>IND vs AUS</div>
-                                    <div className={styles.appPrediction}>Winner: India</div>
+                                    <div className={styles.appAnalysis}>Analysis: India</div>
                                     <div className={styles.appConfidence}>87% Confidence</div>
                                 </div>
                                 <div className={styles.appCard}>

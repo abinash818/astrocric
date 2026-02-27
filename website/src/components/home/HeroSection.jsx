@@ -15,12 +15,12 @@ export default function HeroSection() {
                 <div className={styles.content}>
                     <div className={styles.badge}>
                         <span className={styles.badgeDot}></span>
-                        {locale === 'ta' ? 'வேத ஜோதிட கணிப்புகள்' : 'Vedic Astrology Predictions'}
+                        {locale === 'ta' ? 'வேத ஜோதிட ஆய்வுகள்' : 'Vedic Astrology Analysis'}
                     </div>
                     <h1 className={styles.title}>
                         {locale === 'ta'
                             ? <>{t('heroTitle').split('வேத')[0]}<span className={styles.titleGold}>வேத ஜோதிடத்துடன்</span></>
-                            : <>Predict Match Winners with <span className={styles.titleGold}>Vedic Astrology</span></>
+                            : <>Unlock Match Insights with <span className={styles.titleGold}>Vedic Astrology</span></>
                         }
                     </h1>
                     <p className={styles.subtitle}>{t('heroSubtitle')}</p>
@@ -52,7 +52,7 @@ export default function HeroSection() {
                 <div className={styles.visual}>
                     <div className={styles.card}>
                         <div className={styles.cardHeader}>
-                            <span className={styles.cardBadge}>✦ PREDICTION</span>
+                            <span className={styles.cardBadge}>✦ ANALYSIS</span>
                         </div>
                         <div className={styles.matchPreview}>
                             <div className={styles.team}>
@@ -66,7 +66,7 @@ export default function HeroSection() {
                             </div>
                         </div>
                         <div className={styles.cardResult}>
-                            <span className={styles.winnerLabel}>{locale === 'ta' ? 'கணிப்பு' : 'Predicted Winner'}</span>
+                            <span className={styles.winnerLabel}>{locale === 'ta' ? 'ஆய்வு' : 'Analysis Winner'}</span>
                             <span className={styles.winnerTeam}>INDIA ✓</span>
                         </div>
                         <div className={styles.confidence}>
