@@ -8,6 +8,6 @@ module.exports = {
     clientSecret: process.env.PHONEPE_CLIENT_SECRET,
     clientVersion: process.env.PHONEPE_CLIENT_VERSION || '1',
     apiUrl: process.env.PHONEPE_API_URL || 'https://api.phonepe.com/apis/hermes',
-    redirectUrl: apiBaseUrl + '/api/payment/callback',
-    callbackUrl: apiBaseUrl + '/api/payment/webhook'
+    redirectUrl: process.env.PHONEPE_REDIRECT_URL || (apiBaseUrl + '/api/payment/callback'),
+    callbackUrl: process.env.PHONEPE_CALLBACK_URL || (apiBaseUrl + '/api/payment/webhook')
 };
