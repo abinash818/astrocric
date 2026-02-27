@@ -252,7 +252,7 @@ class _AnalysisDetailScreenState extends State<AnalysisDetailScreen> {
         // Analysis Result
         if (prediction.analysisResult != null) ...[
           const Text(
-            'Analysis Result',
+            'Planet Support',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

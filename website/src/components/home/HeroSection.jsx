@@ -66,7 +66,7 @@ export default function HeroSection() {
                             </div>
                         </div>
                         <div className={styles.cardResult}>
-                            <span className={styles.winnerLabel}>{locale === 'ta' ? 'ஆய்வு' : 'Analysis Winner'}</span>
+                            <span className={styles.winnerLabel}>{locale === 'ta' ? 'கிரக ஆதரவு' : 'Planet Support'}</span>
                             <span className={styles.winnerTeam}>INDIA ✓</span>
                         </div>
                         <div className={styles.confidence}>

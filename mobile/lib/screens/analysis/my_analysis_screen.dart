@@ -175,7 +175,7 @@ class _AnalysisCard extends StatelessWidget {
               children: [
                 if (prediction.analysisResult != null) ...[
                   const Text(
-                    'Analysis Result',
+                    'Planet Support',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
