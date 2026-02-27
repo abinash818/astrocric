@@ -226,7 +226,8 @@
         "success": {
             "resetSent": "Password reset link sent to your email",
             "accountLinked": "Account linked successfully"
-        }
+        },
+        "rechargeLabel": "Recharge"
     },
     "legalContent": {
         "lastUpdated": "Last Updated: February 24, 2026",
