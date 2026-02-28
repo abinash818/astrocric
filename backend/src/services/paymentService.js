@@ -11,9 +11,14 @@ const env = isSandbox ? Env.SANDBOX : Env.PRODUCTION;
 // Production Checklist: Disable logging for live (Force enabled for debugging)
 const enableLogging = true;
 
-console.log(`[PhonePe] Initializing in ${isSandbox ? 'SANDBOX' : 'PRODUCTION'} mode`);
-console.log(`[PhonePe] API URL: ${config.apiUrl}`);
-console.log(`[PhonePe] Logging: ${enableLogging}`);
+console.log('[PhonePe] Config Details:', {
+    merchantId: config.merchantId ? config.merchantId.substring(0, 5) + '...' : 'MISSING',
+    clientId: config.clientId ? config.clientId.substring(0, 5) + '...' : 'MISSING',
+    hasSecret: !!config.clientSecret,
+    apiUrl: config.apiUrl,
+    isSandbox,
+    env
+});
 
 const client = StandardCheckoutClient.getInstance(
     config.clientId,
