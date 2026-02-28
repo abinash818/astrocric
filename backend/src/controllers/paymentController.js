@@ -15,6 +15,15 @@ const checkVelocity = async (userId) => {
     }
 };
 
+const DEFAULT_PAYMENT_MODES = {
+    "enabledPaymentModes": [
+        { "type": "UPI_INTENT" },
+        { "type": "UPI_QR" },
+        { "type": "CARD", "cardTypes": ["DEBIT_CARD", "CREDIT_CARD"] },
+        { "type": "NET_BANKING" }
+    ]
+};
+
 // Helper: Settle Ledger Transaction (Hardened)
 const settleLedgerTransaction = async (merchantTransactionId, amount) => {
     try {
@@ -164,7 +173,8 @@ const rechargeWallet = async (req, res) => {
             userId: userId,
             predictionId: 'WALLET', // Special tag for wallet
             phone: userResult.rows[0].phone,
-            merchantTransactionId: merchantTransactionId // Pass explicit ID
+            merchantTransactionId: merchantTransactionId, // Pass explicit ID
+            paymentModeConfig: DEFAULT_PAYMENT_MODES
         });
 
         console.log(`[Recharge] Payment initiated successfully for txn ${merchantTransactionId}`);
@@ -541,7 +551,7 @@ const getSdkToken = async (req, res) => {
             });
         } else {
             // Use Standard Web Checkout
-            let paymentModeConfig = null;
+            let paymentModeConfig = DEFAULT_PAYMENT_MODES;
             if (restrictToUpi) {
                 paymentModeConfig = { "enabledPaymentModes": [{ "type": "UPI" }] };
             }

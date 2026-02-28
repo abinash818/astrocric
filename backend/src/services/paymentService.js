@@ -77,9 +77,9 @@ class PhonePeService {
     }
 
     // Create Standard Web Checkout Request
-    async initiatePayment({ amount, userId, predictionId, phone, merchantTransactionId }) {
+    async initiatePayment({ amount, userId, predictionId, phone, merchantTransactionId, paymentModeConfig }) {
         const txnId = merchantTransactionId || `MT_${Date.now()}_${predictionId}`;
-        return this.getSdkToken({ amount, userId, merchantTransactionId: txnId, phone });
+        return this.getSdkToken({ amount, userId, merchantTransactionId: txnId, phone, paymentModeConfig });
     }
 
     // New: Get UPI Intent Deep Link (For Native Apps)
