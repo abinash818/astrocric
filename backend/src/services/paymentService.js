@@ -5,19 +5,16 @@ const crypto = require('crypto');
 
 // Initialize Client for Web forwarding (Unified SDK/Hermes)
 // Detect Sandbox vs Production based on URL
-const isSandbox = config.apiUrl && (config.apiUrl.includes('sandbox') || config.apiUrl.includes('preprod'));
+const isSandbox = config.apiUrl && config.apiUrl.includes('sandbox');
 const env = isSandbox ? Env.SANDBOX : Env.PRODUCTION;
 
-// Production Checklist: Disable logging for live (Force enabled for debugging)
+// Production Checklist: Disable logging for live
 const enableLogging = true;
 
-console.log('[PhonePe] Config Details:', {
-    merchantId: config.merchantId ? config.merchantId.substring(0, 5) + '...' : 'MISSING',
-    clientId: config.clientId ? config.clientId.substring(0, 5) + '...' : 'MISSING',
-    hasSecret: !!config.clientSecret,
+console.log('[PhonePe] Initialization Info:', {
+    env: isSandbox ? 'SANDBOX' : 'PRODUCTION',
     apiUrl: config.apiUrl,
-    isSandbox,
-    env
+    merchantId: config.merchantId
 });
 
 const client = StandardCheckoutClient.getInstance(
@@ -28,37 +25,25 @@ const client = StandardCheckoutClient.getInstance(
 );
 
 class PhonePeService {
-    // Web Checkout (Mobile) - Support for Standard MIDs
-    // Web Checkout (Mobile) - Support for Standard MIDs
     async getSdkToken({ amount, userId, merchantTransactionId, phone, paymentModeConfig }) {
         try {
-            const txnId = merchantTransactionId || `T${Date.now()}`;
+            const txnId = merchantTransactionId || `T${Date.now()}${userId}`;
 
-            // Ensure we use the correct merchantId from config
             const request = StandardCheckoutPayRequest.builder()
+                .merchantId(config.merchantId)
                 .merchantOrderId(txnId)
                 .amount(Math.round(amount * 100))
                 .redirectUrl(config.redirectUrl)
                 .message(`Payment for User ${userId}`)
                 .build();
 
-            // Explicitly set merchantId as required by PhonePe Backend
-            request.merchantId = config.merchantId;
-
-            // Inject paymentModeConfig if provided (e.g. to restrict to UPI)
-            if (paymentModeConfig) {
-                request.paymentFlow = {
-                    ...request.paymentFlow,
-                    paymentModeConfig: paymentModeConfig
-                };
-            }
-
             if (enableLogging) {
-                console.log('--- Initiating PhonePe Pay ---');
-                console.log('MID:', config.merchantId);
-                console.log('Transaction:', txnId);
-                console.log('Amount (paise):', Math.round(amount * 100));
-                console.log('Env:', env);
+                console.log('[PhonePe] Initiating request:', {
+                    merchantId: config.merchantId,
+                    merchantOrderId: txnId,
+                    amount: Math.round(amount * 100),
+                    env: env
+                });
             }
 
             const response = await client.pay(request);
