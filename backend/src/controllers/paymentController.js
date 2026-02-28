@@ -764,6 +764,15 @@ const callback = async (req, res) => {
         console.log('Merchant Txn ID:', merchantTransactionId);
         console.log('PhonePe Txn ID:', transactionId);
 
+        // 1. Verify actual status from PhonePe to be sure (since user might just manually visit this URL)
+        let isSuccess = false;
+        try {
+            const verificationResult = await phonePeService.verifyPayment(merchantTransactionId);
+            isSuccess = verificationResult.success && verificationResult.state === 'COMPLETED';
+        } catch (vErr) {
+            console.warn('[Callback] Verification failed during redirect:', vErr.message);
+        }
+
         // Simple HTML response to show status to the user
         res.send(`
             <!DOCTYPE html>
@@ -773,34 +782,47 @@ const callback = async (req, res) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Payment Status - Astrocric</title>
                 <style>
-                    body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #f0f2f5; margin: 0; }
-                    .card { background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); text-align: center; max-width: 400px; width: 90%; }
-                    .icon { font-size: 4rem; margin-bottom: 1.5rem; }
+                    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #f0f2f5; margin: 0; }
+                    .card { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); text-align: center; max-width: 400px; width: 90%; transition: all 0.3s ease; }
+                    .icon { font-size: 4.5rem; margin-bottom: 1.5rem; display: block; }
                     .success { color: #22c55e; }
                     .failed { color: #ef4444; }
-                    h1 { margin: 0.5rem 0; color: #1f2937; }
-                    p { color: #6b7280; font-size: 1.1rem; line-height: 1.5; }
-                    .btn { margin-top: 2rem; background: #5f259f; color: white; border: none; padding: 1rem 2rem; border-radius: 10px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; }
+                    h1 { margin: 0.5rem 0; color: #1f2937; font-size: 1.75rem; }
+                    p { color: #6b7280; font-size: 1.1rem; line-height: 1.5; margin-bottom: 0.5rem; }
+                    .txn-id { font-size: 0.8rem; color: #9ca3af; margin-top: 1rem; font-family: monospace; }
+                    .btn-container { display: flex; flex-direction: column; gap: 12px; margin-top: 2rem; }
+                    .btn { background: #5f259f; color: white; border: none; padding: 1rem 2rem; border-radius: 12px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; transition: background 0.2s; }
+                    .btn:hover { background: #4a1d7f; }
+                    .btn-secondary { background: #fff; color: #1f2937; border: 1px solid #d1d5db; }
+                    .btn-secondary:hover { background: #f9fafb; }
                 </style>
             </head>
             <body>
                 <div class="card">
-                    <div class="icon success">✅</div>
-                    <h1>Payment Successful!</h1>
-                    <p>Your transaction has been processed. Your wallet balance will be updated shortly.</p>
-                    <p style="font-size: 0.8rem; margin-top: 1rem;">ID: ${merchantTransactionId}</p>
-                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 2rem;">
-                        <a href="astrocric://payment-success" class="btn">Back to App</a>
-                        <a href="/en/dashboard" class="btn" style="background: var(--accent-gold, #e5b80b);">Go to Dashboard</a>
+                    ${isSuccess ? `
+                        <div class="icon success">✅</div>
+                        <h1>Payment Successful!</h1>
+                        <p>Your transaction has been processed. Your wallet balance will be updated shortly.</p>
+                    ` : `
+                        <div class="icon failed">❌</div>
+                        <h1>Payment Failed</h1>
+                        <p>We couldn't process your payment. If money was debited, it will be refunded automatically.</p>
+                    `}
+                    
+                    <p class="txn-id">ID: ${merchantTransactionId}</p>
+
+                    <div class="btn-container">
+                        <a href="astrocric://payment-${isSuccess ? 'success' : 'failure'}" class="btn">Back to App</a>
+                        <a href="/en/dashboard" class="btn btn-secondary">Go to Dashboard</a>
                     </div>
                 </div>
                 <script>
-                    // Auto redirect for web users after 5 seconds
+                    // Auto redirect for web users after 10 seconds
                     setTimeout(() => {
                         if (!navigator.userAgent.includes('AstrocricApp')) {
                             window.location.href = '/en/dashboard';
                         }
-                    }, 5000);
+                    }, 10000);
                 </script>
             </body>
             </html>
