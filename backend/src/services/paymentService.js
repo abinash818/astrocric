@@ -30,12 +30,14 @@ class PhonePeService {
             const txnId = merchantTransactionId || `T${Date.now()}${userId}`;
 
             const request = StandardCheckoutPayRequest.builder()
-                .merchantId(config.merchantId)
                 .merchantOrderId(txnId)
                 .amount(Math.round(amount * 100))
                 .redirectUrl(config.redirectUrl)
                 .message(`Payment for User ${userId}`)
                 .build();
+
+            // Explicitly set merchantId as required by PhonePe Backend
+            request.merchantId = config.merchantId;
 
             if (enableLogging) {
                 console.log('[PhonePe] Initiating request:', {
