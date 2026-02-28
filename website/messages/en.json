@@ -16,6 +16,7 @@
         "contact": "Contact",
         "blog": "Blog",
         "login": "Login",
+        "logout": "Logout",
         "myPredictions": "My Analysis",
         "wallet": "Wallet"
     },

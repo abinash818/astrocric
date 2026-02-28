@@ -60,82 +60,88 @@ export default function Header({ locale }) {
                     <LanguageToggle locale={locale} />
 
                     {user ? (
-                        <Link href={`/${locale}/dashboard`} className={styles.userBtn}>
-                            {user.photoURL ? (
-                                <img src={user.photoURL} alt="" className={styles.userAvatar} />
-                            ) : (
-                                <div className={styles.userAvatarPlaceholder}>
-                                    {user.email?.charAt(0).toUpperCase()}
-                                </div>
-                            )}
-                            <span>{user.displayName || (user.email?.split('@')[0])}</span>
+                        <>
+                            <Link href={`/${locale}/dashboard`} className={styles.userBtn}>
+                                {user.photoURL ? (
+                                    <img src={user.photoURL} alt="" className={styles.userAvatar} />
+                                ) : (
+                                    <div className={styles.userAvatarPlaceholder}>
+                                        {user.email?.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
+                                <span>{user.displayName || (user.email?.split('@')[0])}</span>
+                            </Link>
+                            <button onClick={logout} className={styles.logoutBtn}>
+                                {t('logout') || 'Logout'}
+                            </button>
+                        </>
+                    ) : (
+                        <Link href={`/${locale}/login`} className={styles.navLink}>
+                            {t('login')}
                         </Link>
-                        <button onClick={logout} className={styles.logoutBtn}>
-                             {t('logout') || 'Logout'}
-                        </button>
-                    </>
-                ) : (
-                <Link href={`/${locale}/login`} className={styles.navLink}>
-                    {t('login')}
-                </Link>
                     )}
 
-                <Link href={`/${locale}/download`} className={styles.downloadBtn}>
-                    {t('download')}
-                </Link>
+                    <Link href={`/${locale}/download`} className={styles.downloadBtn}>
+                        {t('download')}
+                    </Link>
+                </div>
+
+                {/* Mobile Hamburger */}
+                <button
+                    className={`${styles.hamburger} ${mobileOpen ? styles.hamburgerOpen : ''}`}
+                    onClick={() => setMobileOpen(!mobileOpen)}
+                    aria-label="Toggle menu"
+                >
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </div>
 
-            {/* Mobile Hamburger */}
-            <button
-                className={`${styles.hamburger} ${mobileOpen ? styles.hamburgerOpen : ''}`}
-                onClick={() => setMobileOpen(!mobileOpen)}
-                aria-label="Toggle menu"
-            >
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-        </div>
+            {/* Mobile Menu */}
+            {mobileOpen && (
+                <div className={styles.mobileMenu}>
+                    <nav className={styles.mobileNav}>
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                className={`${styles.mobileLink} ${isActive(link.href) ? styles.active : ''}`}
+                                onClick={() => setMobileOpen(false)}
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
+                        <div className={styles.mobileDivider}></div>
 
-            {/* Mobile Menu */ }
-    {
-        mobileOpen && (
-            <div className={styles.mobileMenu}>
-                <nav className={styles.mobileNav}>
-                    {navLinks.map((link) => (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            className={`${styles.mobileLink} ${isActive(link.href) ? styles.active : ''}`}
-                            onClick={() => setMobileOpen(false)}
-                        >
-                            {link.label}
-                        </Link>
-                    ))}
-                    <div className={styles.mobileDivider}></div>
-
-                    {user.displayName || user.email}
-                </Link>
-                <button
-                    onClick={() => {
-                        logout();
-                        setMobileOpen(false);
-                    }}
-                    className={styles.mobileLogout}
-                >
-                    {t('logout') || 'Logout'}
-                </button>
-            </>
-        ) : (
-            <Link
-                href={`/${locale}/login`}
-                className={styles.mobileLink}
-                onClick={() => setMobileOpen(false)}
-            >
-                {t('login')}
-            </Link>
-        )
-    }
+                        {user ? (
+                            <>
+                                <Link
+                                    href={`/${locale}/dashboard`}
+                                    className={styles.mobileLink}
+                                    onClick={() => setMobileOpen(false)}
+                                >
+                                    {user.displayName || user.email}
+                                </Link>
+                                <button
+                                    onClick={() => {
+                                        logout();
+                                        setMobileOpen(false);
+                                    }}
+                                    className={styles.mobileLogout}
+                                >
+                                    {t('logout') || 'Logout'}
+                                </button>
+                            </>
+                        ) : (
+                            <Link
+                                href={`/${locale}/login`}
+                                className={styles.mobileLink}
+                                onClick={() => setMobileOpen(false)}
+                            >
+                                {t('login')}
+                            </Link>
+                        )}
 
                         <Link
                             href={`/${locale}/download`}
@@ -146,10 +152,9 @@ export default function Header({ locale }) {
                         </Link>
                         <LanguageToggle locale={locale} />
                         <ThemeToggle />
-                    </nav >
-                </div >
-            )
-}
-        </header >
+                    </nav>
+                </div>
+            )}
+        </header>
     );
 }

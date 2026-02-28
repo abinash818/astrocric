@@ -14,14 +14,15 @@ async function fetchAPI(endpoint, options = {}) {
         });
 
         if (!res.ok) {
-            let errorText = '';
+            const errorText = await res.text();
+            let errorMessage = errorText;
             try {
-                const errorData = await res.json();
-                errorText = JSON.stringify(errorData);
+                const errorData = JSON.parse(errorText);
+                errorMessage = JSON.stringify(errorData);
             } catch (e) {
-                errorText = await res.text();
+                // Not JSON, keep as text
             }
-            console.error(`API error ${res.status} at ${endpoint}:`, errorText);
+            console.error(`API error ${res.status} at ${endpoint}:`, errorMessage);
             return null;
         }
 
