@@ -85,8 +85,8 @@ export default async function LocaleLayout({ children, params }) {
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
                 <JsonLd data={orgSchema} />
-                {/* PhonePe Checkout Script (Production version) */}
-                <script src="https://mercury.phonepe.com/web/bundle/checkout.js" async></script>
+                {/* PhonePe Checkout Script (Standard version) */}
+                <script src="https://mercury.phonepe.com/web/bundle/checkout.js"></script>
             </head>
             <body className="" suppressHydrationWarning>
                 <NextIntlClientProvider messages={messages}>
