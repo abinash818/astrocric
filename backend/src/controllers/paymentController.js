@@ -764,13 +764,15 @@ const callback = async (req, res) => {
         console.log('Merchant Txn ID:', merchantTransactionId);
         console.log('PhonePe Txn ID:', transactionId);
 
-        // 1. Verify actual status from PhonePe to be sure (since user might just manually visit this URL)
+        // 1. Verify actual status from PhonePe
         let isSuccess = false;
-        try {
-            const verificationResult = await phonePeService.verifyPayment(merchantTransactionId);
-            isSuccess = verificationResult.success && verificationResult.state === 'COMPLETED';
-        } catch (vErr) {
-            console.warn('[Callback] Verification failed during redirect:', vErr.message);
+        if (merchantTransactionId) {
+            try {
+                const verificationResult = await phonePeService.verifyPayment(merchantTransactionId);
+                isSuccess = verificationResult.success && verificationResult.state === 'COMPLETED';
+            } catch (vErr) {
+                console.warn('[Callback] Verification failed during redirect:', vErr.message);
+            }
         }
 
         // Simple HTML response to show status to the user
