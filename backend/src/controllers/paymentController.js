@@ -15,14 +15,7 @@ const checkVelocity = async (userId) => {
     }
 };
 
-const DEFAULT_PAYMENT_MODES = {
-    "enabledPaymentModes": [
-        { "type": "UPI_INTENT" },
-        { "type": "UPI_QR" },
-        { "type": "CARD", "cardTypes": ["DEBIT_CARD", "CREDIT_CARD"] },
-        { "type": "NET_BANKING" }
-    ]
-};
+const DEFAULT_PAYMENT_MODES = null; // Reverted to null for production stability
 
 // Helper: Settle Ledger Transaction (Hardened)
 const settleLedgerTransaction = async (merchantTransactionId, amount) => {
