@@ -15,7 +15,14 @@ const checkVelocity = async (userId) => {
     }
 };
 
-const DEFAULT_PAYMENT_MODES = null; // Reverted to null to let PhonePe show default instruments (fixes blank QR in some environments)
+const DEFAULT_PAYMENT_MODES = {
+    "enabledPaymentModes": [
+        { "type": "UPI_INTENT" },
+        { "type": "UPI_QR" },
+        { "type": "CARD", "cardTypes": ["DEBIT_CARD", "CREDIT_CARD"] },
+        { "type": "NET_BANKING" }
+    ]
+};
 
 // Helper: Settle Ledger Transaction (Hardened)
 const settleLedgerTransaction = async (merchantTransactionId, amount) => {
