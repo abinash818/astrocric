@@ -26,9 +26,30 @@ export default function RechargeModal({ isOpen, onClose, token, onBalanceUpdate 
         try {
             const response = await rechargeWallet(amount, token);
             console.log('[Recharge] API Response:', response);
+
             if (response && response.success && response.redirectUrl) {
-                // Redirect to PhonePe
-                window.location.href = response.redirectUrl;
+                // Use PhonePe Iframe Checkout
+                if (window.PhonePeCheckout && window.PhonePeCheckout.transact) {
+                    window.PhonePeCheckout.transact({
+                        tokenUrl: response.redirectUrl,
+                        type: 'IFRAME',
+                        callback: (res) => {
+                            if (res === 'CONCLUDED') {
+                                // Refresh balance if needed
+                                if (onBalanceUpdate) onBalanceUpdate();
+                                onClose();
+                                // Optional: Redirect to success page or show toast
+                                window.location.href = `/${window.location.pathname.split('/')[1]}/dashboard`;
+                            } else if (res === 'USER_CANCEL') {
+                                setError('Payment cancelled by user');
+                                setLoading(false);
+                            }
+                        }
+                    });
+                } else {
+                    // Fallback to redirect if script failed to load
+                    window.location.href = response.redirectUrl;
+                }
             } else {
                 console.error('[Recharge] Payment initiation failed:', response);
                 setError(`Failed to initiate payment: ${response?.message || response?.error || 'Unknown error'}`);

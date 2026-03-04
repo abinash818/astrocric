@@ -7,6 +7,7 @@ import '../../widgets/match_card.dart';
 import '../auth/login_screen.dart';
 import '../analysis/my_analysis_screen.dart';
 import '../payment/recharge_screen.dart';
+import '../../config/theme_constants.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -30,25 +31,42 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
+      backgroundColor: AppTheme.warmWhite,
       appBar: AppBar(
-        title: const Text('Astrocric'),
-        backgroundColor: Colors.blue.shade700,
+        title: Row(
+          children: [
+            Image.asset('assets/images/logo.png', height: 40),
+            const SizedBox(width: 12),
+            const Text(
+              'S&B ASTRO',
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                letterSpacing: 2,
+                fontSize: 20,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: AppTheme.deepBlue,
         foregroundColor: Colors.white,
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.account_circle),
+            icon: const Icon(Icons.account_circle_rounded, color: AppTheme.primaryGold, size: 28),
             onPressed: () => _showProfileMenu(context, authProvider),
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
+          indicatorColor: AppTheme.primaryGold,
+          indicatorWeight: 3,
+          labelColor: AppTheme.primaryGold,
           unselectedLabelColor: Colors.white70,
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1),
           tabs: const [
-            Tab(text: 'Upcoming'),
-            Tab(text: 'Live'),
-            Tab(text: 'Finished'),
+            Tab(text: 'UPCOMING'),
+            Tab(text: 'LIVE'),
+            Tab(text: 'FINISHED'),
           ],
         ),
       ),
@@ -75,64 +93,90 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void _showProfileMenu(BuildContext context, AuthProvider authProvider) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: Text(authProvider.user?.name ?? 'User'),
-              subtitle: Text(authProvider.user?.phone ?? ''),
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-            const Divider(),
             ListTile(
-              leading: const Icon(Icons.account_balance_wallet),
-              title: const Text('Astro Coins'),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: AppTheme.softBlue, shape: BoxShape.circle),
+                child: const Icon(Icons.person_rounded, color: AppTheme.deepBlue),
+              ),
+              title: Text(
+                authProvider.user?.name ?? 'User',
+                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: AppTheme.deepBlue),
+              ),
+              subtitle: Text(authProvider.user?.phone ?? '', style: const TextStyle(color: AppTheme.textSecondary)),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Divider(),
+            ),
+            _buildProfileItem(
+              icon: Icons.account_balance_wallet_rounded,
+              title: 'Astro Coins',
               trailing: Text(
                 '🪙 ${authProvider.user?.walletBalance.toStringAsFixed(0) ?? '0'}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: AppTheme.primaryGold),
               ),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const RechargeScreen(),
-                  ),
-                );
+                Navigator.push(context, AppTheme.smoothRoute(const RechargeScreen()));
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.history),
-              title: const Text('My Analysis'),
+            _buildProfileItem(
+              icon: Icons.history_rounded,
+              title: 'My Analysis',
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const MyAnalysisScreen(),
-                  ),
-                );
+                Navigator.push(context, AppTheme.smoothRoute(const MyAnalysisScreen()));
               },
             ),
+            const SizedBox(height: 16),
             ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Logout', style: TextStyle(color: Colors.red)),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.red.shade50, shape: BoxShape.circle),
+                child: const Icon(Icons.logout_rounded, color: Colors.red),
+              ),
+              title: const Text('Logout', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
               onTap: () async {
                 await authProvider.logout();
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  AppTheme.smoothRoute(const LoginScreen()),
                   (route) => false,
                 );
               },
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildProfileItem({required IconData icon, required String title, Widget? trailing, required VoidCallback onTap}) {
+    return ListTile(
+      leading: Icon(icon, color: AppTheme.deepBlue),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: AppTheme.deepBlue)),
+      trailing: trailing ?? const Icon(Icons.chevron_right_rounded, color: AppTheme.textSecondary),
+      onTap: onTap,
     );
   }
 

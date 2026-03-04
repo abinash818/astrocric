@@ -29,8 +29,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDLavevOJKNTuVnpco6uCn3FIgNiKdgASg',
-    appId: '1:491926924357:android:3a4f8109201c73d2d0072c',
+    apiKey: 'AIzaSyD9ebuhOlA6_3Bs27KUnFawspHHsRlyzAU',
+    appId: '1:491926924357:android:f322c3ed8a465140d0072c',
     messagingSenderId: '491926924357',
     projectId: 'astrocricket-826c2',
     storageBucket: 'astrocricket-826c2.firebasestorage.app',

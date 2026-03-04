@@ -9,14 +9,14 @@ class MatchService {
       '/matches/upcoming?page=$page&limit=$limit',
     );
 
-    final List<dynamic> matchesJson = response['matches'];
+    final List<dynamic> matchesJson = response.data['matches'];
     return matchesJson.map((json) => Match.fromJson(json)).toList();
   }
 
   Future<List<Match>> getLiveMatches() async {
     final response = await _apiService.get('/matches/live');
     
-    final List<dynamic> matchesJson = response['matches'];
+    final List<dynamic> matchesJson = response.data['matches'];
     return matchesJson.map((json) => Match.fromJson(json)).toList();
   }
 
@@ -25,17 +25,17 @@ class MatchService {
       '/matches/finished?page=$page&limit=$limit',
     );
 
-    final List<dynamic> matchesJson = response['matches'];
+    final List<dynamic> matchesJson = response.data['matches'];
     return matchesJson.map((json) => Match.fromJson(json)).toList();
   }
 
   Future<Match> getMatchDetails(int matchId) async {
     final response = await _apiService.get('/matches/$matchId');
-    return Match.fromJson(response);
+    return Match.fromJson(response.data);
   }
 
   Future<Map<String, dynamic>> getMatchScorecard(int matchId) async {
     final response = await _apiService.get('/matches/$matchId/scorecard');
-    return response;
+    return response.data;
   }
 }

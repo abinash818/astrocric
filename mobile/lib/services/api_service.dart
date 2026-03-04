@@ -1,93 +1,103 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/constants.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
-  ApiService._internal();
-
+  
+  late final Dio _dio;
+  final _storage = const FlutterSecureStorage();
   String? _token;
+  bool _isInitialized = false;
+
+  ApiService._internal() {
+    _dio = Dio(BaseOptions(
+      baseUrl: AppConstants.apiBaseUrl,
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    ));
+
+    _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        if (_token != null) {
+          options.headers['Authorization'] = 'Bearer $_token';
+        }
+        return handler.next(options);
+      },
+      onError: (DioException e, handler) {
+        if (e.response?.statusCode == 401) {
+          print('ApiService: 401 Unauthorized detected. Clearing token...');
+          clearToken();
+          // Note: In a real app, you might trigger a global logout event here
+        }
+        return handler.next(e);
+      },
+    ));
+  }
+
   String? get token => _token;
+
+  Future<void> ensureInitialized() async {
+    if (_isInitialized) return;
+    await loadToken();
+    _isInitialized = true;
+  }
 
   Future<void> setToken(String token) async {
     _token = token;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
+    await _storage.write(key: 'auth_token', value: token);
   }
 
   Future<void> loadToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    _token = prefs.getString('auth_token');
+    _token = await _storage.read(key: 'auth_token');
   }
 
   Future<void> clearToken() async {
     _token = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
+    await _storage.delete(key: 'auth_token');
   }
 
-  Map<String, String> _getHeaders({bool includeAuth = true}) {
-    final headers = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (includeAuth && _token != null) {
-      headers['Authorization'] = 'Bearer $_token';
-    }
-    
-    return headers;
-  }
-
-  Future<Map<String, dynamic>> get(String endpoint, {bool requiresAuth = true}) async {
+  Future<Response> get(String endpoint, {bool requiresAuth = true}) async {
+    await ensureInitialized();
     try {
-      final response = await http.get(
-        Uri.parse('${AppConstants.apiBaseUrl}$endpoint'),
-        headers: _getHeaders(includeAuth: requiresAuth),
-      );
-
-      return _handleResponse(response);
-    } catch (e) {
-      throw Exception('Network error: $e');
+      return await _dio.get(endpoint);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
   }
 
-  Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> body, {bool requiresAuth = true}) async {
+  Future<Response> post(String endpoint, Map<String, dynamic> body, {bool requiresAuth = true}) async {
+    await ensureInitialized();
     try {
-      final response = await http.post(
-        Uri.parse('${AppConstants.apiBaseUrl}$endpoint'),
-        headers: _getHeaders(includeAuth: requiresAuth),
-        body: jsonEncode(body),
-      );
-
-      return _handleResponse(response);
-    } catch (e) {
-      throw Exception('Network error: $e');
+      return await _dio.post(endpoint, data: body);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
   }
 
-  Future<Map<String, dynamic>> put(String endpoint, Map<String, dynamic> body, {bool requiresAuth = true}) async {
+  Future<Response> put(String endpoint, Map<String, dynamic> body, {bool requiresAuth = true}) async {
+    await ensureInitialized();
     try {
-      final response = await http.put(
-        Uri.parse('${AppConstants.apiBaseUrl}$endpoint'),
-        headers: _getHeaders(includeAuth: requiresAuth),
-        body: jsonEncode(body),
-      );
-
-      return _handleResponse(response);
-    } catch (e) {
-      throw Exception('Network error: $e');
+      return await _dio.put(endpoint, data: body);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
   }
 
-  Map<String, dynamic> _handleResponse(http.Response response) {
-    final data = jsonDecode(response.body);
+  Exception _handleDioError(DioException e) {
+    if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.receiveTimeout) {
+      return Exception('Connection timeout. Please check your internet.');
+    }
+    if (e.type == DioExceptionType.connectionError) {
+      return Exception('No internet connection.');
+    }
     
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return data;
-    } else {
-      throw Exception(data['error'] ?? 'Request failed');
-    }
+    final errorMessage = e.response?.data?['error'] ?? e.message ?? 'Request failed';
+    return Exception(errorMessage);
   }
 }

@@ -1,13 +1,13 @@
 class User {
   final String id;
-  final String phone;
+  final String? phone;
   final String? name;
   final String? email;
   final double walletBalance;
 
   User({
     required this.id,
-    required this.phone,
+    this.phone,
     this.name,
     this.email,
     required this.walletBalance,
@@ -15,8 +15,8 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'],
-      phone: json['phone'],
+      id: json['id'].toString(), // Safely handle int or string
+      phone: json['phone']?.toString(), // Safely handle null
       name: json['name'],
       email: json['email'],
       walletBalance: (json['walletBalance'] ?? 0).toDouble(),

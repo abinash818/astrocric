@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../models/match.dart';
 import '../../services/match_service.dart';
+import '../../config/theme_constants.dart';
 
 class MatchDetailScreen extends StatefulWidget {
   final int matchId;
@@ -20,7 +22,6 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
   @override
   void initState() {
     super.initState();
-    print('MatchDetailScreen initialized for match ${widget.matchId}');
     _matchFuture = _matchService.getMatchDetails(widget.matchId);
     _scorecardFuture = _matchService.getMatchScorecard(widget.matchId);
     _tabController = TabController(length: 2, vsync: this);
@@ -35,18 +36,25 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.warmWhite,
       appBar: AppBar(
-        title: const Text('Match Center'),
-        backgroundColor: Colors.blue.shade700,
+        title: const Text(
+          'MATCH CENTER',
+          style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 18),
+        ),
+        backgroundColor: AppTheme.deepBlue,
         foregroundColor: Colors.white,
+        elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
+          indicatorColor: AppTheme.primaryGold,
+          indicatorWeight: 3,
+          labelColor: AppTheme.primaryGold,
           unselectedLabelColor: Colors.white70,
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1),
           tabs: const [
-            Tab(text: 'Scorecard'),
-            Tab(text: 'Info'),
+            Tab(text: 'SCORECARD'),
+            Tab(text: 'INFO'),
           ],
         ),
       ),
@@ -84,34 +92,70 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
 
   Widget _buildMatchHeader(Match match) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade700,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      decoration: const BoxDecoration(
+        color: AppTheme.deepBlue,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
       ),
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(match.matchType, style: const TextStyle(color: Colors.white70)),
-              Text(match.status.toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  match.matchType.toUpperCase(),
+                  style: const TextStyle(color: AppTheme.primaryGold, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  match.status.toUpperCase(),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 32),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildTeamInfo(match.team1, match.team1FlagUrl, match.team1Score),
-              const Text('VS', style: TextStyle(color: Colors.white54, fontSize: 18, fontWeight: FontWeight.bold)),
-              _buildTeamInfo(match.team2, match.team2FlagUrl, match.team2Score),
+              Expanded(child: _buildTeamInfo(match.team1, match.team1FlagUrl, match.team1Score)),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'VS',
+                  style: TextStyle(color: Colors.white24, fontSize: 32, fontWeight: FontWeight.w900),
+                ),
+              ),
+              Expanded(child: _buildTeamInfo(match.team2, match.team2FlagUrl, match.team2Score)),
             ],
           ),
           if (match.result != null) ...[
-            const SizedBox(height: 16),
-            Text(
-              match.result!,
-              style: const TextStyle(color: Colors.white, fontStyle: FontStyle.italic),
-              textAlign: TextAlign.center,
+            const SizedBox(height: 32),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
+              ),
+              child: Text(
+                match.result!,
+                style: const TextStyle(color: Colors.white, fontStyle: FontStyle.italic, fontWeight: FontWeight.w500),
+                textAlign: TextAlign.center,
+              ),
             ),
           ],
         ],
@@ -122,23 +166,40 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
   Widget _buildTeamInfo(String name, String? flagUrl, String? score) {
     return Column(
       children: [
-        CircleAvatar(
-          backgroundColor: Colors.white,
-          radius: 24,
-          backgroundImage: flagUrl != null ? NetworkImage(flagUrl) : null,
-          child: flagUrl == null ? const Icon(Icons.sports_cricket, color: Colors.blue) : null,
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            border: Border.all(color: AppTheme.primaryGold.withOpacity(0.3), width: 2),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 12, offset: const Offset(0, 4)),
+            ],
+          ),
+          child: flagUrl != null
+              ? ClipOval(
+                  child: Image.network(
+                    flagUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.sports_cricket_rounded, color: AppTheme.deepBlue, size: 28),
+                  ),
+                )
+              : const Icon(Icons.sports_cricket_rounded, color: AppTheme.deepBlue, size: 28),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Text(
           name,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
           textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
         if (score != null) ...[
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             score,
-            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: AppTheme.primaryGold, fontSize: 18, fontWeight: FontWeight.w900),
           ),
         ],
       ],
@@ -192,25 +253,47 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
     final batting = inning['batting'] as List<dynamic>? ?? [];
     final bowling = inning['bowling'] as List<dynamic>? ?? [];
 
-    return Card(
-      margin: const EdgeInsets.all(8),
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.primaryGold.withOpacity(0.15)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
       child: ExpansionTile(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          title.toUpperCase(),
+          style: const TextStyle(fontWeight: FontWeight.w900, color: AppTheme.deepBlue, fontSize: 13, letterSpacing: 1),
+        ),
+        iconColor: AppTheme.primaryGold,
+        collapsedIconColor: AppTheme.primaryGold,
         initiallyExpanded: true,
         children: [
           if (batting.isNotEmpty) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Align(alignment: Alignment.centerLeft, child: Text('Batting', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(color: AppTheme.softBlue, borderRadius: BorderRadius.circular(6)),
+                child: const Text('BATTING', style: TextStyle(fontWeight: FontWeight.w900, color: AppTheme.deepBlue, fontSize: 10, letterSpacing: 1)),
+              ),
             ),
             _buildBattingTable(batting),
           ],
           if (bowling.isNotEmpty) ...[
-             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Align(alignment: Alignment.centerLeft, child: Text('Bowling', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(color: AppTheme.softBlue, borderRadius: BorderRadius.circular(6)),
+                child: const Text('BOWLING', style: TextStyle(fontWeight: FontWeight.w900, color: AppTheme.deepBlue, fontSize: 10, letterSpacing: 1)),
+              ),
             ),
-             _buildBowlingTable(bowling),
+            _buildBowlingTable(bowling),
+            const SizedBox(height: 16),
           ],
         ],
       ),
@@ -221,11 +304,12 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: DataTable(
-        columnSpacing: 20,
-        headingRowHeight: 40,
+        columnSpacing: 24,
+        headingRowHeight: 45,
+        headingTextStyle: const TextStyle(fontWeight: FontWeight.w900, color: AppTheme.textSecondary, fontSize: 11, letterSpacing: 0.5),
         columns: const [
-          DataColumn(label: Text('Batter')),
-          DataColumn(label: Text('R', style: TextStyle(fontWeight: FontWeight.bold))),
+          DataColumn(label: Text('BATTER')),
+          DataColumn(label: Text('R', style: TextStyle(color: AppTheme.deepBlue))),
           DataColumn(label: Text('B')),
           DataColumn(label: Text('4s')),
           DataColumn(label: Text('6s')),
@@ -234,7 +318,6 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
         rows: batting.map((b) {
           final name = b['batsman']?['name'] ?? 'Unknown';
           final dismissal = b['dismissal-text'] ?? '';
-          final isOut = dismissal != 'not out';
           
           return DataRow(cells: [
             DataCell(
@@ -242,17 +325,17 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(name, style: const TextStyle(fontWeight: FontWeight.w800, color: AppTheme.deepBlue, fontSize: 13)),
                   if (dismissal.isNotEmpty)
-                    Text(dismissal, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                    Text(dismissal, style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
                 ],
               )
             ),
-            DataCell(Text(b['r'].toString(), style: const TextStyle(fontWeight: FontWeight.bold))),
-            DataCell(Text(b['b'].toString())),
-            DataCell(Text(b['4s'].toString())),
-            DataCell(Text(b['6s'].toString())),
-            DataCell(Text(b['sr'].toString())),
+            DataCell(Text(b['r'].toString(), style: const TextStyle(fontWeight: FontWeight.w900, color: AppTheme.deepBlue, fontSize: 14))),
+            DataCell(Text(b['b'].toString(), style: const TextStyle(fontSize: 13))),
+            DataCell(Text(b['4s'].toString(), style: const TextStyle(fontSize: 13))),
+            DataCell(Text(b['6s'].toString(), style: const TextStyle(fontSize: 13))),
+            DataCell(Text(b['sr'].toString(), style: const TextStyle(fontSize: 13))),
           ]);
         }).toList(),
       ),
@@ -263,25 +346,26 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: DataTable(
-        columnSpacing: 20,
-        headingRowHeight: 40,
+        columnSpacing: 24,
+        headingRowHeight: 45,
+        headingTextStyle: const TextStyle(fontWeight: FontWeight.w900, color: AppTheme.textSecondary, fontSize: 11, letterSpacing: 0.5),
         columns: const [
-          DataColumn(label: Text('Bowler')),
+          DataColumn(label: Text('BOWLER')),
           DataColumn(label: Text('O')),
           DataColumn(label: Text('M')),
           DataColumn(label: Text('R')),
-          DataColumn(label: Text('W', style: TextStyle(fontWeight: FontWeight.bold))),
+          DataColumn(label: Text('W', style: TextStyle(color: AppTheme.deepBlue))),
           DataColumn(label: Text('ECO')),
         ],
         rows: bowling.map((b) {
           final name = b['bowler']?['name'] ?? 'Unknown';
           return DataRow(cells: [
-            DataCell(Text(name, style: const TextStyle(fontWeight: FontWeight.bold))),
-            DataCell(Text(b['o'].toString())),
-            DataCell(Text(b['m'].toString())),
-            DataCell(Text(b['r'].toString())),
-            DataCell(Text(b['w'].toString(), style: const TextStyle(fontWeight: FontWeight.bold))),
-            DataCell(Text(b['eco'].toString())),
+            DataCell(Text(name, style: const TextStyle(fontWeight: FontWeight.w800, color: AppTheme.deepBlue, fontSize: 13))),
+            DataCell(Text(b['o'].toString(), style: const TextStyle(fontSize: 13))),
+            DataCell(Text(b['m'].toString(), style: const TextStyle(fontSize: 13))),
+            DataCell(Text(b['r'].toString(), style: const TextStyle(fontSize: 13))),
+            DataCell(Text(b['w'].toString(), style: const TextStyle(fontWeight: FontWeight.w900, color: AppTheme.deepBlue, fontSize: 14))),
+            DataCell(Text(b['eco'].toString(), style: const TextStyle(fontSize: 13))),
           ]);
         }).toList(),
       ),
@@ -290,32 +374,41 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
 
   Widget _buildInfoTab(Match match) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       children: [
-        _buildInfoRow(Icons.location_on, 'Venue', match.venue),
-        const Divider(),
-        _buildInfoRow(Icons.calendar_today, 'Date', match.matchDate.toLocal().toString().split('.')[0]),
-        const Divider(),
-        _buildInfoRow(Icons.info_outline, 'Status', match.status),
+        _buildInfoRow(Icons.location_on_rounded, 'VENUE', match.venue),
+        const SizedBox(height: 16),
+        _buildInfoRow(Icons.calendar_today_rounded, 'DATE & TIME', DateFormat('EEEE, MMM dd, yyyy • hh:mm a').format(match.matchDate.toLocal())),
+        const SizedBox(height: 16),
+        _buildInfoRow(Icons.analytics_rounded, 'MATCH STATUS', match.status.toUpperCase()),
       ],
     );
   }
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.primaryGold.withOpacity(0.1)),
+      ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(icon, color: Colors.grey, size: 20),
-          const SizedBox(width: 16),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: AppTheme.softBlue, borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, color: AppTheme.deepBlue, size: 20),
+          ),
+          const SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(label, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
                 const SizedBox(height: 4),
-                Text(value, style: const TextStyle(fontSize: 16)),
+                Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.deepBlue)),
               ],
             ),
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/analysis.dart';
 import '../../services/analysis_service.dart';
+import '../../config/theme_constants.dart';
 
 class MyAnalysisScreen extends StatefulWidget {
   const MyAnalysisScreen({Key? key}) : super(key: key);
@@ -27,10 +28,15 @@ class _MyAnalysisScreenState extends State<MyAnalysisScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.warmWhite,
       appBar: AppBar(
-        title: const Text('My Analysis'),
-        backgroundColor: Colors.blue.shade700,
+        title: const Text(
+          'MY ANALYSIS',
+          style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 18),
+        ),
+        backgroundColor: AppTheme.deepBlue,
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: FutureBuilder<List<MatchAnalysis>>(
         future: _predictionsFuture,
@@ -108,17 +114,28 @@ class _AnalysisCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryGold.withOpacity(0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
       child: ExpansionTile(
-        tilePadding: const EdgeInsets.all(16),
+        tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        shape: const RoundedRectangleBorder(side: BorderSide.none),
         title: Text(
           prediction.title,
           style: const TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w900,
             fontSize: 16,
+            color: AppTheme.deepBlue,
           ),
         ),
         subtitle: Column(
@@ -127,13 +144,19 @@ class _AnalysisCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               '${prediction.match?.team1 ?? ''} vs ${prediction.match?.team2 ?? ''}',
-              style: TextStyle(color: Colors.grey.shade700),
+              style: const TextStyle(color: AppTheme.textSecondary, fontWeight: FontWeight.w600),
             ),
             if (prediction.match?.matchDate != null) ...[
               const SizedBox(height: 4),
-              Text(
-                DateFormat('MMM dd, yyyy').format(prediction.match!.matchDate.toLocal()),
-                style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+              Row(
+                children: [
+                  const Icon(Icons.calendar_today_rounded, size: 12, color: AppTheme.textSecondary),
+                  const SizedBox(width: 6),
+                  Text(
+                    DateFormat('MMM dd, yyyy').format(prediction.match!.matchDate.toLocal()),
+                    style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11),
+                  ),
+                ],
               ),
             ],
           ],
@@ -141,10 +164,10 @@ class _AnalysisCard extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.green.shade50,
+            color: AppTheme.primaryGold.withOpacity(0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.check_circle, color: Colors.green.shade700),
+          child: const Icon(Icons.stars_rounded, color: AppTheme.primaryGold),
         ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -153,64 +176,101 @@ class _AnalysisCard extends StatelessWidget {
             Text(
               '🪙 ${prediction.price.toStringAsFixed(0)}',
               style: const TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w900,
                 fontSize: 16,
+                color: AppTheme.deepBlue,
               ),
             ),
             if (prediction.confidencePercentage != null)
-              Text(
-                '${prediction.confidencePercentage}%',
-                style: TextStyle(
-                  color: Colors.green.shade700,
-                  fontSize: 12,
+              Container(
+                margin: const EdgeInsets.only(top: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  '${prediction.confidencePercentage}%',
+                  style: TextStyle(
+                    color: Colors.green.shade700,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
           ],
         ),
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (prediction.analysisResult != null) ...[
                   const Text(
-                    'Planet Support',
+                    'PLANETARY SUPPORT',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
+                      color: AppTheme.primaryGold,
+                      letterSpacing: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(8),
+                      gradient: LinearGradient(
+                        colors: [AppTheme.deepBlue, AppTheme.deepBlue.withOpacity(0.8)],
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.deepBlue.withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Text(
                       prediction.analysisResult!,
-                      style: TextStyle(
-                        color: Colors.blue.shade700,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                        letterSpacing: 1,
                       ),
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                 ],
                 const Text(
-                  'Full Analysis',
+                  'ASTROLOGICAL ANALYSIS',
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                    color: AppTheme.textSecondary,
+                    letterSpacing: 1.5,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  prediction.fullAnalysis ?? 'No detailed analysis available',
-                  style: const TextStyle(fontSize: 14, height: 1.5),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.divineCream,
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
+                  ),
+                  child: Text(
+                    prediction.fullAnalysis ?? 'No detailed analysis available',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      height: 1.6,
+                      color: AppTheme.textMain,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ],
             ),

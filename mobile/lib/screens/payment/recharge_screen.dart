@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/payment_service.dart';
 import '../../providers/auth_provider.dart';
+import '../../config/theme_constants.dart';
 
 class RechargeScreen extends StatefulWidget {
   const RechargeScreen({Key? key}) : super(key: key);
@@ -17,11 +18,6 @@ class _RechargeScreenState extends State<RechargeScreen> {
   bool _isLoading = false;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void dispose() {
     _amountController.dispose();
     super.dispose();
@@ -30,21 +26,14 @@ class _RechargeScreenState extends State<RechargeScreen> {
   Future<void> _proceedToPay({bool restrictToUpi = false, bool nativeUpi = false}) async {
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid amount')),
-      );
+      _showError('Please enter a valid amount');
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       String? merchantTransactionId;
-
-      // 1. Pay via Native UPI Module
-      // 1. Pay via Native UPI Module
       if (nativeUpi) {
          final result = await _paymentService.startNativeUpiTransaction(
              amount: amount, 
@@ -53,37 +42,31 @@ class _RechargeScreenState extends State<RechargeScreen> {
          
          if (result['status'] == 'success' || result['status'] == 'submitted') {
              merchantTransactionId = result['merchantTransactionId'];
-             // Verify with backend
              if (merchantTransactionId != null) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Checking Payment Status...')));
+                _showSuccess('Checking Payment Status...');
                 await _pollPaymentStatus(merchantTransactionId, maxAttempts: 10); 
              }
              return;
          } else if (result['status'] == 'cancelled') {
-             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Payment Cancelled')));
+             _showError('Payment Cancelled');
          } else {
-             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'] ?? 'Payment Failed')));
+             _showError(result['message'] ?? 'Payment Failed');
          }
       } 
-      // 2. Pay via Web Checkout
       else {
         final result = await _paymentService.startPhonePeTransaction(amount, restrictToUpi: restrictToUpi);
         if (result['success'] == true) {
            merchantTransactionId = result['merchantTransactionId'];
-           // Valid Merchant ID? Start Polling
            if (merchantTransactionId != null) {
               _showPollingDialog(merchantTransactionId);
               return; 
            }
         } else {
-           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'] ?? 'Failed to initiate')));
+           _showError(result['message'] ?? 'Failed to initiate');
         }
       }
-      
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
+      _showError('Error: $e');
     } finally {
       if (mounted) setState(() { _isLoading = false; });
     }
@@ -94,18 +77,19 @@ class _RechargeScreenState extends State<RechargeScreen> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        title: const Text('Processing Payment'),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        title: const Text('Processing Payment', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.deepBlue)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: const [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Please complete payment in your browser/app...'),
+            CircularProgressIndicator(color: AppTheme.primaryGold),
+            SizedBox(height: 20),
+            Text('Please complete payment in your browser/app...', textAlign: TextAlign.center),
           ],
         ),
       ),
     );
-    // Start polling in background
     _pollPaymentStatus(merchantTransactionId, isDialog: true);
   }
 
@@ -117,119 +101,166 @@ class _RechargeScreenState extends State<RechargeScreen> {
         final result = await _paymentService.verifyPayment(merchantTransactionId);
         
         if (result['success'] == true) {
-            if (isDialog && mounted) Navigator.of(context).pop(); // Close dialog
-            await context.read<AuthProvider>().init(); // Refresh wallet
+            if (isDialog && mounted) Navigator.of(context).pop();
+            await context.read<AuthProvider>().init();
             if (mounted) {
-               ScaffoldMessenger.of(context).showSnackBar(
-                 SnackBar(content: Text(result['message'] ?? 'Wallet Recharged!'), backgroundColor: Colors.green),
-               );
-               Navigator.of(context).pop(); // Close Screen
+               _showSuccess(result['message'] ?? 'Wallet Recharged!');
+               Navigator.of(context).pop();
             }
             return;
         } else if (result['code'] == 'PAYMENT_ERROR') {
-            // Stop polling on definite failure
              if (isDialog && mounted) Navigator.of(context).pop();
-             if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Payment Failed')));
+             _showError('Payment Failed');
              return;
         }
     }
-    // Timeout
     if (isDialog && mounted) Navigator.of(context).pop();
-    if (mounted) {
-       ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(content: Text('Payment pending. Check history later.')),
-       );
-    }
+    _showError('Payment pending. Check history later.');
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.redAccent),
+    );
+  }
+
+  void _showSuccess(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.green),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.warmWhite,
       appBar: AppBar(
-        title: const Text('Recharge Astro Coins'),
-        backgroundColor: Colors.blue.shade700,
+        title: const Text(
+          'RECHARGE WALLET',
+          style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 18),
+        ),
+        backgroundColor: AppTheme.deepBlue,
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Enter Amount',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              'RECHARGE AMOUNT',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: AppTheme.primaryGold, letterSpacing: 2),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             TextField(
               controller: _amountController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.deepBlue),
+              decoration: InputDecoration(
                 prefixText: '🪙 ',
-                border: OutlineInputBorder(),
-                hintText: 'Enter amount to add',
+                hintText: '0',
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide(color: AppTheme.primaryGold.withOpacity(0.2)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: const BorderSide(color: AppTheme.primaryGold, width: 2),
+                ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             const Text(
-              'Quick Select',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+              'QUICK SELECT',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: AppTheme.textSecondary, letterSpacing: 1.5),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             Wrap(
-              spacing: 8,
+              spacing: 12,
+              runSpacing: 12,
               children: _presetAmounts.map((amount) {
-                return ActionChip(
-                  label: Text('🪙 ${amount.toInt()}'),
-                  onPressed: () {
-                    _amountController.text = amount.toStringAsFixed(0);
-                  },
+                return InkWell(
+                  onTap: () => setState(() => _amountController.text = amount.toStringAsFixed(0)),
+                  borderRadius: BorderRadius.circular(15),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: _amountController.text == amount.toStringAsFixed(0) ? AppTheme.primaryGold : Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: AppTheme.primaryGold.withOpacity(0.5)),
+                      boxShadow: [
+                        if (_amountController.text == amount.toStringAsFixed(0))
+                          BoxShadow(color: AppTheme.primaryGold.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4)),
+                      ],
+                    ),
+                    child: Text(
+                      '🪙 ${amount.toInt()}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        color: _amountController.text == amount.toStringAsFixed(0) ? Colors.white : AppTheme.deepBlue,
+                      ),
+                    ),
+                  ),
                 );
               }).toList(),
             ),
             
-            const Spacer(),
+            const SizedBox(height: 60),
             
-            // Single Main Button - Standard Web Checkout
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : () => _proceedToPay(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade700,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'Buy Coins (Web Checkout)',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: OutlinedButton.icon(
-                  onPressed: _isLoading ? null : () => _proceedToPay(nativeUpi: true),
-                  icon: const Icon(Icons.apps),
-                  label: const Text('Pay via Local UPI App'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.blue.shade700,
-                    side: BorderSide(color: Colors.blue.shade700),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ),
+            _buildPaymentButton(
+              label: 'WEB CHECKOUT',
+              icon: Icons.language_rounded,
+              onPressed: _isLoading ? null : () => _proceedToPay(),
+              isPrimary: true,
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPaymentButton({
+    required String label, 
+    required IconData icon, 
+    required VoidCallback? onPressed,
+    required bool isPrimary,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: isPrimary 
+        ? ElevatedButton.icon(
+            onPressed: onPressed,
+            icon: Icon(icon, size: 20),
+            label: _isLoading 
+                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : Text(label, style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.deepBlue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              elevation: 8,
+              shadowColor: AppTheme.deepBlue.withOpacity(0.4),
+            ),
+          )
+        : OutlinedButton.icon(
+            onPressed: onPressed,
+            icon: Icon(icon, size: 20),
+            label: Text(label, style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.deepBlue,
+              side: const BorderSide(color: AppTheme.primaryGold, width: 1.5),
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            ),
+          ),
     );
   }
 }

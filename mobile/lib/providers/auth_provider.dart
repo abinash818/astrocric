@@ -1,44 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import '../models/user.dart';
 import '../services/auth_service.dart';
+import '../services/api_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
+  final ApiService _apiService = ApiService();
   
   User? _user;
   bool _isAuthenticated = false;
   bool _isLoading = true;
+  bool _isSyncing = false; // Guard against double-sync
 
   User? get user => _user;
   bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
 
   Future<void> init() async {
+    print('AuthProvider: Initializing AuthProvider...');
+    await _apiService.loadToken();
+    
     _authService.userChanges.listen((firebaseUser) async {
-      _isLoading = true;
-      notifyListeners();
-
+      print('AuthProvider: userChanges detected. firebaseUser: ${firebaseUser?.email}');
+      
+      if (_isSyncing) return;
+      
       if (firebaseUser != null) {
-        try {
-          // 1. Sync with backend to get/update user and get JWT
-          await _authService.syncWithBackend(firebaseUser);
-          
-          // 2. Fetch full profile from backend (including wallet)
-          _user = await _authService.getProfile();
-          _isAuthenticated = true;
-        } catch (e) {
-          print('Auth Init Error: $e');
-          _user = null;
-          _isAuthenticated = false;
-        }
+        await _handleFirebaseUser(firebaseUser);
       } else {
         _user = null;
         _isAuthenticated = false;
+        _isLoading = false;
+        notifyListeners();
       }
-
-      _isLoading = false;
-      notifyListeners();
     });
+  }
+
+  /// Shared handler for syncing Firebase user with backend
+  Future<void> _handleFirebaseUser(firebase.User firebaseUser) async {
+    if (_isSyncing) return;
+    _isSyncing = true;
+    _isLoading = true;
+    notifyListeners(); 
+
+    try {
+      print('AuthProvider: Syncing user ${firebaseUser.email} with backend...');
+      await _authService.syncWithBackend(firebaseUser);
+      
+      print('AuthProvider: Fetching profile...');
+      _user = await _authService.getProfile();
+      _isAuthenticated = (_user != null);
+    } catch (e) {
+      print('AuthProvider: Auth sync error: $e');
+      _user = null;
+      _isAuthenticated = false;
+    } finally {
+      _isSyncing = false;
+      _isLoading = false;
+      notifyListeners(); 
+    }
   }
 
   Future<void> refreshProfile() async {
@@ -54,28 +75,44 @@ class AuthProvider with ChangeNotifier {
 
   Future<String?> loginWithEmail(String email, String password) async {
     try {
+      _isLoading = true;
+      notifyListeners();
       await _authService.loginWithEmail(email, password);
       return null;
     } catch (e) {
+      _isLoading = false;
+      notifyListeners();
       return e.toString();
     }
   }
 
   Future<String?> signupWithEmail(String email, String password) async {
     try {
+      _isLoading = true;
+      notifyListeners();
       await _authService.signupWithEmail(email, password);
       return null;
     } catch (e) {
+      _isLoading = false;
+      notifyListeners();
       return e.toString();
     }
   }
 
   Future<String?> loginWithGoogle() async {
     try {
+      _isLoading = true;
+      notifyListeners();
       final result = await _authService.loginWithGoogle();
-      if (result == null) return 'Google sign in cancelled';
+      if (result == null) {
+        _isLoading = false;
+        notifyListeners();
+        return 'Google sign in cancelled';
+      }
       return null;
     } catch (e) {
+      _isLoading = false;
+      notifyListeners();
       return e.toString();
     }
   }
@@ -90,7 +127,17 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> logout() async {
-    await _authService.logout();
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _authService.logout();
+    } finally {
+      _user = null;
+      _isAuthenticated = false;
+      _isSyncing = false;
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   // Legacy support for older components during transition

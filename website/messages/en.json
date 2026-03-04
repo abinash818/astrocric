@@ -236,6 +236,36 @@
             "title": "Privacy Policy — S&B Astro",
             "content": "S&B Astro — Dharma Sastha Jothida Nilayam respects your privacy and is committed to protecting your personal data. This privacy policy informs you about how we handle your data when you visit our website (SBASTRO.COM) or use our mobile application, providing a secure and transparent experience in compliance with India's Digital Personal Data Protection Act (DPDP) and international standards.\n\n1. Data We Collect: We collect minimal data necessary for service provision, including mobile numbers for OTP authentication and basic profile info.\n2. Use of Data: Your data is used strictly for authentication, personalized astrology analysis, and notification of match outcomes.\n3. Data Security: We implement rigorous security measures to protect your data from unauthorized access.\n4. No Third-Party Sharing: We do not sell or share your personal data with third parties for marketing purposes.\n5. Your Rights: You have the right to access, correct, or request deletion of your personal data at any time via our support channels."
         },
+        "googlePrivacy": {
+            "title": "Privacy Policy for Astrocric",
+            "intro": "Last Updated: March 04, 2026. This Privacy Policy describes how Astrocric (\"we,\" \"us,\" or \"our\") collects, uses, and shares your personal information when you use our mobile application.",
+            "sections": [
+                {
+                    "title": "1. Information We Collect",
+                    "content": "A. Information You Provide: Account Info (Email/Profile via Google/Firebase), Payment Info (Processed by PhonePe). B. Automatically Collected: Device Info (Model, OS, IDs for Push Notifications), Usage Data (App interactions)."
+                },
+                {
+                    "title": "2. How We Use Your Information",
+                    "content": "To provide/maintain App functionality (Cricket predictions, live scores), manage Astro Coins wallet, send push notifications, and improve services."
+                },
+                {
+                    "title": "3. Data Sharing",
+                    "content": "Shared with service providers (Firebase, PhonePe). Disclosed for legal requirements if necessary."
+                },
+                {
+                    "title": "4. Data Safety",
+                    "content": "Industry-standard security measures. No transmission is 100% secure."
+                },
+                {
+                    "title": "5. Your Rights",
+                    "content": "Access/update account in-app, opt-out of notifications, request deletion via email."
+                },
+                {
+                    "title": "6. Contact Us",
+                    "content": "Email: sbastro04@gmail.com | Website: https://sbastro.com"
+                }
+            ]
+        },
         "terms": {
             "title": "Terms & Conditions — S&B Astro",
             "intro": "By using SBASTRO.COM or S&B Astro mobile application, you agree to the following terms.",
